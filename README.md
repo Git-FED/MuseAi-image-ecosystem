@@ -1,6 +1,6 @@
 # Muse AI Image Ecosystem
 
-![Status](https://img.shields.io/badge/Status-v1.4.0-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-v1.4.1-brightgreen?style=for-the-badge)
 ![Live](https://img.shields.io/badge/Live-GitHub_Pages-2ea44f?style=for-the-badge)
 
 **A real working image generation workflow, built like a satellite station.**
@@ -43,6 +43,7 @@ Write a brief, hit Run Pipeline, watch the rooms light up in order, get an image
 
 ## History
 
+- **v1.4.1 — Nov 26, 2026:** Fixed the "sitting in one box" look at its cause. Every idle roam tour funneled through the single Deployment Bay centre point on near-identical timing, so the whole crew converged and lingered in the one bay box with overlapping labels, and heavy per-frame paint dropped a throttled phone viewport to about 17fps. Idle roam is now a perimeter tour of the conveyor streets with Dock B agents running it in reverse, a per-agent roam speed, and widely staggered start phases, so the crew stays spread around the whole floor. Deploys and returns now route through each agent's own bay slot instead of the one shared centre point. Breadcrumb-trail churn was cut so it cannot drag the frame rate down.
 - **v1.4.0 — Nov 26, 2026:** Real continuous moving parts. Routes were issued one short hop at a time with 240-560ms pauses, which read as dots sitting still then jumping. Now the server issues each agent's whole tour as one chained route, at higher speeds, with near-zero pauses, so idle agents walk the full factory almost without stopping and a working pair patrols bench to bench for its whole stage. Walking is visible: agents bob at step pace, drop a fading dotted trail, and the status strip shows an IN MOTION counter for how many of the 12 are walking right now. The overhead gantry crane travels the floor, idle street traffic doubled, and if nobody starts a brief within 6 seconds the page runs one itself through the exact same pipeline, so the first thing you see is the factory working.
 - **v1.3.2 — Nov 26, 2026:** Fixed the inverted agent behaviour. Stages used to advance on a fixed 2.1-second timer, but a deploy trip through the Deployment Bay takes up to 3.6 seconds, so every pair was recalled mid-journey and never reached its workstation, while idle agents roamed the whole factory. Now a stage never advances on a timer: it waits until its pair has actually arrived, then the pair spends a full 3 seconds visibly working, patrolling bench to bench across a wider loop at faster-than-roam speed, before the brief moves on. A 12-second watchdog means a run can never stall.
 - **v1.3.1 — Nov 25, 2026:** Idle agents no longer sit in one box. Each pair now starts posted in its own home room, spread across all six rooms, and idle agents run a constant factory-wide tour: workstation, room corner, conveyor street, through the Deployment Bay, out to a far street, and back, at more than double the old roam speed. Starting a job no longer teleports everyone back into the bay; stages deploy via the bay, and finished pairs head back out on floor patrol. Status renamed AT POST.

@@ -664,7 +664,7 @@
       <!-- Live backend / ops -->
       <section aria-label="Live operations" style="margin-top:20px">
         <h2 class="sec">LIVE OPS — WHO IS DOING WHAT, AND WHEN</h2>
-        <p class="sub">This is the live engine for this page, built the way real agent fleets are wired: the server owns the truth, and the map only renders what the server says. On this static GitHub Pages build the server is a module inside the page — there is no network server behind a Pages site; the full network-server version of this ecosystem is the Space. Inside this page the split is strict all the same: The server creates the job, and for every move it issues an agent's whole route — waypoints, departure time and speed — for deploys, workstation patrols, and the wide idle roam that keeps every agent touring its room, the streets and the bay between jobs. The map animates those routes locally at 60 frames a second, but no animation starts, stops or changes direction except when the server's state changes. The server reports every agent four times a second; if an agent ever stops reporting, it is marked OFFLINE with its last-seen time and its animation holds — it never keeps walking on its own. No anonymous dots do job work — the 12 named crew below do. The smaller background dots are street traffic only.</p>
+        <p class="sub">This is the live engine for this page, built the way real agent fleets are wired: the server owns the truth, and the map only renders what the server says. On this static GitHub Pages build the server is a module inside the page — there is no network server behind a Pages site; the full network-server version of this ecosystem is the Space. Inside this page the split is strict all the same: The server creates the job, and for every move it issues an agent's whole route — waypoints, departure time and speed — for deploys, workstation patrols, and the wide idle roam that keeps every agent touring its room and the full perimeter street loop between jobs. The map animates those routes locally at 60 frames a second, but no animation starts, stops or changes direction except when the server's state changes. The server reports every agent four times a second; if an agent ever stops reporting, it is marked OFFLINE with its last-seen time and its animation holds — it never keeps walking on its own. No anonymous dots do job work — the 12 named crew below do. The smaller background dots are street traffic only.</p>
         <div class="legend"><span>● NAMED CREW — 12 agents spread across all 6 rooms on constant floor patrol, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room, patrolling between its benches while it works</span><span>· DONE — the stage is filed and the agent is back out roaming the floor from its home room</span><span>· OFFLINE — the server stopped reporting the agent: grey, held at its last reported position, last-seen time shown</span><span>· The conveyor belts run at full pace only while a job is live</span><span>· IN MOTION — the status strip counts the crew walking at this moment; a walking agent bobs at step pace and leaves a fading dotted trail on the path it just walked</span><span>· The overhead gantry crane travels the floor on its own loop</span></div>
         <div class="ops-grid">
           <div class="panel">
@@ -738,7 +738,7 @@
           <p class="form-error" id="form-error" hidden></p>
 
           <button type="button" class="run-btn" id="run-btn">RUN PIPELINE</button>
-          <p class="run-note">Watch the grid and the Live Ops feed: at rest the named crew is spread across all six rooms, walking room to room along the conveyor streets through the Deployment Bay — the IN MOTION count in the status strip shows how many of the 12 are walking right now, and every walking agent leaves a fading dotted trail along the path it just took. Fire a run and each room's two agents deploy in turn, travel to their workstation, and patrol bench to bench across their room while they work — a stage only hands the brief on once its pair has actually arrived and put in its working time there, so the pair doing the job is always the pair visibly moving. When their stage is done they head back out on floor patrol — and the conveyor belts speed up for as long as the job is live. Leave the page alone for a few seconds and it runs a brief on its own, so you can watch a full run without typing anything.</p>
+          <p class="run-note">Watch the grid and the Live Ops feed: at rest the named crew is spread across all six rooms, each walking its own full perimeter loop of the conveyor streets at its own pace, so the crew stays spread around the whole floor instead of bunching in the bay — the IN MOTION count in the status strip shows how many of the 12 are walking right now, and every walking agent leaves a fading dotted trail along the path it just took. Fire a run and each room's two agents deploy in turn, travel to their workstation, and patrol bench to bench across their room while they work — a stage only hands the brief on once its pair has actually arrived and put in its working time there, so the pair doing the job is always the pair visibly moving. When their stage is done they head back out on floor patrol — and the conveyor belts speed up for as long as the job is live. Leave the page alone for a few seconds and it runs a brief on its own, so you can watch a full run without typing anything.</p>
         </div>
 
         <!-- Pipeline status + result -->
@@ -858,18 +858,30 @@
           var streetY = a.work[1] < 32 ? 34.5 : a.work[1] > 64 ? 66.5 : 34.5;
           var streetNear = [Math.max(6, Math.min(94, a.work[0])), streetY];
           var streetFar = [a.work[0] < 50 ? 66 : 34, a.work[1] < 50 ? 66.5 : 34.5];
-          // Idle roam is a factory-wide tour, not a shuffle inside one box:
-          // workstation -> room corner -> street by its room -> bay centre ->
-          // its bay slot -> far street -> back across its room.
-          a.bayLoop=[[a.work[0],a.work[1]],[a.work[0]+offX,a.work[1]+3.5],streetNear,[50,48],a.bay.slice(),streetFar,[a.work[0]+offX,a.work[1]],[a.work[0],a.work[1]+3.5]];
+          // Idle roam is a factory-wide PERIMETER tour on the conveyor
+          // streets: workstation -> room corner -> street by its room ->
+          // across that street to the far vertical street -> down/up the
+          // far street -> back along the opposite street -> home. It must
+          // NOT funnel through the Deployment Bay centre: when every tour
+          // shared the single bay point, the whole crew converged there
+          // in phase and the floor read as 12 agents piled in one box.
+          // Dock B agents run the same loop in reverse, and each agent
+          // gets its own roam speed and start phase, so the crew stays
+          // spread around the loop instead of marching in a bunch.
+          var farX = a.work[0] < 50 ? 66 : 34;
+          var otherStreetY = streetY === 34.5 ? 66.5 : 34.5;
+          var tour=[[a.work[0],a.work[1]],[a.work[0]+offX,a.work[1]+3.5],streetNear,[farX,streetY],streetFar,[a.work[0],otherStreetY],[a.work[0]+offX,otherStreetY],[a.work[0],a.work[1]+3.5]];
+          if(a.dock==="Dock B") tour=[tour[0]].concat(tour.slice(1).reverse());
+          a.bayLoop=tour;
           a.roamLoop=a.bayLoop;
-          a.patrolIdx = ai % 4;
+          a.roamFactor = 0.85 + (ai % 5) * 0.13;
+          a.patrolIdx = (ai * 3) % 8;
           // Server-owned truth fields. The renderer never decides anything: it
           // draws the agent at the position the server's current route implies.
           a.anchor = a.work.slice();  // where the agent rests when it has no route
           a.route = null;             // {from, points, departAt, speed, endsAt, purpose, doneText}
           a.lastSeen = Date.now();    // last server report for this agent
-          a.nextLegAt = Date.now() + 400 + (ai % 6) * 260; // when the server may issue its next patrol/roam leg
+          a.nextLegAt = Date.now() + 300 + ai * 350; // staggered start phases so the crew never marches in sync
           a.offline = false;
         });
         var selectedAgent = CREW[0];
@@ -1150,8 +1162,9 @@
         // until the server reports it fresh.
         var trailLayer = el("trail-layer");
         var crumbCount = 0;
+        var frameSlow = false; // set by the rAF loop: true when frames run under ~30fps (weak phone GPU)
         function spawnCrumb(x, y, color){
-          if(!trailLayer || crumbCount > 150) return;
+          if(!trailLayer || crumbCount > 70) return;
           var c = document.createElement("div");
           c.className = "crumb";
           c.style.left = x + "%"; c.style.top = y + "%"; c.style.background = color;
@@ -1187,7 +1200,7 @@
             if(walking){
               movingCount++;
               if(!a.el.classList.contains("walking")) a.el.classList.add("walking");
-              if(!reduced && now - (a.lastCrumb || 0) > 140){
+              if(!reduced && !frameSlow && now - (a.lastCrumb || 0) > 280){
                 a.lastCrumb = now;
                 spawnCrumb(p[0], p[1], a.color);
               }
@@ -1245,6 +1258,7 @@
             // Named agents: RENDER ONLY. Positions come from the server-issued
             // route (agentPosAt) — this loop never starts, stops or redirects a
             // walk; it draws what the server's state says, at 60fps.
+            frameSlow = dt > 0.034;
             renderAgentPositions();
             el("stat-agents").textContent = "AGENTS " + (count + 12) + " ON GRID";
             requestAnimationFrame(tick);
@@ -1856,7 +1870,7 @@
         //    OFFLINE with its last-seen time and holds its animation.
         var jobTimer = null;
         var WORK_MS = 3000;
-        var TRAVEL_SPEED = 46, PATROL_SPEED = 27, ROAM_SPEED = 17;
+        var TRAVEL_SPEED = 46, PATROL_SPEED = 27, ROAM_SPEED = 19;
 
         function routeDistance(from, points){
           var d=0, px=from[0], py=from[1];
@@ -1890,7 +1904,7 @@
         function sendToBay(a, doneText){
           a.status="DEPLOYED"; a.task=doneText;
           a.at="Heading back via the Deployment Bay \u2192 "+a.roomCode+" "+a.roomName;
-          issueRoute(a, [BAY, a.work], TRAVEL_SPEED*(a.speed||1), "return", doneText);
+          issueRoute(a, [a.bay, a.work], TRAVEL_SPEED*(a.speed||1), "return", doneText);
         }
         function arriveWork(a){
           a.status="WORKING"; a.task=a.workTask;
@@ -1941,10 +1955,10 @@
               a.task="Deploying via the Deployment Bay to "+a.roomCode+" "+a.roomName+"\u2026";
               a.at="En route \u00B7 Deployment Bay \u2192 "+a.roomCode+" "+a.roomName;
               if(a.id==="courier"){
-                issueRoute(a, [[42,81], BAY, a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
+                issueRoute(a, [[42,81], a.bay, a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
                 emit(a, "Deployed via the Deployment Bay \u2192 R04 Render Engine pickup, then on to R06 Gallery Vault with the image.");
               } else {
-                issueRoute(a, [BAY, a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
+                issueRoute(a, [a.bay, a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
                 emit(a, "Deployed via the Deployment Bay \u2192 "+a.roomCode+" "+a.roomName+".");
               }
             } else if(a.status==="AT POST"){
@@ -1983,7 +1997,7 @@
                 }
                 if(pts.length){
                   if(isWork) pts = pts.concat(pts.slice()); // two full bench laps per route
-                  issueRoute(a, pts, isWork ? PATROL_SPEED*(a.speed||1) : ROAM_SPEED, isWork ? "patrol" : "roam");
+                  issueRoute(a, pts, isWork ? PATROL_SPEED*(a.speed||1) : ROAM_SPEED*(a.roamFactor||1), isWork ? "patrol" : "roam");
                 }
                 else a.nextLegAt = now + 300;
               }
