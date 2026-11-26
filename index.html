@@ -512,11 +512,30 @@
       .agent-wrap.offline .agent-dot { filter: grayscale(1) brightness(0.75); animation: none; box-shadow: 0 2px 0 rgba(0,0,0,0.7); }
       .agent-wrap.offline .agent-label { border-color: #6b726b; color: #c9cfc9; }
       .crew-card.offline { opacity: 0.62; }
+      /* --- Continuous motion: walking crew, path trails, travelling gantry --- */
+      /* An agent with a live route gets the .walking class from the renderer:
+         its dot bobs at step pace and throws a soft ring, so a walk reads as a
+         walk at a glance instead of a dot quietly drifting. */
+      @keyframes walk-bob { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3px) scale(1.12); } }
+      .agent-wrap.walking .agent-dot { animation: walk-bob 0.38s ease-in-out infinite; }
+      .agent-wrap.walking .agent-label { border-color: rgba(230,245,233,0.55); }
+      /* Breadcrumb trail: a fading dot dropped behind every walking agent a
+         few times a second — the path it just walked stays visible ~1s. */
+      .crumb { position: absolute; width: 5px; height: 5px; margin-left: -2.5px; margin-top: -2.5px; border-radius: 999px; opacity: 0.55; pointer-events: none; animation: crumb-fade 1.15s ease-out forwards; }
+      @keyframes crumb-fade { from { opacity: 0.55; transform: scale(1); } to { opacity: 0; transform: scale(0.35); } }
+      /* The overhead gantry crane travels the floor on its own loop. */
+      .crane { animation: crane-run 36s ease-in-out infinite; }
+      @keyframes crane-run { 0%, 100% { left: 15%; } 50% { left: 83%; } }
+      .crane::after { content: ""; position: absolute; left: 50%; top: 12%; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 999px; background: var(--amber); box-shadow: 0 0 8px var(--amber); animation: blink-dot 1.4s step-end infinite; }
+      /* Bay beacon breathes at rest too, not only during a run. */
+      .hub-dot { animation: pulse-core 2.8s ease-in-out infinite; }
       @media (prefers-reduced-motion: reduce) {
         .render-core, .blink-dot, .street-h::after, .street-v::after,
         .agent-wrap .agent-dot, .room[data-state="active"] .in-bars div,
         .room[data-state="active"] .in-sliders .knob, .room[data-state="active"] .in-lines div,
         .room[data-state="active"] .in-swatches div, .map.running .hub-dot { animation: none; }
+        .agent-wrap.walking .agent-dot, .crane, .crane::after, .hub-dot, .crumb { animation: none; }
+        .crumb { display: none; }
         html { scroll-behavior: auto; }
       }
     </style>
@@ -530,6 +549,7 @@
         <span id="stat-runs">RUNS 0</span>
         <span id="stat-agents">AGENTS 16 ON GRID</span>
         <span id="stat-crew">CREW 0/12 WORKING</span>
+        <span id="stat-motion">IN MOTION —/12</span>
         <span id="stat-job">JOB — NONE</span>
         <span id="stat-clock">LIVE —</span>
         <span class="spacer">FACTORY FLOOR // LIVE VIEW</span>
@@ -634,6 +654,7 @@
         </div>
 
         <div class="dots-layer" id="dots-layer" aria-hidden="true"></div>
+        <div class="dots-layer" id="trail-layer" aria-hidden="true"></div>
         <div class="dots-layer" id="agents-layer" style="pointer-events:none"></div>
       </section>
 
@@ -644,7 +665,7 @@
       <section aria-label="Live operations" style="margin-top:20px">
         <h2 class="sec">LIVE OPS — WHO IS DOING WHAT, AND WHEN</h2>
         <p class="sub">This is the live engine for this page, built the way real agent fleets are wired: the server owns the truth, and the map only renders what the server says. On this static GitHub Pages build the server is a module inside the page — there is no network server behind a Pages site; the full network-server version of this ecosystem is the Space. Inside this page the split is strict all the same: The server creates the job, and for every move it issues an agent's whole route — waypoints, departure time and speed — for deploys, workstation patrols, and the wide idle roam that keeps every agent touring its room, the streets and the bay between jobs. The map animates those routes locally at 60 frames a second, but no animation starts, stops or changes direction except when the server's state changes. The server reports every agent four times a second; if an agent ever stops reporting, it is marked OFFLINE with its last-seen time and its animation holds — it never keeps walking on its own. No anonymous dots do job work — the 12 named crew below do. The smaller background dots are street traffic only.</p>
-        <div class="legend"><span>● NAMED CREW — 12 agents spread across all 6 rooms on constant floor patrol, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room, patrolling between its benches while it works</span><span>· DONE — the stage is filed and the agent is back out roaming the floor from its home room</span><span>· OFFLINE — the server stopped reporting the agent: grey, held at its last reported position, last-seen time shown</span><span>· The conveyor belts run at full pace only while a job is live</span></div>
+        <div class="legend"><span>● NAMED CREW — 12 agents spread across all 6 rooms on constant floor patrol, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room, patrolling between its benches while it works</span><span>· DONE — the stage is filed and the agent is back out roaming the floor from its home room</span><span>· OFFLINE — the server stopped reporting the agent: grey, held at its last reported position, last-seen time shown</span><span>· The conveyor belts run at full pace only while a job is live</span><span>· IN MOTION — the status strip counts the crew walking at this moment; a walking agent bobs at step pace and leaves a fading dotted trail on the path it just walked</span><span>· The overhead gantry crane travels the floor on its own loop</span></div>
         <div class="ops-grid">
           <div class="panel">
             <h3><span>CURRENT JOB + DEPLOYMENT FEED</span><span id="feed-live">LIVE · POLL 2s</span></h3>
@@ -717,7 +738,7 @@
           <p class="form-error" id="form-error" hidden></p>
 
           <button type="button" class="run-btn" id="run-btn">RUN PIPELINE</button>
-          <p class="run-note">Watch the grid and the Live Ops feed: at rest the named crew is spread across all six rooms, roaming room to room along the conveyor streets through the Deployment Bay, and traffic is few and slow. Fire a run and each room's two agents deploy in turn, travel to their workstation, and patrol bench to bench across their room while they work — a stage only hands the brief on once its pair has actually arrived and put in its working time there, so the pair doing the job is always the pair visibly moving. When their stage is done they head back out on floor patrol — and the conveyor belts speed up for as long as the job is live.</p>
+          <p class="run-note">Watch the grid and the Live Ops feed: at rest the named crew is spread across all six rooms, walking room to room along the conveyor streets through the Deployment Bay — the IN MOTION count in the status strip shows how many of the 12 are walking right now, and every walking agent leaves a fading dotted trail along the path it just took. Fire a run and each room's two agents deploy in turn, travel to their workstation, and patrol bench to bench across their room while they work — a stage only hands the brief on once its pair has actually arrived and put in its working time there, so the pair doing the job is always the pair visibly moving. When their stage is done they head back out on floor patrol — and the conveyor belts speed up for as long as the job is live. Leave the page alone for a few seconds and it runs a brief on its own, so you can watch a full run without typing anything.</p>
         </div>
 
         <!-- Pipeline status + result -->
@@ -782,7 +803,7 @@
           <h3>WHO THE AGENTS ARE — AND WHERE THEY DEPLOY FROM</h3>
           <p>Job work is done by <code>12 named agents</code>, two per room, each based in its own room and roaming the whole factory floor — its room, the conveyor streets and the <code>Deployment Bay</code> at the centre of the map — whenever no job is running. <code>Quill + Scribe</code> work R01 Prompt Office, <code>Palette + Mood</code> R02 Style Lab, <code>Frame + Rule</code> R03 Composition Bay, <code>Forge + Kiln</code> R04 Render Engine, <code>Hone + Polish</code> R05 Detail Forge, and <code>Vault + Courier</code> R06 Gallery Vault — Courier also runs the carry from R04 to R06 through the bay. When a stage fires, that room's pair routes through the bay, travels the streets to its workstation, and works there; when the stage closes, the pair heads back out on floor patrol from its home room. Each agent's name rides with it on the map, its room shows what it is doing, and its card, the Agent Inspector and the feed all show the same live task string, so there is one answer to “who is doing what” everywhere you look.</p>
           <h3>THE LIVE ENGINE (SERVER OWNS THE TRUTH)</h3>
-          <p>GitHub Pages has no network server to add, so the server lives in the page as a module — but the split is the real one used by live agent fleets. The server owns every agent's state and is the only thing that can change it: it creates a numbered job from your brief, and for every move it issues the agent's whole route — waypoints, departure time and speed — covering deploys routed through the Deployment Bay, patrol legs around a workstation while a stage runs, and wide roam legs that keep idle agents touring their rooms, the streets and the bay instead of sitting in one box. The map is a renderer only: it animates the server's routes locally at 60 frames a second and never starts, stops or redirects a walk by itself. The server reports every agent four times a second and appends every deployment, arrival, handoff and filing to a timestamped event log (the Deployment Feed and terminal); an agent whose reports go stale is marked <code>OFFLINE</code> with its last-seen time and its animation holds until it reports again. The 18 smaller dots are street traffic only — they ramp from 4 slow at rest toward full pace during a run, but they never carry a job. The full server version of this ecosystem is the Space; this Page is its live public face.</p>
+          <p>GitHub Pages has no network server to add, so the server lives in the page as a module — but the split is the real one used by live agent fleets. The server owns every agent's state and is the only thing that can change it: it creates a numbered job from your brief, and for every move it issues the agent's whole route — waypoints, departure time and speed — covering deploys routed through the Deployment Bay, patrol legs around a workstation while a stage runs, and wide roam legs that keep idle agents touring their rooms, the streets and the bay instead of sitting in one box. The map is a renderer only: it animates the server's routes locally at 60 frames a second and never starts, stops or redirects a walk by itself. The server reports every agent four times a second and appends every deployment, arrival, handoff and filing to a timestamped event log (the Deployment Feed and terminal); an agent whose reports go stale is marked <code>OFFLINE</code> with its last-seen time and its animation holds until it reports again. The 18 smaller dots are street traffic only — they ramp from 8 slow at rest toward full pace during a run, but they never carry a job. The full server version of this ecosystem is the Space; this Page is its live public face.</p>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
         </div>
@@ -1090,7 +1111,7 @@
           [50, 45], [34, 45], [66, 45],
           [50, 81], [17, 81], [83, 81]
         ];
-        var TOTAL_DOTS = 18, IDLE_DOTS = 4;
+        var TOTAL_DOTS = 18, IDLE_DOTS = 8;
         var COLORS = ["#22ff88", "#22ff88", "#67e8f9", "#e6f5e9", "#ffb020"];
         var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         var dots = [];
@@ -1127,8 +1148,21 @@
         // last report for an agent is over 7s old, the agent is OFFLINE —
         // greyed, labelled with its last-seen time, and NOT animated again
         // until the server reports it fresh.
+        var trailLayer = el("trail-layer");
+        var crumbCount = 0;
+        function spawnCrumb(x, y, color){
+          if(!trailLayer || crumbCount > 150) return;
+          var c = document.createElement("div");
+          c.className = "crumb";
+          c.style.left = x + "%"; c.style.top = y + "%"; c.style.background = color;
+          trailLayer.appendChild(c); crumbCount++;
+          var done = function(){ if(c.parentNode) c.parentNode.removeChild(c); crumbCount--; };
+          c.addEventListener("animationend", done);
+          setTimeout(done, 1700); // safety net if animationend never fires
+        }
         function renderAgentPositions(){
           var now = Date.now();
+          var movingCount = 0;
           CREW.forEach(function(a){
             if(!a.el) return;
             var stale = (now - a.lastSeen) > 7000;
@@ -1141,12 +1175,32 @@
               else emit(null, a.name+" is reporting again \u2014 back online.");
               renderCrew();
             }
-            if(a.offline) return;
+            if(a.offline){ a.el.classList.remove("walking"); return; }
             var p = agentPosAt(a, now);
             a.x = p[0]; a.y = p[1];
             a.el.style.left = a.x + "%"; a.el.style.top = a.y + "%";
             a.el.classList.toggle("flip", a.x > 62);
+            // Walking state: the agent is mid-route right now. The class
+            // drives the step-bob in CSS; the breadcrumb trail drops a
+            // fading dot behind it ~7x a second so its path stays visible.
+            var walking = !!a.route && now < a.route.endsAt;
+            if(walking){
+              movingCount++;
+              if(!a.el.classList.contains("walking")) a.el.classList.add("walking");
+              if(!reduced && now - (a.lastCrumb || 0) > 140){
+                a.lastCrumb = now;
+                spawnCrumb(p[0], p[1], a.color);
+              }
+            } else if(a.el.classList.contains("walking")){
+              a.el.classList.remove("walking");
+            }
           });
+          // On-page proof of motion: how many of the 12 are walking right now.
+          if(now - (renderAgentPositions.lastCount || 0) > 250){
+            renderAgentPositions.lastCount = now;
+            var sm = el("stat-motion");
+            if(sm) sm.textContent = "IN MOTION " + movingCount + "/12";
+          }
         }
 
         if (!reduced) {
@@ -1160,7 +1214,7 @@
             if (Math.abs(target - state.activity) < 0.002) state.activity = target;
             var level = Math.max(0, Math.min(1, state.activity));
             var count = Math.round(IDLE_DOTS + level * (TOTAL_DOTS - IDLE_DOTS));
-            var mult = 0.3 + level * 2.4;
+            var mult = 0.5 + level * 2.2;
             dots.forEach(function (d, idx) {
               if (idx >= count) { d.el.style.display = "none"; return; }
               d.el.style.display = "";
@@ -1802,7 +1856,7 @@
         //    OFFLINE with its last-seen time and holds its animation.
         var jobTimer = null;
         var WORK_MS = 3000;
-        var TRAVEL_SPEED = 36, PATROL_SPEED = 19, ROAM_SPEED = 11;
+        var TRAVEL_SPEED = 46, PATROL_SPEED = 27, ROAM_SPEED = 17;
 
         function routeDistance(from, points){
           var d=0, px=from[0], py=from[1];
@@ -1864,8 +1918,11 @@
             emit(a, "Back at "+a.roomCode+" "+a.roomName+" \u2014 stage work filed, resuming floor patrol.");
             renderCrew();
           } else {
-            // Patrol / roam leg finished: pause; the server issues the next leg.
-            a.nextLegAt = now + (a.status==="WORKING" ? 120+((a.patrolIdx*37)%140) : 240+((a.patrolIdx*53)%320));
+            // Patrol / roam route finished: the server chains the next loop
+            // almost immediately — a walking agent stays walking, it does not
+            // stop at every waypoint the way the old one-leg-at-a-time
+            // issuing made it hop, pause, hop, pause.
+            a.nextLegAt = now + (a.status==="WORKING" ? 40 : 80);
           }
         }
         function advanceStage(idx, brief, prompts){
@@ -1910,17 +1967,25 @@
             if(!a.route && now>=a.nextLegAt){
               var isWork = a.status==="WORKING";
               if(isWork || a.status==="AT POST" || a.status==="DONE"){
-                // Issue the next leg of the agent's loop, skipping any corner
-                // the agent is already standing on — a zero-distance route
-                // would read as standing still.
-                var loopPts = isWork ? a.patrol : a.bayLoop, destPt = null;
-                for(var tries=0; tries<loopPts.length; tries++){
-                  a.patrolIdx=(a.patrolIdx+1)%loopPts.length;
-                  var cand=loopPts[a.patrolIdx];
-                  if(Math.abs(cand[0]-a.anchor[0])>0.05 || Math.abs(cand[1]-a.anchor[1])>0.05){ destPt=cand; break; }
+                // Issue the agent's WHOLE loop as one chained route — every
+                // waypoint in sequence, skipping any point the agent is
+                // already standing on. The renderer walks the chain without
+                // stopping, so a roam is one continuous factory tour and a
+                // working patrol is continuous bench-to-bench laps, not a
+                // series of short hops separated by pauses.
+                var loopPts = isWork ? a.patrol : a.bayLoop;
+                var pts = [], ax = a.anchor[0], ay = a.anchor[1], guard = 0;
+                while(pts.length < loopPts.length && guard < loopPts.length * 2){
+                  guard++;
+                  a.patrolIdx = (a.patrolIdx + 1) % loopPts.length;
+                  var cand = loopPts[a.patrolIdx];
+                  if(Math.abs(cand[0]-ax) > 0.05 || Math.abs(cand[1]-ay) > 0.05){ pts.push(cand); ax = cand[0]; ay = cand[1]; }
                 }
-                if(destPt) issueRoute(a, [destPt], isWork ? PATROL_SPEED*(a.speed||1) : ROAM_SPEED, isWork ? "patrol" : "roam");
-                else a.nextLegAt = now + 400;
+                if(pts.length){
+                  if(isWork) pts = pts.concat(pts.slice()); // two full bench laps per route
+                  issueRoute(a, pts, isWork ? PATROL_SPEED*(a.speed||1) : ROAM_SPEED, isWork ? "patrol" : "roam");
+                }
+                else a.nextLegAt = now + 300;
               }
             }
           });
@@ -2089,7 +2154,35 @@
           });
         }
 
+        // One entry point for every run — the button and the self-test demo
+        // below both go through here, so a demo run is the real pipeline,
+        // not a playback. From here the server tick owns every stage
+        // advance, deploy, patrol, return and the close-out.
+        function beginRun(brief) {
+          var prompts = buildPrompts(brief);
+          state.running = true;
+          state.stageIdx = 0;
+          setStageStates();
+          runBtn.disabled = true;
+          runBtn.textContent = "PIPELINE RUNNING…";
+          backend.job={num: state.runs+1, subject: brief.subject, brief: brief, prompts: prompts, finished: false, workStartedAt: null, stageStartedAt: Date.now()}; backend.startedAt=Date.now();
+          CREW.forEach(function(a){ var pos=agentPosAt(a, Date.now()); a.status="AT POST"; a.task=a.taskIdle; a.at=a.roomCode+" "+a.roomName+" \u00B7 floor patrol"; a.route=null; a.anchor=pos.slice(); a.x=pos[0]; a.y=pos[1]; a.nextLegAt=Date.now()+300; });
+          emit(null, "Server created Job #"+backend.job.num+" from the brief and queued all 6 stages.");
+          advanceStage(0, brief, prompts);
+          log("JOB // \"" + brief.subject.slice(0, 42) + "\" — brief accepted by R01 Prompt Office");
+          log("TRAFFIC // agents waking — traffic climbing with every stage");
+        }
+
+        var userDrove = false;
+        var briefCol = el("brief");
+        if (briefCol) {
+          briefCol.addEventListener("pointerdown", function(){ userDrove = true; });
+          briefCol.addEventListener("keydown", function(){ userDrove = true; });
+          briefCol.addEventListener("input", function(){ userDrove = true; });
+        }
+
         runBtn.addEventListener("click", function () {
+          userDrove = true;
           el("form-error").hidden = true;
           el("scout").hidden = true;
           var subject = el("subject").value.trim();
@@ -2099,29 +2192,27 @@
             return;
           }
           el("subject-error").hidden = true;
-          var brief = {
+          beginRun({
             subject: subject,
             details: el("details").value.trim(),
             negative: el("negative").value.trim(),
             format: state.format,
             detail: state.detail
-          };
-          var prompts = buildPrompts(brief);
-          // Hand the job to the SERVER. From here the server tick owns every
-          // stage advance, deploy, patrol, return and the close-out — the
-          // click handler starts nothing else and sets no animation timers.
-          state.running = true;
-          state.stageIdx = 0;
-          setStageStates();
-          runBtn.disabled = true;
-          runBtn.textContent = "PIPELINE RUNNING…";
-          backend.job={num: state.runs+1, subject: subject, brief: brief, prompts: prompts, finished: false, workStartedAt: null, stageStartedAt: Date.now()}; backend.startedAt=Date.now();
-          CREW.forEach(function(a){ var pos=agentPosAt(a, Date.now()); a.status="AT POST"; a.task=a.taskIdle; a.at=a.roomCode+" "+a.roomName+" \u00B7 floor patrol"; a.route=null; a.anchor=pos.slice(); a.x=pos[0]; a.y=pos[1]; a.nextLegAt=Date.now()+300; });
-          emit(null, "Server created Job #"+backend.job.num+" from the brief and queued all 6 stages.");
-          advanceStage(0, brief, prompts);
-                    log("JOB // \"" + subject.slice(0, 42) + "\" — brief accepted by R01 Prompt Office");
-          log("TRAFFIC // agents waking — traffic climbing with every stage");
+          });
         });
+
+        // Self-test on open: if nobody has started a brief within a few
+        // seconds, the ecosystem runs one on its own — the same server, the
+        // same crew, the same canvas render — so the first thing anyone sees
+        // is the factory actually working, not a still picture of one. Any
+        // touch or keystroke in the brief column cancels it.
+        setTimeout(function () {
+          if (userDrove || state.running || state.runs > 0) return;
+          var demoSubject = "A red sports car on a city street at night";
+          el("subject").value = demoSubject;
+          log("SELF-TEST // no brief yet — running one on its own so you can watch the crew work");
+          beginRun({ subject: demoSubject, details: "", negative: "", format: state.format, detail: state.detail });
+        }, 6000);
 
         el("download-img-btn").addEventListener("click", function () {
           if (!state.lastPrompt || !state.lastPrompt.imageUrl) return;
