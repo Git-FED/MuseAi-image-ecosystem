@@ -24,6 +24,9 @@
         --cyan: #67e8f9;
         --red: #ff5a4e;
         --red-soft: #ff9a92;
+        --steel: #1a2b1f;
+        --steel-hi: #2e4a36;
+        --floor: #0a120c;
         --radius: 10px;
         --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
       }
@@ -31,11 +34,34 @@
       html { scroll-behavior: smooth; }
       body {
         margin: 0;
-        background: var(--bg);
         color: var(--text);
         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         font-size: 16px;
         line-height: 1.5;
+        background-color: var(--bg);
+        background-image:
+          radial-gradient(ellipse 900px 420px at 50% -60px, rgba(34,255,136,0.14), transparent 65%),
+          radial-gradient(ellipse 600px 500px at 100% 30%, rgba(34,255,136,0.05), transparent 60%),
+          radial-gradient(ellipse 600px 500px at 0% 70%, rgba(103,232,249,0.04), transparent 60%),
+          linear-gradient(rgba(34,255,136,0.045) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(34,255,136,0.045) 1px, transparent 1px),
+          linear-gradient(180deg, #08130c 0%, #050a07 340px, #040805 100%);
+        background-size: auto, auto, auto, 34px 34px, 34px 34px, auto;
+        background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
+      }
+      /* Factory skyline silhouette fixed behind everything */
+      body::before {
+        content: ""; position: fixed; inset: auto 0 0 0; height: 210px; z-index: -1; pointer-events: none; opacity: 0.55;
+        background:
+          linear-gradient(180deg, transparent 0%, rgba(5,10,7,0.2) 55%, #050a07 100%),
+          repeating-linear-gradient(90deg, transparent 0 46px, rgba(34,255,136,0.05) 46px 47px);
+        box-shadow: inset 0 1px 0 rgba(34,255,136,0.06);
+        clip-path: polygon(0 100%, 0 62%, 6% 62%, 6% 38%, 8% 38%, 8% 62%, 16% 62%, 16% 52%, 19% 52%, 19% 22%, 21% 22%, 21% 52%, 30% 52%, 30% 68%, 38% 68%, 38% 44%, 41% 44%, 41% 68%, 52% 68%, 52% 34%, 55% 34%, 55% 12%, 57% 12%, 57% 34%, 64% 34%, 64% 58%, 73% 58%, 73% 40%, 76% 40%, 76% 58%, 85% 58%, 85% 48%, 88% 48%, 88% 30%, 90% 30%, 90% 48%, 100% 48%, 100% 100%);
+        background-color: #0a1710;
+      }
+      body::after {
+        content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+        background: radial-gradient(ellipse 120% 70% at 50% 0%, transparent 55%, rgba(0,0,0,0.55) 100%);
       }
       .mono { font-family: var(--mono); }
       button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
@@ -56,11 +82,12 @@
       .status-strip .spacer { margin-left: auto; }
       @media (max-width: 639px) { .status-strip .spacer { display: none; } }
 
-      /* Repo bar */
+      /* Repo bar — steel plate */
       .repo-bar {
         margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
-        border: 1px solid var(--border); border-radius: var(--radius);
-        background: var(--surface); padding: 10px 14px;
+        border: 1px solid #35543f; border-radius: var(--radius);
+        background: linear-gradient(180deg, #16261a 0%, #0d1710 60%, #0a120c 100%); padding: 10px 14px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -10px 18px rgba(0,0,0,0.5), 0 6px 0 #020503, 0 12px 22px rgba(0,0,0,0.55);
       }
       .repo-path { font-family: var(--mono); font-size: 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
       .repo-path a { text-decoration: none; }
@@ -83,79 +110,155 @@
       .repo-desc { margin: 12px 2px 0; font-size: 14px; color: var(--dim); max-width: 46rem; }
       .repo-desc strong { color: var(--text); }
 
-      /* Satellite map */
-      .map {
-        position: relative; margin-top: 14px; height: 580px; overflow: hidden;
-        border: 1px solid var(--border); border-radius: var(--radius); background: #070d09;
-        background-image:
-          linear-gradient(rgba(34,255,136,0.055) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(34,255,136,0.055) 1px, transparent 1px);
-        background-size: 26px 26px;
+      /* Factory floor map — steel frame, concrete floor, conveyor streets */
+      .hazard-bar {
+        margin-top: 14px; height: 14px; border-radius: 6px 6px 0 0; border: 1px solid #2a4633; border-bottom: 0;
+        background: repeating-linear-gradient(-45deg, #c9a227 0 14px, #10160f 14px 28px);
+        opacity: 0.9; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 -4px 14px rgba(0,0,0,0.5);
+        display: flex; align-items: center; justify-content: center; overflow: hidden;
       }
-      @media (min-width: 640px) { .map { height: 540px; } }
-      .street-h { position: absolute; left: 0; width: 100%; background: rgba(255,255,255,0.045); }
-      .street-v { position: absolute; top: 0; height: 100%; background: rgba(255,255,255,0.045); }
-      .street-line-h { position: absolute; left: 0; width: 100%; height: 1px; background: rgba(34,255,136,0.15); }
+      .hazard-bar span {
+        font-family: var(--mono); font-size: 8px; font-weight: 800; letter-spacing: 0.28em; color: #0a0f0a;
+        background: #e6f5e9; padding: 1px 10px; border-radius: 999px; white-space: nowrap;
+      }
+      .map {
+        position: relative; height: 600px; overflow: hidden;
+        border: 3px solid #2e4a36; border-top: 0; border-radius: 0 0 12px 12px;
+        background-color: var(--floor);
+        background-image:
+          radial-gradient(circle at 12px 12px, rgba(255,255,255,0.14) 1.5px, transparent 2px),
+          radial-gradient(circle at calc(100% - 12px) 12px, rgba(255,255,255,0.14) 1.5px, transparent 2px),
+          radial-gradient(circle at 12px calc(100% - 12px), rgba(255,255,255,0.14) 1.5px, transparent 2px),
+          radial-gradient(circle at calc(100% - 12px) calc(100% - 12px), rgba(255,255,255,0.14) 1.5px, transparent 2px),
+          linear-gradient(rgba(34,255,136,0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(34,255,136,0.06) 1px, transparent 1px),
+          radial-gradient(ellipse 80% 60% at 50% 45%, rgba(34,255,136,0.07), transparent 70%),
+          linear-gradient(180deg, #0c1710 0%, #08110b 50%, #060d08 100%);
+        background-size: auto, auto, auto, auto, 26px 26px, 26px 26px, auto, auto;
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.8), inset 0 18px 34px rgba(0,0,0,0.55), inset 0 -18px 34px rgba(0,0,0,0.55), 0 18px 36px rgba(0,0,0,0.65), 0 4px 0 #020503;
+        perspective: 900px;
+      }
+      @media (min-width: 640px) { .map { height: 560px; } }
+      /* Conveyor streets: dark belt + moving chevrons + glowing centre line */
+      .street-h { position: absolute; left: 0; width: 100%; background: linear-gradient(180deg, #131f16, #0d1710 50%, #131f16); box-shadow: inset 0 2px 0 rgba(255,255,255,0.07), inset 0 -2px 0 rgba(0,0,0,0.7), 0 1px 0 rgba(34,255,136,0.08); overflow: hidden; }
+      .street-v { position: absolute; top: 0; height: 100%; background: linear-gradient(90deg, #131f16, #0d1710 50%, #131f16); box-shadow: inset 2px 0 0 rgba(255,255,255,0.07), inset -2px 0 0 rgba(0,0,0,0.7); overflow: hidden; }
+      .street-h::after, .street-v::after {
+        content: ""; position: absolute; inset: 0; opacity: 0.16;
+        background-image: repeating-linear-gradient(90deg, transparent 0 18px, rgba(34,255,136,0.9) 18px 26px);
+        background-size: 44px 100%; animation: belt-move 2.8s linear infinite;
+      }
+      .street-v::after { background-image: repeating-linear-gradient(180deg, transparent 0 18px, rgba(34,255,136,0.9) 18px 26px); background-size: 100% 44px; animation-name: belt-move-v; }
+      @keyframes belt-move { from { background-position: 0 0; } to { background-position: 44px 0; } }
+      @keyframes belt-move-v { from { background-position: 0 0; } to { background-position: 0 44px; } }
+      .street-line-h { position: absolute; left: 0; width: 100%; height: 2px; background: repeating-linear-gradient(90deg, rgba(34,255,136,0.55) 0 16px, transparent 16px 30px); }
+      /* Overhead factory dressing: pipes + crane beam (decor only) */
+      .pipe-h { position: absolute; left: 0; width: 100%; height: 7px; z-index: 1; pointer-events: none;
+        background: linear-gradient(180deg, #3d5c46 0%, #1c2f22 45%, #0c1710 100%); border-top: 1px solid rgba(255,255,255,0.18); border-bottom: 1px solid rgba(0,0,0,0.8); opacity: 0.85; }
+      .pipe-h::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 118px, rgba(0,0,0,0.55) 118px 124px, rgba(255,255,255,0.12) 124px 126px); }
+      .crane { position: absolute; top: 0; bottom: 0; width: 10px; z-index: 1; pointer-events: none; opacity: 0.5;
+        background: linear-gradient(90deg, #243b2b, #101c13); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(0,0,0,0.7); }
+      .floor-tag { position: absolute; z-index: 1; pointer-events: none; font-family: var(--mono); font-size: 7px; font-weight: 700; letter-spacing: 0.22em; color: rgba(230,245,233,0.28); white-space: nowrap; }
+      /* --- 3D production blocks: raised boxes with a lit top face and extruded sides --- */
       .room {
-        position: absolute; border: 1px solid #2a4633; border-radius: 6px; padding: 6px;
-        background: rgba(13,21,16,0.92); transition: border-color 0.5s, box-shadow 0.5s;
+        position: absolute; border: 1px solid #3a5c44; border-radius: 4px; padding: 7px 8px 6px; z-index: 2;
+        background: linear-gradient(180deg, #1b2f20 0%, #122016 34%, #0d1710 72%, #0a120c 100%);
+        box-shadow:
+          inset 0 2px 0 rgba(255,255,255,0.22),
+          inset 2px 0 0 rgba(255,255,255,0.07),
+          inset 0 -14px 22px rgba(0,0,0,0.62),
+          inset 0 0 0 1px rgba(0,0,0,0.45),
+          7px 9px 0 #030604,
+          7px 9px 0 1px #223d2b,
+          14px 20px 28px rgba(0,0,0,0.72);
+        transition: border-color 0.5s, box-shadow 0.5s;
         overflow: hidden;
       }
-      .room.render { background: rgba(10,30,36,0.92); box-shadow: 0 0 16px rgba(103,232,249,0.18); }
-      .room.gallery { background: rgba(10,32,18,0.95); box-shadow: 0 0 18px rgba(34,255,136,0.22); }
-      .room[data-state="active"] { border-color: var(--amber); box-shadow: 0 0 16px rgba(255,176,32,0.35); }
-      .room[data-state="done"] { border-color: var(--accent); }
+      .room::before {
+        content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; pointer-events: none;
+        background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.02));
+        border-bottom: 1px solid rgba(0,0,0,0.5);
+      }
+      .room::after {
+        content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 7px; pointer-events: none;
+        background: linear-gradient(90deg, transparent, rgba(0,0,0,0.5));
+        border-left: 1px solid rgba(255,255,255,0.05);
+      }
+      .room.render { background: linear-gradient(180deg, #14343e 0%, #0e2831 34%, #0a1e26 72%, #08161c 100%); border-color: #2f6b7d;
+        box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 2px 0 0 rgba(255,255,255,0.07), inset 0 -14px 22px rgba(0,0,0,0.62), inset 0 0 0 1px rgba(0,0,0,0.45), 7px 9px 0 #030a0c, 7px 9px 0 1px #1d4a5a, 14px 20px 28px rgba(0,0,0,0.72), 0 0 22px rgba(103,232,249,0.22); }
+      .room.gallery { background: linear-gradient(180deg, #1e3a26 0%, #142a1b 34%, #0f2114 72%, #0b1810 100%);
+        box-shadow: inset 0 2px 0 rgba(255,255,255,0.24), inset 2px 0 0 rgba(255,255,255,0.07), inset 0 -14px 22px rgba(0,0,0,0.62), inset 0 0 0 1px rgba(0,0,0,0.45), 7px 9px 0 #030604, 7px 9px 0 1px #2a5238, 14px 20px 28px rgba(0,0,0,0.72), 0 0 22px rgba(34,255,136,0.25); }
+      .room[data-state="active"] { border-color: var(--amber); box-shadow: inset 0 2px 0 rgba(255,255,255,0.25), inset 0 -14px 22px rgba(0,0,0,0.6), 7px 9px 0 #0c0802, 7px 9px 0 1px #7a5a12, 14px 20px 28px rgba(0,0,0,0.72), 0 0 26px rgba(255,176,32,0.45); }
+      .room[data-state="done"] { border-color: var(--accent); box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 0 -14px 22px rgba(0,0,0,0.6), 7px 9px 0 #030604, 7px 9px 0 1px #1d6b41, 14px 20px 28px rgba(0,0,0,0.72), 0 0 20px rgba(34,255,136,0.3); }
       .room[data-state="failed"] { border-color: var(--red); }
-      .room-head { font-family: var(--mono); display: flex; align-items: baseline; justify-content: space-between; gap: 4px; }
-      .room-code { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
+      .room-head { font-family: var(--mono); display: flex; align-items: baseline; justify-content: space-between; gap: 4px; position: relative; z-index: 1; }
+      .room-code { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; color: #b9d6c0; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.14); border-radius: 3px; padding: 1px 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15); }
       .room-state { font-size: 8px; letter-spacing: 0.12em; color: var(--dim); }
       .room[data-state="active"] .room-state { color: var(--amber); }
       .room[data-state="done"] .room-state { color: var(--accent); }
       .room[data-state="failed"] .room-state { color: var(--red); }
-      .room-name { font-family: var(--mono); font-size: 10px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .room-name { font-family: var(--mono); font-size: 10px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.9); }
       @media (min-width: 640px) { .room-name { font-size: 11px; } }
       .hub {
-        position: absolute; display: flex; align-items: flex-start; justify-content: center;
-        border: 1px solid rgba(255,90,78,0.5); border-radius: 6px; background: rgba(42,15,12,0.9);
-        padding-top: 5px;
+        position: absolute; display: flex; align-items: center; justify-content: center; z-index: 2;
+        border: 1px solid rgba(255,120,110,0.65); border-radius: 6px;
+        background: linear-gradient(180deg, #4a1d17 0%, #331510 40%, #220e0a 100%);
+        box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 0 -16px 24px rgba(0,0,0,0.65), 7px 9px 0 #0d0302, 7px 9px 0 1px #6b2a22, 14px 20px 28px rgba(0,0,0,0.72), 0 0 24px rgba(255,90,78,0.22);
       }
-      .hub > div { background: rgba(5,10,7,0.78); border-radius: 6px; padding: 3px 10px 4px; }
-      .hub-dot { width: 12px; height: 12px; border-radius: 999px; background: var(--red); box-shadow: 0 0 10px rgba(255,90,78,0.8); margin: 0 auto; }
+      /* Bay nameplate: its own strip across the top edge of the bay, above the
+         staging rows on every screen size, so no dot or tag can cover it */
+      .bay-tag {
+        position: absolute; left: 50%; top: 32.6%; transform: translateX(-50%); z-index: 5; pointer-events: none;
+        font-family: var(--mono); font-size: 8px; font-weight: 800; letter-spacing: 0.12em; color: #ff9a92;
+        text-align: center; line-height: 1.5; white-space: nowrap;
+        background: rgba(5,10,7,0.92); border: 1px solid rgba(255,120,110,0.55); border-radius: 4px;
+        padding: 2px 10px 3px; box-shadow: 0 3px 8px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.14);
+      }
+      .bay-tag span { display: block; font-size: 7px; font-weight: 700; letter-spacing: 0.1em; color: #c97a72; }
+      .hub-dot { width: 12px; height: 12px; border-radius: 999px; background: var(--red); box-shadow: 0 0 10px rgba(255,90,78,0.8), inset 0 -3px 4px rgba(0,0,0,0.5), inset 0 2px 3px rgba(255,255,255,0.5); margin: 0 auto; }
       .hub-label { font-family: var(--mono); margin-top: 4px; font-size: 8px; font-weight: 700; letter-spacing: 0.12em; color: #ff9a92; text-align: center; }
       .dots-layer { pointer-events: none; position: absolute; inset: 0; }
       .dot-wrap { position: absolute; left: 0; top: 0; width: 100%; height: 100%; will-change: transform; }
       .dot { border-radius: 999px; }
 
-      /* Room interiors */
-      .in-lines { margin-top: 6px; padding: 0 2px; display: grid; gap: 4px; }
-      .in-lines div { height: 3px; border-radius: 2px; background: rgba(34,255,136,0.5); }
-      .in-swatches { margin-top: 6px; padding: 0 2px; display: flex; gap: 4px; flex-wrap: wrap; }
-      .in-swatches div { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.2); }
-      .in-frame { position: relative; margin: 6px 2px 0; height: 32px; border: 1px dashed rgba(103,232,249,0.5); }
+      /* Room interiors — benches, crates and machines with real depth */
+      .in-lines { margin-top: 6px; padding: 0 2px; display: grid; gap: 4px; position: relative; z-index: 1; }
+      .in-lines div { height: 5px; border-radius: 2px; background: linear-gradient(180deg, rgba(120,255,175,0.85), rgba(34,255,136,0.35)); box-shadow: 0 2px 0 rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.4); }
+      .in-swatches { margin-top: 6px; padding: 0 2px; display: flex; gap: 5px; flex-wrap: wrap; position: relative; z-index: 1; }
+      .in-swatches div { width: 14px; height: 14px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.35); box-shadow: 2px 3px 0 rgba(0,0,0,0.65), inset 0 2px 0 rgba(255,255,255,0.45), inset 0 -3px 4px rgba(0,0,0,0.35); }
+      .in-frame { position: relative; margin: 6px 2px 0; height: 32px; border: 1px solid rgba(103,232,249,0.6); background: rgba(0,0,0,0.35); box-shadow: inset 0 2px 8px rgba(0,0,0,0.8), 0 2px 0 rgba(0,0,0,0.6); z-index: 1; }
       .in-frame .v { position: absolute; left: 50%; top: 0; height: 100%; width: 1px; background: rgba(103,232,249,0.3); }
       .in-frame .h { position: absolute; left: 0; top: 50%; width: 100%; height: 1px; background: rgba(103,232,249,0.3); }
-      .in-frame .c { position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; transform: translate(-50%,-50%); border-radius: 999px; border: 1px solid var(--cyan); }
-      .in-render { display: flex; align-items: center; gap: 12px; padding: 4px 4px 0; }
+      .in-frame .c { position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; transform: translate(-50%,-50%); border-radius: 999px; border: 1px solid var(--cyan); box-shadow: 0 0 8px rgba(103,232,249,0.8); }
+      .in-render { display: flex; align-items: center; gap: 12px; padding: 4px 4px 0; position: relative; z-index: 1; }
       .render-core {
-        width: 36px; height: 36px; flex-shrink: 0; border-radius: 999px;
-        border: 2px solid var(--cyan); background: rgba(103,232,249,0.25);
-        box-shadow: 0 0 18px rgba(103,232,249,0.7); animation: pulse-core 1.6s ease-in-out infinite;
+        width: 38px; height: 38px; flex-shrink: 0; border-radius: 999px;
+        border: 2px solid var(--cyan); background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.75), rgba(103,232,249,0.45) 45%, rgba(8,47,60,0.9));
+        box-shadow: 0 4px 0 #06202a, 0 6px 14px rgba(0,0,0,0.7), 0 0 20px rgba(103,232,249,0.75), inset 0 -6px 10px rgba(0,0,0,0.45); animation: pulse-core 1.6s ease-in-out infinite;
       }
       .in-bars { display: flex; flex: 1; align-items: flex-end; gap: 4px; }
-      .in-bars div { width: 100%; border-radius: 2px 2px 0 0; background: rgba(103,232,249,0.6); }
-      .in-sliders { margin-top: 6px; padding: 0 2px; display: grid; gap: 6px; }
-      .in-sliders .track { position: relative; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.15); }
-      .in-sliders .knob { position: absolute; top: 50%; width: 8px; height: 8px; transform: translateY(-50%); border-radius: 999px; background: var(--amber); }
-      .in-vault { margin-top: 6px; padding: 0 2px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-      .in-vault div { height: 24px; border-radius: 4px; border: 1px solid rgba(34,255,136,0.25); background: rgba(34,255,136,0.05); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 8px; letter-spacing: 0.1em; color: var(--dim); overflow: hidden; padding: 0; }
-      .in-vault div.filled { border-color: rgba(34,255,136,0.6); }
+      .in-bars div { width: 100%; border-radius: 2px 2px 0 0; background: linear-gradient(180deg, rgba(190,245,255,0.9), rgba(103,232,249,0.45)); box-shadow: 2px 0 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.5); }
+      .in-sliders { margin-top: 6px; padding: 0 2px; display: grid; gap: 7px; position: relative; z-index: 1; }
+      .in-sliders .track { position: relative; height: 5px; border-radius: 3px; background: rgba(0,0,0,0.65); box-shadow: inset 0 1px 3px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.12); }
+      .in-sliders .knob { position: absolute; top: 50%; width: 10px; height: 10px; transform: translateY(-50%); border-radius: 2px; background: linear-gradient(180deg, #ffd98a, var(--amber) 60%, #a87408); border: 1px solid rgba(0,0,0,0.6); box-shadow: 0 2px 0 rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.6); }
+      .in-vault { margin-top: 6px; padding: 0 2px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; position: relative; z-index: 1; }
+      .in-vault div { height: 24px; border-radius: 3px; border: 1px solid rgba(34,255,136,0.4); background: linear-gradient(180deg, rgba(34,255,136,0.14), rgba(34,255,136,0.03)); box-shadow: 2px 3px 0 rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 8px; letter-spacing: 0.1em; color: var(--dim); overflow: hidden; padding: 0; }
+      .in-vault div.filled { border-color: rgba(34,255,136,0.7); }
       .in-vault img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      /* Little 3D crates / pallets sitting in each room */
+      .crates { position: absolute; right: 10px; bottom: 6px; display: flex; align-items: flex-end; gap: 3px; z-index: 0; pointer-events: none; opacity: 0.9; }
+      .crate { width: 13px; height: 11px; border-radius: 1px; border: 1px solid rgba(0,0,0,0.7);
+        background: linear-gradient(180deg, #4a6b52 0%, #2c4634 55%, #1c2f22 100%);
+        box-shadow: inset 0 2px 0 rgba(255,255,255,0.28), inset 0 -3px 4px rgba(0,0,0,0.5), 3px 3px 0 rgba(0,0,0,0.65); position: relative; }
+      .crate::after { content: ""; position: absolute; left: 0; right: 0; top: 4px; height: 1px; background: rgba(0,0,0,0.55); }
+      .crate.tall { height: 17px; } .crate.amber { background: linear-gradient(180deg, #8a6a24 0%, #5c4714 55%, #3d2f0c 100%); }
+      .crate.cyan { background: linear-gradient(180deg, #2f6b7d 0%, #1d4a5a 55%, #12303c 100%); }
+      @media (max-width: 639px) { .crates { display: none; } }
 
-      /* Terminal log */
+      /* Terminal log — recessed factory console */
       .terminal {
-        font-family: var(--mono); margin-top: 8px; border: 1px solid var(--border); border-radius: var(--radius);
-        background: rgba(0,0,0,0.5); padding: 8px 12px; font-size: 11px; line-height: 1.7; color: #9fe8bb;
-        min-height: 104px;
+        font-family: var(--mono); margin-top: 10px; border: 1px solid #35543f; border-radius: var(--radius);
+        background: linear-gradient(180deg, #020604, #041008); padding: 10px 12px; font-size: 11px; line-height: 1.7; color: #9fe8bb;
+        min-height: 104px; box-shadow: inset 0 3px 14px rgba(0,0,0,0.95), inset 0 0 0 1px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.08);
       }
       .terminal p { margin: 0; overflow-wrap: anywhere; }
 
@@ -193,11 +296,13 @@
       @media (min-width: 640px) { .seg-grid { grid-template-columns: 1fr 1fr; } }
       .seg-grid .flabel { margin-top: 0; }
       .run-btn {
-        font-family: var(--mono); margin-top: 16px; width: 100%; border: 0; border-radius: var(--radius);
-        background: var(--accent); padding: 14px 16px; font-size: 16px; font-weight: 700; letter-spacing: 0.12em;
-        color: #000; cursor: pointer; min-height: 52px;
+        font-family: var(--mono); margin-top: 16px; width: 100%; border: 1px solid #7dffb8; border-radius: var(--radius);
+        background: linear-gradient(180deg, #5cff9f 0%, var(--accent) 45%, #12c964 100%); padding: 14px 16px; font-size: 16px; font-weight: 700; letter-spacing: 0.12em;
+        color: #021208; cursor: pointer; min-height: 52px;
+        box-shadow: inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -6px 10px rgba(0,0,0,0.25), 0 6px 0 #075c2c, 0 12px 22px rgba(0,0,0,0.6);
       }
-      .run-btn:disabled { opacity: 0.5; cursor: default; }
+      .run-btn:active { transform: translateY(3px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.4), 0 3px 0 #075c2c, 0 8px 16px rgba(0,0,0,0.6); }
+      .run-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
       .run-note { margin: 8px 0 0; text-align: center; font-size: 12px; color: var(--dim); }
       .form-error {
         margin-top: 12px; border: 1px solid rgba(255,90,78,0.4); background: rgba(255,90,78,0.1);
@@ -207,8 +312,9 @@
       /* Pipeline list */
       .pipe { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
       .pipe li {
-        display: flex; align-items: flex-start; gap: 10px; border: 1px solid var(--border);
-        border-radius: var(--radius); background: var(--surface); padding: 8px 12px;
+        display: flex; align-items: flex-start; gap: 10px; border: 1px solid #2e4a36;
+        border-radius: var(--radius); background: linear-gradient(180deg, #14231a, #0d1710); padding: 8px 12px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 3px 0 #020503, 0 6px 12px rgba(0,0,0,0.45);
       }
       .pipe li[data-state="active"] { border-color: rgba(255,176,32,0.6); background: rgba(255,176,32,0.05); }
       .pipe li[data-state="done"] { border-color: rgba(34,255,136,0.4); background: rgba(34,255,136,0.05); }
@@ -258,8 +364,9 @@
       /* README / repo sections */
       .section { margin-top: 36px; }
       .readme {
-        margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius);
-        background: var(--surface); padding: 18px;
+        margin-top: 12px; border: 1px solid #35543f; border-radius: var(--radius);
+        background: linear-gradient(180deg, #122016, #0d1710); padding: 18px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 6px 0 #020503, 0 12px 22px rgba(0,0,0,0.5);
       }
       .readme h3 { font-family: var(--mono); font-size: 13px; letter-spacing: 0.1em; color: var(--accent); margin: 20px 0 8px; }
       .readme h3:first-child { margin-top: 0; }
@@ -291,8 +398,8 @@
 
       /* Named agents on map */
       .agent-wrap { position: absolute; width: 0; height: 0; will-change: left, top; pointer-events: auto; cursor: pointer; z-index: 6; }
-      .agent-dot { border-radius: 999px; border: 2px solid #e6f5e9; box-shadow: 0 0 10px currentColor; margin-left: -8px; margin-top: -8px; width: 16px; height: 16px; position: relative; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 9px; font-weight: 800; color: rgba(0,0,0,0.75); }
-      .agent-label { position: absolute; left: 12px; top: -10px; font-family: var(--mono); font-size: 9px; font-weight: 800; letter-spacing: .06em; background: rgba(0,0,0,0.88); border: 1px solid var(--border); padding: 2px 6px; border-radius: 999px; white-space: nowrap; color: var(--text); display: block; line-height: 1.5; }
+      .agent-dot { border-radius: 999px; border: 2px solid #e6f5e9; box-shadow: 0 3px 0 rgba(0,0,0,0.7), 0 5px 10px rgba(0,0,0,0.6), 0 0 12px currentColor, inset 0 2px 3px rgba(255,255,255,0.65), inset 0 -3px 4px rgba(0,0,0,0.4); margin-left: -8px; margin-top: -8px; width: 16px; height: 16px; position: relative; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 9px; font-weight: 800; color: rgba(0,0,0,0.75); }
+      .agent-label { position: absolute; left: 12px; top: -10px; font-family: var(--mono); font-size: 9px; font-weight: 800; letter-spacing: .06em; background: linear-gradient(180deg, #1c2f22, #060d08); border: 1px solid #3a5c44; padding: 2px 6px; border-radius: 4px; white-space: nowrap; color: var(--text); display: block; line-height: 1.5; box-shadow: 0 3px 0 rgba(0,0,0,0.7), 0 5px 10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.2); }
       .agent-label .agent-task { display: block; font-weight: 400; font-size: 8px; letter-spacing: .02em; color: var(--amber); max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
       .agent-wrap.flip .agent-label { left: auto; right: 12px; text-align: right; }
       .agent-wrap[data-status="WORKING"] .agent-dot, .agent-wrap[data-status="DEPLOYED"] .agent-dot { animation: pulse-core 1s ease-in-out infinite; }
@@ -318,6 +425,7 @@
       .dock { position: absolute; bottom: 5px; font-family: var(--mono); font-size: 7px; letter-spacing: .1em; color: var(--faint); border: 1px dashed rgba(255,255,255,.22); padding: 2px 4px; border-radius: 3px; }
       .dock-a { left: 6px; } .dock-b { right: 6px; }
       @media (max-width: 639px) {
+        .room-name { white-space: normal; overflow: visible; text-overflow: clip; font-size: 9px; line-height: 1.2; }
         .dock { display: none; } .agent-label .agent-task { display: none; } .rn-task { display: none; }
         .agent-label .agent-call { display: none; }
         /* Phone-width: the bay formation is too narrow for 12 tags at once, so staged tags
@@ -338,7 +446,7 @@
       /* Live ops + crew */
       .ops-grid { margin-top: 20px; display: grid; gap: 16px; }
       @media (min-width: 900px) { .ops-grid { grid-template-columns: 1.2fr .8fr; } }
-      .panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 14px; }
+      .panel { border: 1px solid #35543f; border-radius: var(--radius); background: linear-gradient(180deg, #14231a 0%, #0d1710 55%, #0a120c 100%); padding: 14px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -12px 20px rgba(0,0,0,0.5), 0 6px 0 #020503, 0 12px 22px rgba(0,0,0,0.55); }
       .panel h3 { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; color: var(--accent); margin: 0 0 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
       .panel h3 span:last-child { color: var(--dim); }
       .job-subject { font-weight: 700; font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
@@ -361,7 +469,8 @@
       .crew-grid { margin-top: 12px; display: grid; gap: 10px; }
       @media (min-width: 640px) { .crew-grid { grid-template-columns: 1fr 1fr; } }
       @media (min-width: 1024px) { .crew-grid { grid-template-columns: 1fr 1fr 1fr; } }
-      .crew-card { text-align: left; width: 100%; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 12px; color: var(--text); cursor: pointer; }
+      .crew-card { text-align: left; width: 100%; border: 1px solid #2e4a36; border-radius: var(--radius); background: linear-gradient(180deg, #15251a 0%, #0d1710 60%, #0a120c 100%); padding: 12px; color: var(--text); cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -10px 16px rgba(0,0,0,0.45), 0 4px 0 #020503, 0 8px 16px rgba(0,0,0,0.5); }
+      .crew-card:active { transform: translateY(2px); }
       .crew-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
       .crew-card[data-status="WORKING"] { border-color: rgba(255,176,32,.7); }
       .crew-card[data-status="DONE"] { border-color: rgba(34,255,136,.45); }
@@ -376,8 +485,43 @@
 
       @keyframes pulse-core { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.18); opacity: 1; } }
       @keyframes blink-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+      /* Idle life: staged agents bob gently (staggered per agent) so the bay never reads as mannequins */
+      @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
+      .agent-wrap[data-status="AT BAY"] .agent-dot, .agent-wrap[data-status="DONE"] .agent-dot { animation: bob 2.8s ease-in-out infinite; }
+      /* --- Factory coupling: the floor reacts to the real run state --- */
+      /* Belts crawl at rest, run at pace during a job (class toggled by setStageStates) */
+      .map.running .street-h::after, .map.running .street-v::after { animation-duration: 1.1s; opacity: 0.32; }
+      .map.running .hub-dot { animation: pulse-core 0.7s ease-in-out infinite; }
+      /* Machinery inside a room animates only while that room's stage is actually active */
+      @keyframes bar-eq { from { transform: scaleY(0.45); } to { transform: scaleY(1); } }
+      .room[data-state="active"] .in-bars div { transform-origin: bottom; animation: bar-eq 0.65s ease-in-out infinite alternate; }
+      .room[data-state="active"] .in-bars div:nth-child(2n) { animation-delay: 0.18s; }
+      .room[data-state="active"] .in-bars div:nth-child(3n) { animation-delay: 0.34s; }
+      .room[data-state="active"] .render-core { animation-duration: 0.45s; }
+      @keyframes knob-slide { from { margin-left: -5px; } to { margin-left: 5px; } }
+      .room[data-state="active"] .in-sliders .knob { animation: knob-slide 0.9s ease-in-out infinite alternate; }
+      @keyframes line-flow { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+      .room[data-state="active"] .in-lines div { animation: line-flow 0.9s ease-in-out infinite; }
+      .room[data-state="active"] .in-lines div:nth-child(2) { animation-delay: 0.15s; }
+      .room[data-state="active"] .in-lines div:nth-child(3) { animation-delay: 0.3s; }
+      .room[data-state="active"] .in-lines div:nth-child(4) { animation-delay: 0.45s; }
+      @keyframes swatch-pop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+      .room[data-state="active"] .in-swatches div { animation: swatch-pop 1.1s ease-in-out infinite; }
+      .room[data-state="active"] .in-swatches div:nth-child(2n) { animation-delay: 0.2s; }
+      .room[data-state="active"] .in-swatches div:nth-child(3n) { animation-delay: 0.4s; }
+      .room[data-state="active"] .in-frame .c { animation: pulse-core 0.6s ease-in-out infinite; }
+      .room[data-state="done"] .in-vault div { border-color: rgba(34,255,136,0.65); }
+      /* OFFLINE: the server stopped reporting this agent — grey, still, labelled */
+      .pill.offline { background: #3c423c; border-color: #6b726b; color: #d7ddd7; font-weight: 800; }
+      .agent-wrap.offline { z-index: 7; }
+      .agent-wrap.offline .agent-dot { filter: grayscale(1) brightness(0.75); animation: none; box-shadow: 0 2px 0 rgba(0,0,0,0.7); }
+      .agent-wrap.offline .agent-label { border-color: #6b726b; color: #c9cfc9; }
+      .crew-card.offline { opacity: 0.62; }
       @media (prefers-reduced-motion: reduce) {
-        .render-core, .blink-dot { animation: none; }
+        .render-core, .blink-dot, .street-h::after, .street-v::after,
+        .agent-wrap .agent-dot, .room[data-state="active"] .in-bars div,
+        .room[data-state="active"] .in-sliders .knob, .room[data-state="active"] .in-lines div,
+        .room[data-state="active"] .in-swatches div, .map.running .hub-dot { animation: none; }
         html { scroll-behavior: auto; }
       }
     </style>
@@ -393,7 +537,7 @@
         <span id="stat-crew">CREW 0/12 WORKING</span>
         <span id="stat-job">JOB — NONE</span>
         <span id="stat-clock">LIVE —</span>
-        <span class="spacer">GRID // SAT-VIEW</span>
+        <span class="spacer">FACTORY FLOOR // LIVE VIEW</span>
       </div>
 
       <!-- Repo bar -->
@@ -414,7 +558,8 @@
         <strong>Muse AI Image Ecosystem — live ops view.</strong> All 12 named agents start at the Deployment Bay in the centre of the map. When a job fires, each room's pair deploys out of the bay, travels the streets to its room, and works there — its name rides with it on the map, its room shows what it is doing, and the feed logs every move with a timestamp. Then the finished image lands in the vault.
       </p>
 
-      <!-- Satellite grid map -->
+      <!-- Factory floor map -->
+      <div class="hazard-bar" aria-hidden="true"><span>MUSE IMAGE WORKS — FACTORY FLOOR 01</span></div>
       <section class="map" aria-label="Ecosystem map">
         <div class="street-h" style="top:31%;height:7%" aria-hidden="true"></div>
         <div class="street-h" style="top:63%;height:7%" aria-hidden="true"></div>
@@ -422,11 +567,18 @@
         <div class="street-v" style="left:64%;width:4%" aria-hidden="true"></div>
         <div class="street-line-h" style="top:34.5%" aria-hidden="true"></div>
         <div class="street-line-h" style="top:66.5%" aria-hidden="true"></div>
+        <div class="pipe-h" style="top:29.2%" aria-hidden="true"></div>
+        <div class="pipe-h" style="top:70.5%" aria-hidden="true"></div>
+        <div class="crane" style="left:49.4%" aria-hidden="true"></div>
+        <span class="floor-tag" style="left:3%;top:29%" aria-hidden="true">CONVEYOR A →</span>
+        <span class="floor-tag" style="left:69%;top:61%" aria-hidden="true">CONVEYOR B →</span>
+        <span class="floor-tag" style="left:3%;bottom:1.5%" aria-hidden="true">BAY 04 · RENDER LINE</span>
 
         <div class="room" id="room-prompt-office" data-state="idle" style="left:2%;top:3%;width:30%;height:25%">
           <div class="room-head"><span class="room-code">R01</span><span class="room-state">IDLE</span></div>
           <div class="room-name">Prompt Office</div><span class="dock dock-a">DOCK A · QUILL</span><span class="dock dock-b">DOCK B · SCRIBE</span>
           <div class="in-lines" aria-hidden="true"><div style="width:92%"></div><div style="width:74%"></div><div style="width:84%"></div><div style="width:58%"></div></div>
+          <div class="crates" aria-hidden="true"><div class="crate"></div><div class="crate tall"></div></div>
           <div class="room-now" id="now-prompt-office"></div>
         </div>
 
@@ -451,12 +603,14 @@
           <div class="room-head"><span class="room-code">R03</span><span class="room-state">IDLE</span></div>
           <div class="room-name">Composition Bay</div><span class="dock dock-a">DOCK A · FRAME</span><span class="dock dock-b">DOCK B · RULE</span>
           <div class="in-frame" aria-hidden="true"><div class="v"></div><div class="h"></div><div class="c"></div></div>
+          <div class="crates" aria-hidden="true"><div class="crate cyan"></div><div class="crate cyan tall"></div></div>
           <div class="room-now" id="now-composition-bay"></div>
         </div>
 
         <div class="hub" style="left:34%;top:32%;width:32%;height:32%" aria-hidden="true">
-          <div><div class="hub-dot"></div><div class="hub-label">DEPLOYMENT BAY</div><div class="hub-sub">CREW DEPLOYS FROM HERE</div></div>
+          <div class="hub-dot"></div>
         </div>
+        <div class="bay-tag" aria-hidden="true">DEPLOYMENT BAY<span>CREW DEPLOYS FROM HERE</span></div>
 
         <div class="room" id="room-detail-forge" data-state="idle" style="left:68%;top:40%;width:30%;height:21%">
           <div class="room-head"><span class="room-code">R05</span><span class="room-state">IDLE</span></div>
@@ -466,6 +620,7 @@
             <div class="track"><div class="knob" style="left:55%"></div></div>
             <div class="track"><div class="knob" style="left:90%"></div></div>
           </div>
+          <div class="crates" aria-hidden="true"><div class="crate amber"></div><div class="crate amber tall"></div><div class="crate amber"></div></div>
           <div class="room-now" id="now-detail-forge"></div>
         </div>
 
@@ -479,6 +634,7 @@
               <div style="height:18px"></div><div style="height:24px"></div><div style="height:14px"></div><div style="height:20px"></div>
             </div>
           </div>
+          <div class="crates" aria-hidden="true"><div class="crate cyan tall"></div><div class="crate cyan"></div><div class="crate cyan tall"></div></div>
           <div class="room-now" id="now-render-engine"></div>
         </div>
 
@@ -492,8 +648,8 @@
       <!-- Live backend / ops -->
       <section aria-label="Live operations" style="margin-top:20px">
         <h2 class="sec">LIVE OPS — WHO IS DOING WHAT, AND WHEN</h2>
-        <p class="sub">This is the live engine for this page. A dispatcher in the page acts as the backend: it creates a job, deploys each stage's two agents out of the Deployment Bay at the map centre, writes every deployment, arrival and finish to an event log with a timestamp, heartbeats working agents, and files the finished image. No anonymous dots do job work — the 12 named crew below do. The smaller background dots are street traffic only.</p>
-        <div class="legend"><span>● NAMED CREW — 12 agents staged in a labelled formation at the Deployment Bay, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room</span></div>
+        <p class="sub">This is the live engine for this page, built the way real agent fleets are wired: the server owns the truth, and the map only renders what the server says. On this static GitHub Pages build the server is a module inside the page — there is no network server behind a Pages site; the full network-server version of this ecosystem is the Space. Inside this page the split is strict all the same: The server creates the job, and for every move it issues an agent's whole route — waypoints, departure time and speed — for deploys, workstation patrols, idle roams and the matching return trip to the Deployment Bay. The map animates those routes locally at 60 frames a second, but no animation starts, stops or changes direction except when the server's state changes. The server reports every agent four times a second; if an agent ever stops reporting, it is marked OFFLINE with its last-seen time and its animation holds — it never keeps walking on its own. No anonymous dots do job work — the 12 named crew below do. The smaller background dots are street traffic only.</p>
+        <div class="legend"><span>● NAMED CREW — 12 agents staged in a labelled formation at the Deployment Bay, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room, patrolling between its benches while it works</span><span>· DONE — the agent has travelled back to the bay and shuffles at its staging slot</span><span>· OFFLINE — the server stopped reporting the agent: grey, held at its last reported position, last-seen time shown</span><span>· The conveyor belts run at full pace only while a job is live</span></div>
         <div class="ops-grid">
           <div class="panel">
             <h3><span>CURRENT JOB + DEPLOYMENT FEED</span><span id="feed-live">LIVE · POLL 2s</span></h3>
@@ -513,6 +669,7 @@
               <dt>DOING NOW</dt><dd id="insp-task">Staged at the Deployment Bay, waiting for a job.</dd>
               <dt>JOB</dt><dd id="insp-job">—</dd>
               <dt>LAST EVENT</dt><dd id="insp-last">—</dd>
+              <dt>LAST SEEN</dt><dd id="insp-seen">—</dd>
             </dl>
           </div>
         </div>
@@ -565,7 +722,7 @@
           <p class="form-error" id="form-error" hidden></p>
 
           <button type="button" class="run-btn" id="run-btn">RUN PIPELINE</button>
-          <p class="run-note">Watch the grid and the Live Ops feed: at rest the named crew waits at the Deployment Bay in the centre and traffic is few and slow. Fire a run and each room's two agents deploy out of the bay in turn, travel to their room, work, and report back by name.</p>
+          <p class="run-note">Watch the grid and the Live Ops feed: at rest the named crew waits at the Deployment Bay in the centre, shuffling at their slots, and traffic is few and slow. Fire a run and each room's two agents deploy out of the bay in turn, travel to their room, patrol their workstations while they work, then travel back to the bay when their stage is done — and the conveyor belts speed up for as long as the job is live.</p>
         </div>
 
         <!-- Pipeline status + result -->
@@ -629,8 +786,8 @@
           </ul>
           <h3>WHO THE AGENTS ARE — AND WHERE THEY DEPLOY FROM</h3>
           <p>Job work is done by <code>12 named agents</code>, two per room, and every one of them deploys from the same place: the <code>Deployment Bay</code> at the centre of the map. <code>Quill + Scribe</code> work R01 Prompt Office, <code>Palette + Mood</code> R02 Style Lab, <code>Frame + Rule</code> R03 Composition Bay, <code>Forge + Kiln</code> R04 Render Engine, <code>Hone + Polish</code> R05 Detail Forge, and <code>Vault + Courier</code> R06 Gallery Vault — Courier also runs the carry from R04 to R06 through the bay. When a stage fires, that room's pair leaves the bay, travels the streets to the room, and works at the room's workstation; when the job closes, everyone returns to the bay. Each agent's name rides with it on the map, its room shows what it is doing, and its card, the Agent Inspector and the feed all show the same live task string, so there is one answer to “who is doing what” everywhere you look.</p>
-          <h3>THE LIVE ENGINE (BACKEND FOR THIS STATIC PAGE)</h3>
-          <p>GitHub Pages has no server to add, so the backend lives in the page as a dispatcher and event store: it creates a numbered job from your brief, deploys each stage's crew out of the Deployment Bay before the stage advances, heartbeats once a second while a run is live, appends every deployment, arrival, handoff and filing to a timestamped event log (the Deployment Feed and terminal), and sends agents back to the bay as they finish. The 18 smaller dots are street traffic only — they ramp from 4 slow at rest toward full pace during a run, but they never carry a job. The full server version of this ecosystem is the Space; this Page is its live public face.</p>
+          <h3>THE LIVE ENGINE (SERVER OWNS THE TRUTH)</h3>
+          <p>GitHub Pages has no network server to add, so the server lives in the page as a module — but the split is the real one used by live agent fleets. The server owns every agent's state and is the only thing that can change it: it creates a numbered job from your brief, and for every move it issues the agent's whole route — waypoints, departure time and speed — covering deploys out of the Deployment Bay, patrol legs around a workstation while a stage runs, roam legs for idle agents at the bay, and a matching return route to the bay for every deploy. The map is a renderer only: it animates the server's routes locally at 60 frames a second and never starts, stops or redirects a walk by itself. The server reports every agent four times a second and appends every deployment, arrival, handoff and filing to a timestamped event log (the Deployment Feed and terminal); an agent whose reports go stale is marked <code>OFFLINE</code> with its last-seen time and its animation holds until it reports again. The 18 smaller dots are street traffic only — they ramp from 4 slow at rest toward full pace during a run, but they never carry a job. The full server version of this ecosystem is the Space; this Page is its live public face.</p>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
         </div>
@@ -673,7 +830,24 @@
           { id:"courier", name:"Courier", call:"R06-B", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Image Courier — R04 to R06", dock:"Dock B", color:"#bbf7d0", bay:[61,57], work:[88,19], speed:1.8, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Carrying the finished image from the Render Engine (R04) through the bay to the Gallery Vault (R06).";} }
         ];
         var BAY = [50, 48];
-        CREW.forEach(function(a){ a.home=a.bay; a.status="AT BAY"; a.task=a.taskIdle; a.at="Deployment Bay \u00B7 staging"; a.last="\u2014"; a.x=a.bay[0]; a.y=a.bay[1]; a.phase=0; a.path=[]; a.onArrive=null; a.workTask=""; });
+        CREW.forEach(function(a, ai){
+          a.home=a.bay; a.status="AT BAY"; a.task=a.taskIdle; a.at="Deployment Bay \u00B7 staging"; a.last="\u2014"; a.x=a.bay[0]; a.y=a.bay[1]; a.workTask="";
+          // Patrol / roam loops the SERVER issues legs from: a WORKING agent walks
+          // a small rectangle around its workstation; an idle agent roams gently
+          // around its staging slot. offX flips by dock so a room's pair patrols
+          // in opposite directions and never overlaps.
+          var offX = a.dock==="Dock B" ? -6 : 6;
+          a.patrol=[[a.work[0],a.work[1]],[a.work[0]+offX,a.work[1]],[a.work[0]+offX,a.work[1]+3.5],[a.work[0],a.work[1]+3.5]];
+          a.bayLoop=[[a.bay[0],a.bay[1]],[a.bay[0]+1.8,a.bay[1]+0.8],[a.bay[0],a.bay[1]+1.6],[a.bay[0]-1.8,a.bay[1]+0.8]];
+          a.patrolIdx = ai % 4;
+          // Server-owned truth fields. The renderer never decides anything: it
+          // draws the agent at the position the server's current route implies.
+          a.anchor = a.bay.slice();   // where the agent rests when it has no route
+          a.route = null;             // {from, points, departAt, speed, endsAt, purpose, doneText}
+          a.lastSeen = Date.now();    // last server report for this agent
+          a.nextLegAt = Date.now() + 400 + (ai % 6) * 260; // when the server may issue its next patrol/roam leg
+          a.offline = false;
+        });
         var selectedAgent = CREW[0];
         var backend = { seq:0, events:[], job:null, startedAt:0, heartbeat:"\u2014" };
         function clockTime(d){ d=d||new Date(); return d.toLocaleTimeString("en-US",{hour12:false}); }
@@ -709,13 +883,13 @@
             var card=document.getElementById("crew-"+a.id); if(!card) return;
             card.setAttribute("data-status", a.status); card.classList.toggle("selected", selectedAgent===a);
             card.querySelector(".crew-task").textContent=a.task;
-            card.querySelector(".pill").textContent=a.status; card.querySelector(".pill").className="pill "+pillClass(a.status);
+            card.querySelector(".pill").textContent=a.offline?"OFFLINE":a.status; card.querySelector(".pill").className="pill "+(a.offline?"offline":pillClass(a.status));
             card.querySelector(".crew-from").textContent="DEPLOYS FROM DEPLOYMENT BAY \u2192 POST "+a.roomCode+" "+a.roomName.toUpperCase()+" \u00B7 NOW: "+a.at.toUpperCase();
             var wrap=document.getElementById("agent-"+a.id);
             if(wrap){
               wrap.setAttribute("data-status", a.status); wrap.classList.toggle("selected", selectedAgent===a);
               var t=wrap.querySelector(".agent-task");
-              if(t) t.textContent = a.status==="WORKING" ? a.task : a.status==="DEPLOYED" ? (/^(Finished|Done)/.test(a.task) ? "Returning to the bay\u2026" : "Deploying from the bay\u2026") : "";
+              if(t) t.textContent = a.offline ? "OFFLINE \u2014 last seen "+clockTime(new Date(a.lastSeen)) : a.status==="WORKING" ? a.task : a.status==="DEPLOYED" ? (/^(Finished|Done)/.test(a.task) ? "Returning to the bay\u2026" : "Deploying from the bay\u2026") : "";
             }
           });
           roomNow();
@@ -724,12 +898,13 @@
           var nm=document.getElementById("insp-name"); if(!nm) return;
           nm.textContent=a.name;
           document.getElementById("insp-role").textContent=a.role+" \u2014 "+a.roomCode+" "+a.roomName;
-          var st=document.getElementById("insp-status"); st.textContent=a.status; st.className="pill "+pillClass(a.status);
+          var st=document.getElementById("insp-status"); st.textContent=a.offline?"OFFLINE":a.status; st.className="pill "+(a.offline?"offline":pillClass(a.status));
           document.getElementById("insp-from").textContent="Deployment Bay (map centre)";
-          document.getElementById("insp-at").textContent=a.at;
-          document.getElementById("insp-task").textContent=a.task;
+          document.getElementById("insp-at").textContent=a.offline?"Last reported position \u2014 animation held":a.at;
+          document.getElementById("insp-task").textContent=a.offline?"Not reporting \u2014 the server has not heard from this agent. It does not animate until it reports again.":a.task;
           document.getElementById("insp-job").textContent=backend.job?("#"+backend.job.num+" \u00B7 "+backend.job.subject):"\u2014";
           document.getElementById("insp-last").textContent=a.last;
+          var seenEl=document.getElementById("insp-seen"); if(seenEl) seenEl.textContent=clockTime(new Date(a.lastSeen))+(a.offline?" \u00B7 OFFLINE":"");
         }
         function selectAgent(a){ selectedAgent=a; renderCrew(); }
         function buildCrew(){
@@ -746,6 +921,7 @@
             var wrap=document.createElement("div"); wrap.className="agent-wrap "+(ai%2===0?"tag-above":"tag-below")+(a.dock==="Dock B"?" lbl-below":""); wrap.id="agent-"+a.id; wrap.setAttribute("data-status",a.status); wrap.style.pointerEvents="auto";
             wrap.innerHTML='<div class="agent-dot"></div><span class="agent-label"><span class="agent-name"></span><span class="agent-call"></span><span class="agent-task"></span></span>';
             wrap.querySelector(".agent-dot").style.background=a.color; wrap.querySelector(".agent-dot").style.color=a.color;
+            wrap.querySelector(".agent-dot").style.animationDelay=(ai*0.23)+"s";
             wrap.querySelector(".agent-dot").textContent=a.name.charAt(0);
             wrap.querySelector(".agent-name").textContent=a.name.toUpperCase();
             wrap.querySelector(".agent-call").textContent=" \u00B7 "+a.call;
@@ -879,6 +1055,10 @@
               li.querySelector(".pstate").textContent = st === "active" ? "WORKING" : st === "done" ? "DONE" : "";
             }
           });
+          // Factory coupling: conveyor belts and floor dressing run at full pace
+          // only while a job is live; at rest they crawl.
+          var mapEl = document.querySelector(".map");
+          if (mapEl) mapEl.classList.toggle("running", !!state.running);
         }
 
         // ---------- Terminal ----------
@@ -938,6 +1118,34 @@
 
         function activeAgents() { return Math.round(IDLE_DOTS + state.activity * (TOTAL_DOTS - IDLE_DOTS)); }
 
+        // Renderer for the named crew, shared by the 60fps loop and the
+        // reduced-motion timer. Draws each agent at the position its
+        // server-issued route implies right now. Watchdog: if the server's
+        // last report for an agent is over 7s old, the agent is OFFLINE —
+        // greyed, labelled with its last-seen time, and NOT animated again
+        // until the server reports it fresh.
+        function renderAgentPositions(){
+          var now = Date.now();
+          CREW.forEach(function(a){
+            if(!a.el) return;
+            var stale = (now - a.lastSeen) > 7000;
+            if(stale !== a.offline){
+              a.offline = stale;
+              a.el.classList.toggle("offline", stale);
+              var card = document.getElementById("crew-"+a.id);
+              if(card) card.classList.toggle("offline", stale);
+              if(stale) emit(null, a.name+" stopped reporting \u2014 OFFLINE, last seen "+clockTime(new Date(a.lastSeen))+". Animation held at last reported position.");
+              else emit(null, a.name+" is reporting again \u2014 back online.");
+              renderCrew();
+            }
+            if(a.offline) return;
+            var p = agentPosAt(a, now);
+            a.x = p[0]; a.y = p[1];
+            a.el.style.left = a.x + "%"; a.el.style.top = a.y + "%";
+            a.el.classList.toggle("flip", a.x > 62);
+          });
+        }
+
         if (!reduced) {
           var last = performance.now();
           var tick = function (now) {
@@ -977,41 +1185,20 @@
               }
               d.el.style.transform = "translate(" + d.x + "%, " + d.y + "%)";
             });
-            // Named agents travel their waypoint path on axis-aligned streets
-            CREW.forEach(function(a){
-              if(!a.el) return;
-              if(a.path && a.path.length){
-                var tgt = a.path[0];
-                var tx2 = a.phase===0 ? tgt[0] : a.x;
-                var ty2 = a.phase===0 ? a.y : tgt[1];
-                var dx2 = tx2-a.x, dy2 = ty2-a.y;
-                var dist2 = a.phase===0 ? Math.abs(dx2) : Math.abs(dy2);
-                var step2 = 26 * (a.speed || 1) * dt;
-                if(dist2 <= step2){
-                  if(a.phase===0){ a.x=tx2; a.phase=1; }
-                  else { a.y=ty2; a.phase=0; a.path.shift(); if(!a.path.length && a.onArrive){ var cb=a.onArrive; a.onArrive=null; cb(a); } }
-                }
-                else if(a.phase===0){ a.x += Math.sign(dx2)*step2; } else { a.y += Math.sign(dy2)*step2; }
-              }
-              a.el.style.left = a.x + "%"; a.el.style.top = a.y + "%";
-              a.el.classList.toggle("flip", a.x > 62);
-            });
+            // Named agents: RENDER ONLY. Positions come from the server-issued
+            // route (agentPosAt) — this loop never starts, stops or redirects a
+            // walk; it draws what the server's state says, at 60fps.
+            renderAgentPositions();
             el("stat-agents").textContent = "AGENTS " + (count + 12) + " ON GRID";
             requestAnimationFrame(tick);
           };
           requestAnimationFrame(tick);
         } else {
           dots.forEach(function (d, idx) { if (idx >= IDLE_DOTS) d.el.style.display = "none"; });
-          // Reduced motion: no animation loop, so snap agents along their paths on a slow timer
-          setInterval(function(){
-            CREW.forEach(function(a){
-              if(a.path && a.path.length){
-                var dest=a.path[a.path.length-1]; a.x=dest[0]; a.y=dest[1]; a.path=[]; a.phase=0;
-                if(a.el){ a.el.style.left=a.x+"%"; a.el.style.top=a.y+"%"; a.el.classList.toggle("flip", a.x > 62); }
-                if(a.onArrive){ var cb2=a.onArrive; a.onArrive=null; cb2(a); }
-              }
-            });
-          }, 700);
+          // Reduced motion: no 60fps loop — the same server-route renderer,
+          // sampled on a slow timer. The server tick still owns every state
+          // change and arrival; this only draws the result less often.
+          setInterval(renderAgentPositions, 700);
         }
 
         // ---------- Prompt building (the rooms' real work, done in-page) ----------
@@ -1592,27 +1779,99 @@
         }
 
 
-        // ---------- Dispatcher: deploy crew stage by stage ----------
+        // ---------- SERVER: owns the truth ----------
+        // The pattern the workers found everywhere: the server owns the truth and
+        // the client only renders it. On this static Pages build the server is a
+        // module in the page (GitHub Pages has no network server to add), but the
+        // split is real:
+        //  - The SERVER (this section, ticking 4x a second) is the only code that
+        //    changes an agent's status, task or route. It issues each agent's
+        //    WHOLE route — waypoints, departure time and speed — for deploys,
+        //    workstation patrols, idle roams and returns, and it applies the
+        //    arrival transition when a route's end time passes.
+        //  - Every deploy gets a matching return route: when a stage closes, the
+        //    server routes that room's pair back to the Deployment Bay.
+        //  - Idle agents roam: the server issues short roam legs around the bay.
+        //  - The server reports every agent on every tick (lastSeen). The
+        //    RENDERER (the rAF loop) never starts, stops or redirects a walk on
+        //    its own — it draws each agent where the server's route puts it at
+        //    60fps — and if an agent's last report goes stale it marks the agent
+        //    OFFLINE with its last-seen time and holds its animation.
         var jobTimer = null;
-        function arriveWork(a){
-          a.status="WORKING"; a.task=a.workTask;
-          a.at=a.roomCode+" "+a.roomName+" \u00B7 workstation";
-          emit(a, "Arrived at "+a.roomCode+" "+a.roomName+" \u2014 working: "+a.task);
-          renderCrew();
+        var STAGE_MS = 2100;
+        var TRAVEL_SPEED = 26, PATROL_SPEED = 8.5, ROAM_SPEED = 5;
+
+        function routeDistance(from, points){
+          var d=0, px=from[0], py=from[1];
+          points.forEach(function(p){ d+=Math.abs(p[0]-px)+Math.abs(p[1]-py); px=p[0]; py=p[1]; });
+          return d;
+        }
+        // Pure function of the server-issued route and the clock: where is this
+        // agent at `now`? Axis-aligned, X then Y per leg, like the street grid.
+        function agentPosAt(a, now){
+          if(!a.route) return a.anchor;
+          var r=a.route;
+          if(now>=r.endsAt) return r.points[r.points.length-1];
+          var budget=((now-r.departAt)/1000)*r.speed;
+          var px=r.from[0], py=r.from[1];
+          for(var i=0;i<r.points.length;i++){
+            var p=r.points[i], dx=p[0]-px, dy=p[1]-py, seg=Math.abs(dx)+Math.abs(dy);
+            if(budget>=seg){ px=p[0]; py=p[1]; budget-=seg; continue; }
+            var mx=Math.min(Math.abs(dx), budget); px+=Math.sign(dx)*mx; budget-=mx;
+            if(budget>0){ var my=Math.min(Math.abs(dy), budget); py+=Math.sign(dy)*my; }
+            break;
+          }
+          return [px,py];
+        }
+        function issueRoute(a, points, speed, purpose, doneText){
+          var now=Date.now();
+          var from=agentPosAt(a, now).slice();
+          var dur=routeDistance(from, points)/speed;
+          a.route={ from:from, points:points, departAt:now, speed:speed, endsAt:now+dur*1000, purpose:purpose, doneText:doneText||"" };
+          a.anchor=points[points.length-1].slice();
         }
         function sendToBay(a, doneText){
           a.status="DEPLOYED"; a.task=doneText;
           a.at="Returning to the Deployment Bay";
-          a.path=[BAY, a.bay]; a.phase=0;
-          a.onArrive=function(x){ x.status="DONE"; x.task=doneText+" \u2014 back at the bay."; x.at="Deployment Bay \u00B7 staging"; renderCrew(); };
+          issueRoute(a, [BAY, a.bay], TRAVEL_SPEED*(a.speed||1), "return", doneText);
         }
-        function deployStage(idx, brief, prompts){
+        function arriveWork(a){
+          a.status="WORKING"; a.task=a.workTask;
+          a.at=a.roomCode+" "+a.roomName+" \u00B7 workstation";
+          a.nextLegAt=Date.now()+300;
+          emit(a, "Arrived at "+a.roomCode+" "+a.roomName+" \u2014 working: "+a.task);
+          renderCrew();
+        }
+        // Server-side arrival transition: runs on the server tick when a route ends.
+        function onRouteEnd(a){
+          var purpose=a.route ? a.route.purpose : "";
+          var doneText=a.route ? a.route.doneText : "";
+          a.route=null;
+          var now=Date.now();
+          if(purpose==="deploy"){
+            // Superseded mid-flight (next stage already fired): go straight home.
+            if(backend.job && STAGE_ORDER.indexOf(a.room) < state.stageIdx){
+              sendToBay(a, "Finished "+a.roomCode+": "+a.workTask);
+              renderCrew(); return;
+            }
+            arriveWork(a);
+          } else if(purpose==="return"){
+            a.status="DONE"; a.task=doneText+" \u2014 back at the bay."; a.at="Deployment Bay \u00B7 staging";
+            a.nextLegAt=now+700;
+            emit(a, "Back at the Deployment Bay \u2014 stage work filed.");
+            renderCrew();
+          } else {
+            // Patrol / roam leg finished: pause; the server issues the next leg.
+            a.nextLegAt = now + (a.status==="WORKING" ? 320+((a.patrolIdx*37)%280) : 900+((a.patrolIdx*53)%900));
+          }
+        }
+        function advanceStage(idx, brief, prompts){
           CREW.forEach(function(a){
             var roomIdx = STAGE_ORDER.indexOf(a.room);
             if(roomIdx < idx){
-              if(a.status==="WORKING"){
+              if(a.status==="WORKING" || (a.status==="DEPLOYED" && a.route && a.route.purpose==="deploy")){
                 emit(a, "Stage complete \u2014 returning to the Deployment Bay.");
-                sendToBay(a, "Finished "+a.roomCode+": "+a.taskWork(brief,prompts));
+                sendToBay(a, "Finished "+a.roomCode+": "+(a.workTask||a.taskWork(brief,prompts)));
               }
             }
             else if(roomIdx === idx){
@@ -1620,13 +1879,11 @@
               a.status="DEPLOYED";
               a.task="Deploying from the Deployment Bay to "+a.roomCode+" "+a.roomName+"\u2026";
               a.at="En route \u00B7 Deployment Bay \u2192 "+a.roomCode+" "+a.roomName;
-              a.phase=0;
-              a.onArrive=function(x){ arriveWork(x); };
               if(a.id==="courier"){
-                a.path=[[42,81], BAY, a.work];
+                issueRoute(a, [[42,81], BAY, a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
                 emit(a, "Deployed from the Deployment Bay \u2192 R04 Render Engine pickup, then on to R06 Gallery Vault with the image.");
               } else {
-                a.path=[a.work];
+                issueRoute(a, [a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
                 emit(a, "Deployed from the Deployment Bay \u2192 "+a.roomCode+" "+a.roomName+".");
               }
             } else if(a.status==="AT BAY"){
@@ -1638,6 +1895,45 @@
           var sj=document.getElementById("stat-job"); if(sj && backend.job) sj.textContent="JOB #"+backend.job.num+" \u00B7 "+STAGES[idx].name.toUpperCase();
           renderCrew();
         }
+        // The server tick: reports every agent, applies route arrivals, issues
+        // patrol/roam legs, and advances the job stage by stage. Nothing else
+        // in the page is allowed to move an agent or change its state.
+        function serverTick(){
+          var now=Date.now();
+          CREW.forEach(function(a){
+            a.lastSeen=now;
+            if(a.route && now>=a.route.endsAt) onRouteEnd(a);
+            if(!a.route && now>=a.nextLegAt){
+              var isWork = a.status==="WORKING";
+              if(isWork || a.status==="AT BAY" || a.status==="DONE"){
+                // Issue the next leg of the agent's loop, skipping any corner
+                // the agent is already standing on — a zero-distance route
+                // would read as standing still.
+                var loopPts = isWork ? a.patrol : a.bayLoop, destPt = null;
+                for(var tries=0; tries<loopPts.length; tries++){
+                  a.patrolIdx=(a.patrolIdx+1)%loopPts.length;
+                  var cand=loopPts[a.patrolIdx];
+                  if(Math.abs(cand[0]-a.anchor[0])>0.05 || Math.abs(cand[1]-a.anchor[1])>0.05){ destPt=cand; break; }
+                }
+                if(destPt) issueRoute(a, [destPt], isWork ? PATROL_SPEED*(a.speed||1) : ROAM_SPEED, isWork ? "patrol" : "roam");
+                else a.nextLegAt = now + 400;
+              }
+            }
+          });
+          var job=backend.job;
+          if(job && state.running && !job.finished){
+            var idx=Math.min(5, Math.floor((now-backend.startedAt)/STAGE_MS));
+            if(idx>state.stageIdx){
+              state.stageIdx=idx; setStageStates(); advanceStage(idx, job.brief, job.prompts);
+              log("FLOW // brief moving room to room \u2014 "+STAGES[idx].name+" active");
+              if(STAGE_ORDER[idx]==="render-engine") log("RENDER // Render Engine drawing the image from the locked prompt");
+            }
+            if(now>=backend.startedAt + STAGE_MS*5 + 4000){ job.finished=true; finishRun(job.brief, job.prompts); }
+          }
+          var seen=document.getElementById("insp-seen");
+          if(seen && selectedAgent) seen.textContent=clockTime(new Date(selectedAgent.lastSeen))+(selectedAgent.offline?" \u00B7 OFFLINE":"");
+        }
+        setInterval(serverTick, 250);
         function startJobClock(){
           if(jobTimer) clearInterval(jobTimer);
           jobTimer=setInterval(function(){
@@ -1651,10 +1947,8 @@
         }
         startJobClock();
 
-        // ---------- Run the pipeline ----------
+        // ---------- Run the pipeline (job close-out, called by the server tick) ----------
         var runBtn = el("run-btn");
-        var timers = [];
-        function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 
         function finishRun(brief, prompts) {
           state.running = false;
@@ -1666,7 +1960,11 @@
           state.lastPrompt = { brief: brief, prompts: prompts, imageUrl: imageUrl };
           CREW.forEach(function(a){
             var doneText="Done on Job #"+state.runs+": "+a.taskWork(brief,prompts);
-            if(a.status==="WORKING" || a.status==="DEPLOYED"){ sendToBay(a, doneText); }
+            if(a.status==="WORKING" || a.status==="DEPLOYED"){
+              // Already walking a server return route: just retitle its arrival.
+              if(a.route && a.route.purpose==="return"){ a.route.doneText=doneText; a.task=doneText; }
+              else sendToBay(a, doneText);
+            }
             else { a.status="DONE"; a.task=doneText; }
           });
           emit(CREW[10], "Vault filed the finished image in slot 1. Job #"+state.runs+" complete.");
@@ -1778,31 +2076,20 @@
             detail: state.detail
           };
           var prompts = buildPrompts(brief);
-          clearTimers();
+          // Hand the job to the SERVER. From here the server tick owns every
+          // stage advance, deploy, patrol, return and the close-out — the
+          // click handler starts nothing else and sets no animation timers.
           state.running = true;
           state.stageIdx = 0;
           setStageStates();
           runBtn.disabled = true;
           runBtn.textContent = "PIPELINE RUNNING…";
-          backend.job={num: state.runs+1, subject: subject}; backend.startedAt=Date.now();
-          CREW.forEach(function(a){ a.status="AT BAY"; a.task=a.taskIdle; a.at="Deployment Bay \u00B7 staging"; a.path=[a.bay]; a.phase=0; a.onArrive=null; });
-          emit(null, "Dispatcher created Job #"+backend.job.num+" from the brief and queued all 6 stages.");
-          deployStage(0, brief, prompts);
+          backend.job={num: state.runs+1, subject: subject, brief: brief, prompts: prompts, finished: false}; backend.startedAt=Date.now();
+          CREW.forEach(function(a){ a.status="AT BAY"; a.task=a.taskIdle; a.at="Deployment Bay \u00B7 staging"; a.route=null; a.anchor=a.bay.slice(); a.x=a.bay[0]; a.y=a.bay[1]; a.nextLegAt=Date.now()+1200; });
+          emit(null, "Server created Job #"+backend.job.num+" from the brief and queued all 6 stages.");
+          advanceStage(0, brief, prompts);
                     log("JOB // \"" + subject.slice(0, 42) + "\" — brief accepted by R01 Prompt Office");
           log("TRAFFIC // agents waking — traffic climbing with every stage");
-          var stageMs = 2100;
-          STAGE_ORDER.forEach(function (id, idx) {
-            if (idx === 0) return;
-            timers.push(setTimeout(function () {
-              state.stageIdx = idx;
-              setStageStates();
-              var s = STAGES[idx];
-              deployStage(idx, brief, prompts);
-              log("FLOW // brief moving room to room — " + s.name + " active");
-              if (id === "render-engine") log("RENDER // Render Engine drawing the image from the locked prompt");
-            }, stageMs * idx));
-          });
-          timers.push(setTimeout(function () { finishRun(brief, prompts); }, stageMs * 5 + 4000));
         });
 
         el("download-img-btn").addEventListener("click", function () {
