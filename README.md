@@ -1,6 +1,6 @@
 # Muse AI Image Ecosystem
 
-![Status](https://img.shields.io/badge/Status-v1.0.0-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-v1.1.0-brightgreen?style=for-the-badge)
 ![Live](https://img.shields.io/badge/Live-GitHub_Pages-2ea44f?style=for-the-badge)
 
 **A real working image generation workflow, built like a satellite station.**
@@ -43,6 +43,7 @@ Write a brief, hit Run Pipeline, watch the rooms light up in order, get an image
 
 ## History
 
+- **v1.1.0 — Nov 25, 2026:** Every agent is a someone. 12 named crew, 2 per room, each with a home dock, a callsign, a role, and a live task. Deployment Bay at the centre, crew stages in a spread 4x3 formation, tags readable on phone and desktop. Live Ops section: job, progress, heartbeat, timestamped deployment feed, Agent Inspector. 18 traffic dots labelled traffic only.
 - **v1.0.0 — Nov 25, 2026:** First release. Satellite grid station, six pipeline rooms, agents that ramp from 4 slow dots at idle to 30 fast dots during a run, real end-to-end run on the page, Gallery Vault with PNG download.
 
 ---

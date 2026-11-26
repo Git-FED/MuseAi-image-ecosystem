@@ -85,14 +85,14 @@
 
       /* Satellite map */
       .map {
-        position: relative; margin-top: 14px; height: 380px; overflow: hidden;
+        position: relative; margin-top: 14px; height: 580px; overflow: hidden;
         border: 1px solid var(--border); border-radius: var(--radius); background: #070d09;
         background-image:
           linear-gradient(rgba(34,255,136,0.055) 1px, transparent 1px),
           linear-gradient(90deg, rgba(34,255,136,0.055) 1px, transparent 1px);
         background-size: 26px 26px;
       }
-      @media (min-width: 640px) { .map { height: 440px; } }
+      @media (min-width: 640px) { .map { height: 540px; } }
       .street-h { position: absolute; left: 0; width: 100%; background: rgba(255,255,255,0.045); }
       .street-v { position: absolute; top: 0; height: 100%; background: rgba(255,255,255,0.045); }
       .street-line-h { position: absolute; left: 0; width: 100%; height: 1px; background: rgba(34,255,136,0.15); }
@@ -115,9 +115,11 @@
       .room-name { font-family: var(--mono); font-size: 10px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       @media (min-width: 640px) { .room-name { font-size: 11px; } }
       .hub {
-        position: absolute; display: flex; align-items: center; justify-content: center;
+        position: absolute; display: flex; align-items: flex-start; justify-content: center;
         border: 1px solid rgba(255,90,78,0.5); border-radius: 6px; background: rgba(42,15,12,0.9);
+        padding-top: 5px;
       }
+      .hub > div { background: rgba(5,10,7,0.78); border-radius: 6px; padding: 3px 10px 4px; }
       .hub-dot { width: 12px; height: 12px; border-radius: 999px; background: var(--red); box-shadow: 0 0 10px rgba(255,90,78,0.8); margin: 0 auto; }
       .hub-label { font-family: var(--mono); margin-top: 4px; font-size: 8px; font-weight: 700; letter-spacing: 0.12em; color: #ff9a92; text-align: center; }
       .dots-layer { pointer-events: none; position: absolute; inset: 0; }
@@ -155,7 +157,7 @@
         background: rgba(0,0,0,0.5); padding: 8px 12px; font-size: 11px; line-height: 1.7; color: #9fe8bb;
         min-height: 104px;
       }
-      .terminal p { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .terminal p { margin: 0; overflow-wrap: anywhere; }
 
       /* Layout below map */
       .cols { margin-top: 20px; display: grid; gap: 24px; }
@@ -218,7 +220,7 @@
       .pipe li[data-state="active"] .code { background: var(--amber); color: #000; }
       .pipe li[data-state="done"] .code { background: var(--accent); color: #000; }
       .pipe .pname { display: block; font-size: 14px; font-weight: 500; line-height: 1.3; }
-      .pipe .ptask { display: block; font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .pipe .ptask { display: block; font-size: 12px; color: var(--dim); }
       .pipe .pstate { font-family: var(--mono); margin-left: auto; flex-shrink: 0; font-size: 10px; letter-spacing: 0.12em; color: var(--dim); padding-top: 4px; }
 
       /* Result / prompt output */
@@ -281,6 +283,91 @@
       footer a { color: var(--dim); }
       footer a:hover { color: var(--accent); }
 
+      /* Named agents on map */
+      .agent-wrap { position: absolute; width: 0; height: 0; will-change: left, top; pointer-events: auto; cursor: pointer; z-index: 6; }
+      .agent-dot { border-radius: 999px; border: 2px solid #e6f5e9; box-shadow: 0 0 10px currentColor; margin-left: -8px; margin-top: -8px; width: 16px; height: 16px; position: relative; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 9px; font-weight: 800; color: rgba(0,0,0,0.75); }
+      .agent-label { position: absolute; left: 12px; top: -10px; font-family: var(--mono); font-size: 9px; font-weight: 800; letter-spacing: .06em; background: rgba(0,0,0,0.88); border: 1px solid var(--border); padding: 2px 6px; border-radius: 999px; white-space: nowrap; color: var(--text); display: block; line-height: 1.5; }
+      .agent-label .agent-task { display: block; font-weight: 400; font-size: 8px; letter-spacing: .02em; color: var(--amber); max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
+      .agent-wrap.flip .agent-label { left: auto; right: 12px; text-align: right; }
+      .agent-wrap[data-status="WORKING"] .agent-dot, .agent-wrap[data-status="DEPLOYED"] .agent-dot { animation: pulse-core 1s ease-in-out infinite; }
+      .agent-wrap[data-status="WORKING"] .agent-label { border-color: rgba(255,176,32,0.7); }
+      .agent-wrap[data-status="DONE"] .agent-label { border-color: rgba(34,255,136,0.5); }
+      .agent-wrap.selected .agent-label { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+      .agent-wrap[data-status="WORKING"] { z-index: 8; }
+      .agent-wrap.selected { z-index: 9; }
+      /* Working pair: Dock B agent's label sits below its dot so the pair's labels never stack */
+      .agent-wrap.lbl-below .agent-label { top: 12px; }
+      /* Staged at the bay: compact name-only tag centred below the dot. The crew stages in a
+         4x3 formation across the enlarged bay, so every tag sits in the clear gap under its
+         own dot — no tag ever lands on another dot, another tag, or the bay's own label. */
+      .agent-wrap[data-status="AT BAY"] .agent-label,
+      .agent-wrap[data-status="DONE"] .agent-label {
+        left: 50%; right: auto; top: 11px; bottom: auto; transform: translateX(-50%); text-align: center;
+        font-size: 8px; padding: 1px 5px;
+      }
+      .agent-wrap[data-status="AT BAY"] .agent-call,
+      .agent-wrap[data-status="AT BAY"] .agent-task,
+      .agent-wrap[data-status="DONE"] .agent-call,
+      .agent-wrap[data-status="DONE"] .agent-task { display: none; }
+      .dock { position: absolute; bottom: 5px; font-family: var(--mono); font-size: 7px; letter-spacing: .1em; color: var(--faint); border: 1px dashed rgba(255,255,255,.22); padding: 2px 4px; border-radius: 3px; }
+      .dock-a { left: 6px; } .dock-b { right: 6px; }
+      @media (max-width: 639px) {
+        .dock { display: none; } .agent-label .agent-task { display: none; } .rn-task { display: none; }
+        .agent-label .agent-call { display: none; }
+        /* Phone-width: the bay formation is too narrow for 12 tags at once, so staged tags
+           hide except the tapped agent's — its lettered dot, the room lines and the crew
+           cards below still name every agent. Tags return in full while an agent travels
+           or works, when only one room's pair is out at a time. */
+        .agent-wrap[data-status="AT BAY"] .agent-label,
+        .agent-wrap[data-status="DONE"] .agent-label { display: none; }
+        .agent-wrap.selected[data-status="AT BAY"] .agent-label,
+        .agent-wrap.selected[data-status="DONE"] .agent-label { display: block; }
+      }
+      .room-now { font-family: var(--mono); margin-top: 6px; font-size: 8.5px; line-height: 1.65; letter-spacing: .03em; color: var(--dim); overflow-wrap: anywhere; }
+      .room-now b { color: var(--text); font-weight: 800; }
+      .room[data-state="active"] .room-now { color: #ffd98a; }
+      .room[data-state="done"] .room-now { color: #9fe8bb; }
+      .hub-sub { font-family: var(--mono); margin-top: 2px; font-size: 7px; letter-spacing: .1em; color: #c97a72; text-align: center; }
+
+      /* Live ops + crew */
+      .ops-grid { margin-top: 20px; display: grid; gap: 16px; }
+      @media (min-width: 900px) { .ops-grid { grid-template-columns: 1.2fr .8fr; } }
+      .panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 14px; }
+      .panel h3 { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; color: var(--accent); margin: 0 0 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+      .panel h3 span:last-child { color: var(--dim); }
+      .job-subject { font-weight: 700; font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
+      .job-meta { font-family: var(--mono); font-size: 11px; color: var(--dim); margin-top: 6px; line-height: 1.7; }
+      .progress { height: 8px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; margin-top: 10px; }
+      .progress i { display: block; height: 100%; background: var(--accent); width: 0%; transition: width .6s ease; }
+      .feed { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 0; max-height: 300px; overflow: auto; }
+      .feed li { font-family: var(--mono); font-size: 11px; line-height: 1.55; padding: 7px 0; border-top: 1px solid var(--border); display: grid; grid-template-columns: 62px 74px 1fr; gap: 6px; }
+      .feed time { color: var(--faint); } .feed b { color: var(--cyan); font-weight: 700; } .feed span { color: #c9e6d0; overflow-wrap: anywhere; }
+      @media (max-width: 520px) { .feed li { grid-template-columns: 52px 1fr; } .feed b { grid-column: 2; } .feed span { grid-column: 2; } }
+      .inspector-name { font-size: 22px; font-weight: 800; line-height: 1; }
+      .inspector-role { color: var(--dim); font-size: 13px; margin-top: 4px; }
+      .kv { display: grid; grid-template-columns: 108px 1fr; gap: 6px 10px; margin-top: 12px; font-size: 13px; }
+      .kv dt { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; color: var(--faint); padding-top: 2px; }
+      .kv dd { margin: 0; overflow-wrap: anywhere; }
+      .pill { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: .1em; border: 1px solid var(--border); border-radius: 999px; padding: 2px 7px; }
+      .pill.working { color: #000; background: var(--amber); border-color: var(--amber); font-weight: 800; }
+      .pill.done { color: #000; background: var(--accent); border-color: var(--accent); font-weight: 800; }
+      .pill.deployed { color: var(--cyan); border-color: var(--cyan); }
+      .crew-grid { margin-top: 12px; display: grid; gap: 10px; }
+      @media (min-width: 640px) { .crew-grid { grid-template-columns: 1fr 1fr; } }
+      @media (min-width: 1024px) { .crew-grid { grid-template-columns: 1fr 1fr 1fr; } }
+      .crew-card { text-align: left; width: 100%; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 12px; color: var(--text); cursor: pointer; }
+      .crew-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+      .crew-card[data-status="WORKING"] { border-color: rgba(255,176,32,.7); }
+      .crew-card[data-status="DONE"] { border-color: rgba(34,255,136,.45); }
+      .crew-top { display: flex; align-items: center; gap: 9px; }
+      .crew-avatar { width: 14px; height: 14px; border-radius: 999px; border: 2px solid #fff; flex-shrink: 0; }
+      .crew-name { font-family: var(--mono); font-weight: 800; font-size: 14px; }
+      .crew-call { font-family: var(--mono); font-size: 10px; color: var(--dim); margin-left: auto; }
+      .crew-role { font-size: 12px; color: var(--dim); margin-top: 6px; line-height: 1.4; }
+      .crew-task { font-size: 13px; margin-top: 8px; line-height: 1.45; min-height: 38px; }
+      .crew-from { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 8px; line-height: 1.6; overflow-wrap: anywhere; }
+      .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--mono); font-size: 10px; color: var(--dim); margin-top: 10px; }
+
       @keyframes pulse-core { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.18); opacity: 1; } }
       @keyframes blink-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
       @media (prefers-reduced-motion: reduce) {
@@ -296,7 +383,10 @@
         <span class="online"><span class="blink-dot" aria-hidden="true"></span> SYS ONLINE</span>
         <span>ROOMS 6</span>
         <span id="stat-runs">RUNS 0</span>
-        <span id="stat-agents">AGENTS 4</span>
+        <span id="stat-agents">AGENTS 16 ON GRID</span>
+        <span id="stat-crew">CREW 0/12 WORKING</span>
+        <span id="stat-job">JOB — NONE</span>
+        <span id="stat-clock">LIVE —</span>
         <span class="spacer">GRID // SAT-VIEW</span>
       </div>
 
@@ -315,9 +405,7 @@
         </div>
       </div>
       <p class="repo-desc">
-        <strong>Muse AI Image Ecosystem.</strong> A working image-generation pipeline drawn as a satellite
-        grid: six rooms, one relay hub, and a crew of agent dots that stay quiet until a brief fires —
-        then they wake up, multiply, and move the job room to room until a finished image comes out.
+        <strong>Muse AI Image Ecosystem — live ops view.</strong> All 12 named agents start at the Deployment Bay in the centre of the map. When a job fires, each room's pair deploys out of the bay, travels the streets to its room, and works there — its name rides with it on the map, its room shows what it is doing, and the feed logs every move with a timestamp. Then the finished image lands in the vault.
       </p>
 
       <!-- Satellite grid map -->
@@ -331,48 +419,53 @@
 
         <div class="room" id="room-prompt-office" data-state="idle" style="left:2%;top:3%;width:30%;height:25%">
           <div class="room-head"><span class="room-code">R01</span><span class="room-state">IDLE</span></div>
-          <div class="room-name">Prompt Office</div>
+          <div class="room-name">Prompt Office</div><span class="dock dock-a">DOCK A · QUILL</span><span class="dock dock-b">DOCK B · SCRIBE</span>
           <div class="in-lines" aria-hidden="true"><div style="width:92%"></div><div style="width:74%"></div><div style="width:84%"></div><div style="width:58%"></div></div>
+          <div class="room-now" id="now-prompt-office"></div>
         </div>
 
         <div class="room" id="room-style-lab" data-state="idle" style="left:36%;top:3%;width:28%;height:25%">
           <div class="room-head"><span class="room-code">R02</span><span class="room-state">IDLE</span></div>
-          <div class="room-name">Style Lab</div>
+          <div class="room-name">Style Lab</div><span class="dock dock-a">DOCK A · PALETTE</span><span class="dock dock-b">DOCK B · MOOD</span>
           <div class="in-swatches" aria-hidden="true">
             <div style="background:#ffb020"></div><div style="background:#67e8f9"></div><div style="background:#ff5a4e"></div>
             <div style="background:#22ff88"></div><div style="background:#c084fc"></div><div style="background:#e6f5e9"></div>
           </div>
+          <div class="room-now" id="now-style-lab"></div>
         </div>
 
         <div class="room gallery" id="room-gallery-vault" data-state="idle" style="left:68%;top:3%;width:30%;height:30%">
           <div class="room-head"><span class="room-code">R06</span><span class="room-state">IDLE</span></div>
-          <div class="room-name">Gallery Vault</div>
+          <div class="room-name">Gallery Vault</div><span class="dock dock-a">DOCK A · VAULT</span><span class="dock dock-b">DOCK B · COURIER</span>
           <div class="in-vault" aria-hidden="true"><div class="vault-tile">EMPTY</div><div class="vault-tile">EMPTY</div><div class="vault-tile">EMPTY</div><div class="vault-tile">EMPTY</div></div>
+          <div class="room-now" id="now-gallery-vault"></div>
         </div>
 
         <div class="room" id="room-composition-bay" data-state="idle" style="left:2%;top:35%;width:30%;height:25%">
           <div class="room-head"><span class="room-code">R03</span><span class="room-state">IDLE</span></div>
-          <div class="room-name">Composition Bay</div>
+          <div class="room-name">Composition Bay</div><span class="dock dock-a">DOCK A · FRAME</span><span class="dock dock-b">DOCK B · RULE</span>
           <div class="in-frame" aria-hidden="true"><div class="v"></div><div class="h"></div><div class="c"></div></div>
+          <div class="room-now" id="now-composition-bay"></div>
         </div>
 
-        <div class="hub" style="left:41%;top:37%;width:18%;height:17%" aria-hidden="true">
-          <div><div class="hub-dot"></div><div class="hub-label">RELAY</div></div>
+        <div class="hub" style="left:34%;top:32%;width:32%;height:32%" aria-hidden="true">
+          <div><div class="hub-dot"></div><div class="hub-label">DEPLOYMENT BAY</div><div class="hub-sub">CREW DEPLOYS FROM HERE</div></div>
         </div>
 
         <div class="room" id="room-detail-forge" data-state="idle" style="left:68%;top:40%;width:30%;height:21%">
           <div class="room-head"><span class="room-code">R05</span><span class="room-state">IDLE</span></div>
-          <div class="room-name">Detail Forge</div>
+          <div class="room-name">Detail Forge</div><span class="dock dock-a">DOCK A · HONE</span><span class="dock dock-b">DOCK B · POLISH</span>
           <div class="in-sliders" aria-hidden="true">
             <div class="track"><div class="knob" style="left:80%"></div></div>
             <div class="track"><div class="knob" style="left:55%"></div></div>
             <div class="track"><div class="knob" style="left:90%"></div></div>
           </div>
+          <div class="room-now" id="now-detail-forge"></div>
         </div>
 
         <div class="room render" id="room-render-engine" data-state="idle" style="left:18%;top:67%;width:64%;height:29%">
           <div class="room-head"><span class="room-code">R04</span><span class="room-state">IDLE</span></div>
-          <div class="room-name">Render Engine</div>
+          <div class="room-name">Render Engine</div><span class="dock dock-a">DOCK A · FORGE</span><span class="dock dock-b">DOCK B · KILN</span>
           <div class="in-render" aria-hidden="true">
             <div class="render-core"></div>
             <div class="in-bars">
@@ -380,13 +473,51 @@
               <div style="height:18px"></div><div style="height:24px"></div><div style="height:14px"></div><div style="height:20px"></div>
             </div>
           </div>
+          <div class="room-now" id="now-render-engine"></div>
         </div>
 
         <div class="dots-layer" id="dots-layer" aria-hidden="true"></div>
+        <div class="dots-layer" id="agents-layer" style="pointer-events:none"></div>
       </section>
 
       <!-- Terminal log -->
       <section class="terminal" aria-label="Terminal log" id="terminal"></section>
+
+      <!-- Live backend / ops -->
+      <section aria-label="Live operations" style="margin-top:20px">
+        <h2 class="sec">LIVE OPS — WHO IS DOING WHAT, AND WHEN</h2>
+        <p class="sub">This is the live engine for this page. A dispatcher in the page acts as the backend: it creates a job, deploys each stage's two agents out of the Deployment Bay at the map centre, writes every deployment, arrival and finish to an event log with a timestamp, heartbeats working agents, and files the finished image. No anonymous dots do job work — the 12 named crew below do. The smaller background dots are street traffic only.</p>
+        <div class="legend"><span>● NAMED CREW — 12 agents staged in a labelled formation at the Deployment Bay, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room</span></div>
+        <div class="ops-grid">
+          <div class="panel">
+            <h3><span>CURRENT JOB + DEPLOYMENT FEED</span><span id="feed-live">LIVE · POLL 2s</span></h3>
+            <div class="job-subject" id="job-subject">No job running — the crew is staged at the Deployment Bay.</div>
+            <div class="job-meta" id="job-meta">JOB — · STAGE — · ELAPSED 0.0s · HEARTBEAT —</div>
+            <div class="progress" aria-hidden="true"><i id="job-progress"></i></div>
+            <ol class="feed" id="ops-feed" aria-live="polite"></ol>
+          </div>
+          <div class="panel" aria-label="Agent inspector">
+            <h3><span>AGENT INSPECTOR</span><span>TAP A CARD OR MAP AGENT</span></h3>
+            <div class="inspector-name" id="insp-name">Quill</div>
+            <div class="inspector-role" id="insp-role">Prompt Expander — R01 Prompt Office</div>
+            <dl class="kv">
+              <dt>STATUS</dt><dd><span class="pill" id="insp-status">AT BAY</span></dd>
+              <dt>DEPLOYED FROM</dt><dd id="insp-from">Deployment Bay (map centre)</dd>
+              <dt>NOW AT</dt><dd id="insp-at">Deployment Bay · staging</dd>
+              <dt>DOING NOW</dt><dd id="insp-task">Staged at the Deployment Bay, waiting for a job.</dd>
+              <dt>JOB</dt><dd id="insp-job">—</dd>
+              <dt>LAST EVENT</dt><dd id="insp-last">—</dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <!-- Crew roster -->
+      <section aria-label="Crew roster" style="margin-top:28px">
+        <h2 class="sec">WHO'S WHO — THE 12-AGENT CREW</h2>
+        <p class="sub">Two agents per room, all staged at the Deployment Bay. When a stage fires, that room's pair deploys from the bay to the room, works it, and the next pair goes. Each agent only ever works its own room's stage, so who did what never blurs. Tap any agent to inspect them on the map and in the panel above.</p>
+        <div class="crew-grid" id="crew-grid"></div>
+      </section>
 
       <div class="cols">
         <!-- Brief / control room -->
@@ -428,7 +559,7 @@
           <p class="form-error" id="form-error" hidden></p>
 
           <button type="button" class="run-btn" id="run-btn">RUN PIPELINE</button>
-          <p class="run-note">Watch the grid: the agents are few and slow at rest. Fire a run and they swarm.</p>
+          <p class="run-note">Watch the grid and the Live Ops feed: at rest the named crew waits at the Deployment Bay in the centre and traffic is few and slow. Fire a run and each room's two agents deploy out of the bay in turn, travel to their room, work, and report back by name.</p>
         </div>
 
         <!-- Pipeline status + result -->
@@ -485,8 +616,10 @@
             <li><code>R05 Detail Forge</code> — sharpens detail language and applies your keep-out list.</li>
             <li><code>R06 Gallery Vault</code> — where finished work lands.</li>
           </ul>
-          <h3>HOW THE AGENTS BEHAVE</h3>
-          <p>At rest the grid is quiet: <code>4 agents</code>, drifting slowly along the streets. The moment a pipeline run fires, traffic ramps with every stage — more dots join the grid and every dot speeds up, up to all <code>30 agents</code> at full pace while the Render Engine works. When the run ends, the grid settles back down to idle. The agent count in the status strip is live.</p>
+          <h3>WHO THE AGENTS ARE — AND WHERE THEY DEPLOY FROM</h3>
+          <p>Job work is done by <code>12 named agents</code>, two per room, and every one of them deploys from the same place: the <code>Deployment Bay</code> at the centre of the map. <code>Quill + Scribe</code> work R01 Prompt Office, <code>Palette + Mood</code> R02 Style Lab, <code>Frame + Rule</code> R03 Composition Bay, <code>Forge + Kiln</code> R04 Render Engine, <code>Hone + Polish</code> R05 Detail Forge, and <code>Vault + Courier</code> R06 Gallery Vault — Courier also runs the carry from R04 to R06 through the bay. When a stage fires, that room's pair leaves the bay, travels the streets to the room, and works at the room's workstation; when the job closes, everyone returns to the bay. Each agent's name rides with it on the map, its room shows what it is doing, and its card, the Agent Inspector and the feed all show the same live task string, so there is one answer to “who is doing what” everywhere you look.</p>
+          <h3>THE LIVE ENGINE (BACKEND FOR THIS STATIC PAGE)</h3>
+          <p>GitHub Pages has no server to add, so the backend lives in the page as a dispatcher and event store: it creates a numbered job from your brief, deploys each stage's crew out of the Deployment Bay before the stage advances, heartbeats once a second while a run is live, appends every deployment, arrival, handoff and filing to a timestamped event log (the Deployment Feed and terminal), and sends agents back to the bay as they finish. The 18 smaller dots are street traffic only — they ramp from 4 slow at rest toward full pace during a run, but they never carry a job. The full server version of this ecosystem is the Space; this Page is its live public face.</p>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, and it appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
         </div>
@@ -513,6 +646,105 @@
           { id: "gallery-vault", code: "R06", name: "Gallery Vault", task: "Finished work lands in the vault" }
         ];
         var STAGE_ORDER = ["prompt-office", "style-lab", "composition-bay", "render-engine", "detail-forge", "gallery-vault"];
+        // ---------- Named crew: who is who, where they deploy from ----------
+        var CREW = [
+          { id:"quill", name:"Quill", call:"R01-A", room:"prompt-office", roomName:"Prompt Office", roomCode:"R01", role:"Prompt Expander", dock:"Dock A", color:"#22ff88", bay:[38.5,40], work:[16,14], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Expanding the brief into a full prompt: \u201C"+b.subject.slice(0,54)+"\u201D";} },
+          { id:"scribe", name:"Scribe", call:"R01-B", room:"prompt-office", roomName:"Prompt Office", roomCode:"R01", role:"Brief Logger & Tagger", dock:"Dock B", color:"#86efac", bay:[46,40], work:[22,18], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Logging the brief and tagging subjects, details and keep-out list.";} },
+          { id:"palette", name:"Palette", call:"R02-A", room:"style-lab", roomName:"Style Lab", roomCode:"R02", role:"Style & Palette Lead", dock:"Dock A", color:"#ffb020", bay:[53.5,40], work:[46,14], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b,pr){return "Locking style \u201C"+pr.style+"\u201D and its palette for the shot.";} },
+          { id:"mood", name:"Mood", call:"R02-B", room:"style-lab", roomName:"Style Lab", roomCode:"R02", role:"Lighting & Mood", dock:"Dock B", color:"#fde68a", bay:[61,40], work:[56,18], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b,pr){return "Setting mood \u201C"+pr.mood+"\u201D — lighting, shadow and atmosphere.";} },
+          { id:"frame", name:"Frame", call:"R03-A", room:"composition-bay", roomName:"Composition Bay", roomCode:"R03", role:"Composition Lead", dock:"Dock A", color:"#67e8f9", bay:[38.5,48.5], work:[16,45], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Framing the shot for "+b.format+" format on the framing table.";} },
+          { id:"rule", name:"Rule", call:"R03-B", room:"composition-bay", roomName:"Composition Bay", roomCode:"R03", role:"Thirds & Margins Checker", dock:"Dock B", color:"#a5f3fc", bay:[46,48.5], work:[22,49], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Checking thirds, margins and headroom for "+b.format+".";} },
+          { id:"forge", name:"Forge", call:"R04-A", room:"render-engine", roomName:"Render Engine", roomCode:"R04", role:"Render Lead", dock:"Dock A", color:"#22d3ee", bay:[53.5,48.5], work:[42,81], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Rendering the image on canvas from the locked final prompt.";} },
+          { id:"kiln", name:"Kiln", call:"R04-B", room:"render-engine", roomName:"Render Engine", roomCode:"R04", role:"Render Core & Grain", dock:"Dock B", color:"#67e8f9", bay:[61,48.5], work:[58,84], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Firing the render core — grain and detail pass at "+b.detail+" detail.";} },
+          { id:"hone", name:"Hone", call:"R05-A", room:"detail-forge", roomName:"Detail Forge", roomCode:"R05", role:"Detail Sharpener", dock:"Dock A", color:"#c084fc", bay:[38.5,57], work:[78,48], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Sharpening detail language and resolving fine texture.";} },
+          { id:"polish", name:"Polish", call:"R05-B", room:"detail-forge", roomName:"Detail Forge", roomCode:"R05", role:"Flaw & Keep-Out Checker", dock:"Dock B", color:"#e9d5ff", bay:[46,57], work:[88,51], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return b.negative ? "Stripping keep-out items: "+b.negative+"." : "Checking for flaws — no keep-out list on this brief.";} },
+          { id:"vault", name:"Vault", call:"R06-A", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Vault Keeper", dock:"Dock A", color:"#22ff88", bay:[53.5,57], work:[78,15], speed:1.3, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Opening vault slot 1 and filing the finished image.";} },
+          { id:"courier", name:"Courier", call:"R06-B", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Image Courier — R04 to R06", dock:"Dock B", color:"#bbf7d0", bay:[61,57], work:[88,19], speed:1.8, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Carrying the finished image from the Render Engine (R04) through the bay to the Gallery Vault (R06).";} }
+        ];
+        var BAY = [50, 48];
+        CREW.forEach(function(a){ a.home=a.bay; a.status="AT BAY"; a.task=a.taskIdle; a.at="Deployment Bay \u00B7 staging"; a.last="\u2014"; a.x=a.bay[0]; a.y=a.bay[1]; a.phase=0; a.path=[]; a.onArrive=null; a.workTask=""; });
+        var selectedAgent = CREW[0];
+        var backend = { seq:0, events:[], job:null, startedAt:0, heartbeat:"\u2014" };
+        function clockTime(d){ d=d||new Date(); return d.toLocaleTimeString("en-US",{hour12:false}); }
+        function renderFeed(){
+          var feed=document.getElementById("ops-feed"); if(!feed) return; feed.innerHTML="";
+          backend.events.slice(0,18).forEach(function(ev){ var li=document.createElement("li"); var tm=document.createElement("time"); tm.textContent=ev.time; var b=document.createElement("b"); b.textContent=ev.agent.toUpperCase(); var s=document.createElement("span"); s.textContent=ev.msg; li.appendChild(tm); li.appendChild(b); li.appendChild(s); feed.appendChild(li); });
+        }
+        function emit(agent, msg){
+          backend.seq++; var ev={time:clockTime(), agent:agent?agent.name:"SYS", msg:msg}; backend.events.unshift(ev); renderFeed();
+          if(agent){ agent.last=ev.time+" \u00B7 "+msg; }
+          log((agent?agent.name.toUpperCase()+" // ":"")+msg);
+          renderCrew();
+        }
+        function pillClass(st){ return st==="WORKING"?"working":st==="DONE"?"done":st==="DEPLOYED"?"deployed":""; }
+        function roomNow(){
+          STAGE_ORDER.forEach(function(roomId){
+            var box=document.getElementById("now-"+roomId); if(!box) return;
+            var parts=[];
+            CREW.forEach(function(a){
+              if(a.room!==roomId) return;
+              var esc = a.task.replace(/</g,"&lt;");
+              var what = a.status==="WORKING" ? "working<span class=\"rn-task\"> \u2014 "+esc+"</span>" : a.status==="DEPLOYED" ? (/^(Finished|Done)/.test(a.task) ? "returning to bay\u2026" : "deploying from bay\u2026") : a.status==="DONE" ? "done \u00B7 at bay" : "at bay";
+              parts.push("<b>"+a.name.toUpperCase()+"</b> "+what);
+            });
+            box.innerHTML=parts.join("<br>");
+          });
+        }
+        function renderCrew(){
+          var grid=document.getElementById("crew-grid"); if(!grid) return;
+          var working=CREW.filter(function(a){return a.status==="WORKING"||a.status==="DEPLOYED";}).length;
+          var sc=document.getElementById("stat-crew"); if(sc) sc.textContent="CREW "+working+"/12 WORKING";
+          CREW.forEach(function(a){
+            var card=document.getElementById("crew-"+a.id); if(!card) return;
+            card.setAttribute("data-status", a.status); card.classList.toggle("selected", selectedAgent===a);
+            card.querySelector(".crew-task").textContent=a.task;
+            card.querySelector(".pill").textContent=a.status; card.querySelector(".pill").className="pill "+pillClass(a.status);
+            card.querySelector(".crew-from").textContent="DEPLOYS FROM DEPLOYMENT BAY \u2192 POST "+a.roomCode+" "+a.roomName.toUpperCase()+" \u00B7 NOW: "+a.at.toUpperCase();
+            var wrap=document.getElementById("agent-"+a.id);
+            if(wrap){
+              wrap.setAttribute("data-status", a.status); wrap.classList.toggle("selected", selectedAgent===a);
+              var t=wrap.querySelector(".agent-task");
+              if(t) t.textContent = a.status==="WORKING" ? a.task : a.status==="DEPLOYED" ? (/^(Finished|Done)/.test(a.task) ? "Returning to the bay\u2026" : "Deploying from the bay\u2026") : "";
+            }
+          });
+          roomNow();
+          // inspector
+          var a=selectedAgent;
+          var nm=document.getElementById("insp-name"); if(!nm) return;
+          nm.textContent=a.name;
+          document.getElementById("insp-role").textContent=a.role+" \u2014 "+a.roomCode+" "+a.roomName;
+          var st=document.getElementById("insp-status"); st.textContent=a.status; st.className="pill "+pillClass(a.status);
+          document.getElementById("insp-from").textContent="Deployment Bay (map centre)";
+          document.getElementById("insp-at").textContent=a.at;
+          document.getElementById("insp-task").textContent=a.task;
+          document.getElementById("insp-job").textContent=backend.job?("#"+backend.job.num+" \u00B7 "+backend.job.subject):"\u2014";
+          document.getElementById("insp-last").textContent=a.last;
+        }
+        function selectAgent(a){ selectedAgent=a; renderCrew(); }
+        function buildCrew(){
+          var grid=document.getElementById("crew-grid"); var layerA=document.getElementById("agents-layer");
+          CREW.forEach(function(a, ai){
+            var card=document.createElement("button"); card.type="button"; card.className="crew-card"; card.id="crew-"+a.id; card.setAttribute("data-status",a.status);
+            card.innerHTML='<span class="crew-top"><span class="crew-avatar"></span><span class="crew-name"></span><span class="pill"></span><span class="crew-call"></span></span><span class="crew-role" style="display:block"></span><span class="crew-task" style="display:block"></span><span class="crew-from" style="display:block"></span>';
+            card.querySelector(".crew-avatar").style.background=a.color; card.querySelector(".crew-avatar").style.color=a.color;
+            card.querySelector(".crew-name").textContent=a.name; card.querySelector(".crew-call").textContent=a.call;
+            card.querySelector(".crew-role").textContent=a.role+" \u2014 "+a.roomCode+" "+a.roomName;
+            card.querySelector(".crew-task").textContent=a.task;
+            card.addEventListener("click", function(){ selectAgent(a); document.querySelector("[aria-label=\'Live operations\']").scrollIntoView({behavior:"smooth", block:"nearest"}); });
+            grid.appendChild(card);
+            var wrap=document.createElement("div"); wrap.className="agent-wrap "+(ai%2===0?"tag-above":"tag-below")+(a.dock==="Dock B"?" lbl-below":""); wrap.id="agent-"+a.id; wrap.setAttribute("data-status",a.status); wrap.style.pointerEvents="auto";
+            wrap.innerHTML='<div class="agent-dot"></div><span class="agent-label"><span class="agent-name"></span><span class="agent-call"></span><span class="agent-task"></span></span>';
+            wrap.querySelector(".agent-dot").style.background=a.color; wrap.querySelector(".agent-dot").style.color=a.color;
+            wrap.querySelector(".agent-dot").textContent=a.name.charAt(0);
+            wrap.querySelector(".agent-name").textContent=a.name.toUpperCase();
+            wrap.querySelector(".agent-call").textContent=" \u00B7 "+a.call;
+            wrap.style.left=a.x+"%"; wrap.style.top=a.y+"%";
+            wrap.addEventListener("click", function(){ selectAgent(a); });
+            layerA.appendChild(wrap); a.el=wrap;
+          });
+          renderCrew();
+        }
+
         var STYLE_CHIPS = ["Cinematic", "Photoreal", "Anime", "Oil painting", "Watercolor", "3D render", "Pixel art", "Cyberpunk"];
         var MOOD_CHIPS = ["Golden hour", "Moody", "Bright and clean", "Dreamy", "Dark", "Serene"];
         var FORMATS = ["square", "landscape", "portrait"];
@@ -651,6 +883,8 @@
             t.appendChild(p);
           });
         }
+        buildCrew();
+        emit(null, "Backend live — 12 named agents staged at the Deployment Bay. No job yet.");
         log("SYS // image-ecosystem online — 6 rooms, agents quiet until a run fires");
         log("PAGE // MuseAi-image-ecosystem on GitHub Pages — same grid as the live space");
 
@@ -662,7 +896,7 @@
           [50, 45], [34, 45], [66, 45],
           [50, 81], [17, 81], [83, 81]
         ];
-        var TOTAL_DOTS = 30, IDLE_DOTS = 4;
+        var TOTAL_DOTS = 18, IDLE_DOTS = 4;
         var COLORS = ["#22ff88", "#22ff88", "#67e8f9", "#e6f5e9", "#ffb020"];
         var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         var dots = [];
@@ -732,12 +966,41 @@
               }
               d.el.style.transform = "translate(" + d.x + "%, " + d.y + "%)";
             });
-            el("stat-agents").textContent = "AGENTS " + count;
+            // Named agents travel their waypoint path on axis-aligned streets
+            CREW.forEach(function(a){
+              if(!a.el) return;
+              if(a.path && a.path.length){
+                var tgt = a.path[0];
+                var tx2 = a.phase===0 ? tgt[0] : a.x;
+                var ty2 = a.phase===0 ? a.y : tgt[1];
+                var dx2 = tx2-a.x, dy2 = ty2-a.y;
+                var dist2 = a.phase===0 ? Math.abs(dx2) : Math.abs(dy2);
+                var step2 = 26 * (a.speed || 1) * dt;
+                if(dist2 <= step2){
+                  if(a.phase===0){ a.x=tx2; a.phase=1; }
+                  else { a.y=ty2; a.phase=0; a.path.shift(); if(!a.path.length && a.onArrive){ var cb=a.onArrive; a.onArrive=null; cb(a); } }
+                }
+                else if(a.phase===0){ a.x += Math.sign(dx2)*step2; } else { a.y += Math.sign(dy2)*step2; }
+              }
+              a.el.style.left = a.x + "%"; a.el.style.top = a.y + "%";
+              a.el.classList.toggle("flip", a.x > 62);
+            });
+            el("stat-agents").textContent = "AGENTS " + (count + 12) + " ON GRID";
             requestAnimationFrame(tick);
           };
           requestAnimationFrame(tick);
         } else {
           dots.forEach(function (d, idx) { if (idx >= IDLE_DOTS) d.el.style.display = "none"; });
+          // Reduced motion: no animation loop, so snap agents along their paths on a slow timer
+          setInterval(function(){
+            CREW.forEach(function(a){
+              if(a.path && a.path.length){
+                var dest=a.path[a.path.length-1]; a.x=dest[0]; a.y=dest[1]; a.path=[]; a.phase=0;
+                if(a.el){ a.el.style.left=a.x+"%"; a.el.style.top=a.y+"%"; a.el.classList.toggle("flip", a.x > 62); }
+                if(a.onArrive){ var cb2=a.onArrive; a.onArrive=null; cb2(a); }
+              }
+            });
+          }, 700);
         }
 
         // ---------- Prompt building (the rooms' real work, done in-page) ----------
@@ -952,6 +1215,66 @@
           return canvas.toDataURL("image/png");
         }
 
+
+        // ---------- Dispatcher: deploy crew stage by stage ----------
+        var jobTimer = null;
+        function arriveWork(a){
+          a.status="WORKING"; a.task=a.workTask;
+          a.at=a.roomCode+" "+a.roomName+" \u00B7 workstation";
+          emit(a, "Arrived at "+a.roomCode+" "+a.roomName+" \u2014 working: "+a.task);
+          renderCrew();
+        }
+        function sendToBay(a, doneText){
+          a.status="DEPLOYED"; a.task=doneText;
+          a.at="Returning to the Deployment Bay";
+          a.path=[BAY, a.bay]; a.phase=0;
+          a.onArrive=function(x){ x.status="DONE"; x.task=doneText+" \u2014 back at the bay."; x.at="Deployment Bay \u00B7 staging"; renderCrew(); };
+        }
+        function deployStage(idx, brief, prompts){
+          CREW.forEach(function(a){
+            var roomIdx = STAGE_ORDER.indexOf(a.room);
+            if(roomIdx < idx){
+              if(a.status==="WORKING"){
+                emit(a, "Stage complete \u2014 returning to the Deployment Bay.");
+                sendToBay(a, "Finished "+a.roomCode+": "+a.taskWork(brief,prompts));
+              }
+            }
+            else if(roomIdx === idx){
+              a.workTask=a.taskWork(brief,prompts);
+              a.status="DEPLOYED";
+              a.task="Deploying from the Deployment Bay to "+a.roomCode+" "+a.roomName+"\u2026";
+              a.at="En route \u00B7 Deployment Bay \u2192 "+a.roomCode+" "+a.roomName;
+              a.phase=0;
+              a.onArrive=function(x){ arriveWork(x); };
+              if(a.id==="courier"){
+                a.path=[[42,81], BAY, a.work];
+                emit(a, "Deployed from the Deployment Bay \u2192 R04 Render Engine pickup, then on to R06 Gallery Vault with the image.");
+              } else {
+                a.path=[a.work];
+                emit(a, "Deployed from the Deployment Bay \u2192 "+a.roomCode+" "+a.roomName+".");
+              }
+            } else if(a.status==="AT BAY"){
+              a.task=a.taskIdle; a.at="Deployment Bay \u00B7 staging";
+            }
+          });
+          var jobEl=document.getElementById("job-subject"); if(jobEl && backend.job) jobEl.textContent="Job #"+backend.job.num+": "+brief.subject;
+          var prog=document.getElementById("job-progress"); if(prog) prog.style.width=Math.round(((idx+1)/6)*100)+"%";
+          var sj=document.getElementById("stat-job"); if(sj && backend.job) sj.textContent="JOB #"+backend.job.num+" \u00B7 "+STAGES[idx].name.toUpperCase();
+          renderCrew();
+        }
+        function startJobClock(){
+          if(jobTimer) clearInterval(jobTimer);
+          jobTimer=setInterval(function(){
+            var elapsed = backend.startedAt ? ((Date.now()-backend.startedAt)/1000) : 0;
+            backend.heartbeat = clockTime();
+            var meta=document.getElementById("job-meta");
+            if(meta && backend.job) meta.textContent="JOB #"+backend.job.num+" \u00B7 STAGE "+(state.stageIdx+1)+"/6 \u00B7 ELAPSED "+elapsed.toFixed(1)+"s \u00B7 HEARTBEAT "+backend.heartbeat+" \u00B7 EVENTS "+backend.seq;
+            var clk=document.getElementById("stat-clock"); if(clk) clk.textContent="LIVE "+clockTime();
+            var fl=document.getElementById("feed-live"); if(fl) fl.textContent = state.running ? "LIVE \u00B7 POLL 2s \u00B7 HB "+backend.heartbeat : "IDLE \u00B7 POLL 10s \u00B7 HB "+backend.heartbeat;
+          }, 1000);
+        }
+        startJobClock();
+
         // ---------- Run the pipeline ----------
         var runBtn = el("run-btn");
         var timers = [];
@@ -965,7 +1288,16 @@
           el("stat-runs").textContent = "RUNS " + state.runs;
           var imageUrl = renderImage(brief, prompts);
           state.lastPrompt = { brief: brief, prompts: prompts, imageUrl: imageUrl };
-          log("DONE // image generated and secured in Gallery Vault — run #" + state.runs);
+          CREW.forEach(function(a){
+            var doneText="Done on Job #"+state.runs+": "+a.taskWork(brief,prompts);
+            if(a.status==="WORKING" || a.status==="DEPLOYED"){ sendToBay(a, doneText); }
+            else { a.status="DONE"; a.task=doneText; }
+          });
+          emit(CREW[10], "Vault filed the finished image in slot 1. Job #"+state.runs+" complete.");
+          emit(null, "Job #"+state.runs+" complete in "+((Date.now()-backend.startedAt)/1000).toFixed(1)+"s \u2014 all 12 agents returning to the Deployment Bay.");
+          var prog2=document.getElementById("job-progress"); if(prog2) prog2.style.width="100%";
+          renderCrew();
+                    log("DONE // image generated and secured in Gallery Vault — run #" + state.runs);
           log("TRAFFIC // agents easing back down to idle");
           el("result-title").textContent = "OUT OF THE VAULT — RUN #" + state.runs;
           var img = el("result-img");
@@ -1022,7 +1354,11 @@
           setStageStates();
           runBtn.disabled = true;
           runBtn.textContent = "PIPELINE RUNNING…";
-          log("JOB // \"" + subject.slice(0, 42) + "\" — brief accepted by R01 Prompt Office");
+          backend.job={num: state.runs+1, subject: subject}; backend.startedAt=Date.now();
+          CREW.forEach(function(a){ a.status="AT BAY"; a.task=a.taskIdle; a.at="Deployment Bay \u00B7 staging"; a.path=[a.bay]; a.phase=0; a.onArrive=null; });
+          emit(null, "Dispatcher created Job #"+backend.job.num+" from the brief and queued all 6 stages.");
+          deployStage(0, brief, prompts);
+                    log("JOB // \"" + subject.slice(0, 42) + "\" — brief accepted by R01 Prompt Office");
           log("TRAFFIC // agents waking — traffic climbing with every stage");
           var stageMs = 2100;
           STAGE_ORDER.forEach(function (id, idx) {
@@ -1031,11 +1367,12 @@
               state.stageIdx = idx;
               setStageStates();
               var s = STAGES[idx];
+              deployStage(idx, brief, prompts);
               log("FLOW // brief moving room to room — " + s.name + " active");
               if (id === "render-engine") log("RENDER // Render Engine drawing the image from the locked prompt");
             }, stageMs * idx));
           });
-          timers.push(setTimeout(function () { finishRun(brief, prompts); }, stageMs * 5 + 500));
+          timers.push(setTimeout(function () { finishRun(brief, prompts); }, stageMs * 5 + 4000));
         });
 
         el("download-img-btn").addEventListener("click", function () {
