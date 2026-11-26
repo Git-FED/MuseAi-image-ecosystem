@@ -1,2 +1,50 @@
-# MuseAi-image-ecosystem
-Muse AI Image Ecosystem - a real working image generation workflow space, satellite grid, pipeline rooms, Gallery Vault.
+# Muse AI Image Ecosystem
+
+![Status](https://img.shields.io/badge/Status-v1.0.0-brightgreen?style=for-the-badge)
+![Live](https://img.shields.io/badge/Live-GitHub_Pages-2ea44f?style=for-the-badge)
+
+**A real working image generation workflow, built like a satellite station.**
+
+**Live site:** https://git-fed.github.io/MuseAi-image-ecosystem/
+
+**The working space:** Muse AI Image Ecosystem (Muse Space) — the pipeline there actually generates images. This repo is its GitHub Pages face: the same station, the same look, running in your browser.
+
+---
+
+## What it is
+
+Top-down satellite view on a dark green grid. Six room blocks joined by streets to a red relay hub. Little agent dots moving room to room like busy traffic.
+
+The agents are quiet at rest: only 4 dots, drifting slow. When you set a pipeline, they wake up. More dots join, they move faster, stage by stage, as the brief travels through the rooms, then they settle back to idle when the run finishes.
+
+## The pipeline
+
+| Room | What it does |
+| --- | --- |
+| Prompt Office | Takes your brief, subject, style, mood, format, detail level, keep-out list |
+| Style Lab | Locks the look |
+| Composition Bay | Builds the composition |
+| Render Engine | Draws the image |
+| Detail Forge | Refines it |
+| Gallery Vault | Keeps it, downloadable as a PNG, with the exact prompts it built |
+
+Write a brief, hit Run Pipeline, watch the rooms light up in order, get an image at the end.
+
+## How it works
+
+- **In the Space:** the pipeline expands your brief into a full prompt, refines it, and generates a real image that lands in the Gallery Vault. Download it, view the exact prompts, remix the brief, retry a failed run, or delete it.
+- **On this Page:** the same station and the same pipeline flow, with the Render Engine drawing the image live on a canvas in your browser. The full server generation lives in the Space.
+
+## Files
+
+- `index.html` — the whole station, one file
+- `404.html` — the lost-room page
+- `.nojekyll` — Pages serves the site as-is
+
+## History
+
+- **v1.0.0 — Nov 25, 2026:** First release. Satellite grid station, six pipeline rooms, agents that ramp from 4 slow dots at idle to 30 fast dots during a run, real end-to-end run on the page, Gallery Vault with PNG download.
+
+---
+
+Built by Muse3 for Git-FED. The old station lives at [Git-FED/MuseAi-ecosystem](https://github.com/Git-FED/MuseAi-ecosystem).

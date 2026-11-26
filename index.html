@@ -1,0 +1,1094 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="data:," />
+    <title>Muse AI Image Ecosystem — Git-FED/MuseAi-image-ecosystem</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #050a07;
+        --surface: #0d1510;
+        --surface2: #111c14;
+        --text: #e6f5e9;
+        --dim: #8aa892;
+        --faint: #54705c;
+        --border: #1e3324;
+        --accent: #22ff88;
+        --accent-dim: #0f3d24;
+        --amber: #ffb020;
+        --cyan: #67e8f9;
+        --red: #ff5a4e;
+        --red-soft: #ff9a92;
+        --radius: 10px;
+        --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      .mono { font-family: var(--mono); }
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      a { color: var(--accent); }
+      :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+      .wrap { margin: 0 auto; width: 100%; max-width: 64rem; padding: 0 12px 40px; }
+      @media (min-width: 640px) { .wrap { padding: 0 16px 48px; } }
+
+      /* Status strip */
+      .status-strip {
+        display: flex; flex-wrap: wrap; align-items: center;
+        gap: 4px 16px; padding-top: 12px;
+        font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--dim);
+      }
+      .status-strip .online { display: flex; align-items: center; gap: 6px; color: var(--accent); }
+      .blink-dot { display: inline-block; width: 8px; height: 8px; border-radius: 999px; background: var(--accent); animation: blink-dot 1.1s step-end infinite; }
+      .status-strip .spacer { margin-left: auto; }
+      @media (max-width: 639px) { .status-strip .spacer { display: none; } }
+
+      /* Repo bar */
+      .repo-bar {
+        margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+        border: 1px solid var(--border); border-radius: var(--radius);
+        background: var(--surface); padding: 10px 14px;
+      }
+      .repo-path { font-family: var(--mono); font-size: 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+      .repo-path a { text-decoration: none; }
+      .repo-path a:hover { text-decoration: underline; }
+      .repo-path .sep { color: var(--dim); }
+      .repo-path .name { font-weight: 700; }
+      .badge {
+        font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+        border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; color: var(--dim);
+      }
+      .repo-links { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+      .repo-links a {
+        font-family: var(--mono); font-size: 12px; font-weight: 700; text-decoration: none;
+        display: inline-flex; align-items: center; min-height: 36px;
+        border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px;
+        background: var(--surface2); color: var(--text);
+      }
+      .repo-links a.primary { background: var(--accent); border-color: var(--accent); color: #000; }
+
+      .repo-desc { margin: 12px 2px 0; font-size: 14px; color: var(--dim); max-width: 46rem; }
+      .repo-desc strong { color: var(--text); }
+
+      /* Satellite map */
+      .map {
+        position: relative; margin-top: 14px; height: 380px; overflow: hidden;
+        border: 1px solid var(--border); border-radius: var(--radius); background: #070d09;
+        background-image:
+          linear-gradient(rgba(34,255,136,0.055) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(34,255,136,0.055) 1px, transparent 1px);
+        background-size: 26px 26px;
+      }
+      @media (min-width: 640px) { .map { height: 440px; } }
+      .street-h { position: absolute; left: 0; width: 100%; background: rgba(255,255,255,0.045); }
+      .street-v { position: absolute; top: 0; height: 100%; background: rgba(255,255,255,0.045); }
+      .street-line-h { position: absolute; left: 0; width: 100%; height: 1px; background: rgba(34,255,136,0.15); }
+      .room {
+        position: absolute; border: 1px solid #2a4633; border-radius: 6px; padding: 6px;
+        background: rgba(13,21,16,0.92); transition: border-color 0.5s, box-shadow 0.5s;
+        overflow: hidden;
+      }
+      .room.render { background: rgba(10,30,36,0.92); box-shadow: 0 0 16px rgba(103,232,249,0.18); }
+      .room.gallery { background: rgba(10,32,18,0.95); box-shadow: 0 0 18px rgba(34,255,136,0.22); }
+      .room[data-state="active"] { border-color: var(--amber); box-shadow: 0 0 16px rgba(255,176,32,0.35); }
+      .room[data-state="done"] { border-color: var(--accent); }
+      .room[data-state="failed"] { border-color: var(--red); }
+      .room-head { font-family: var(--mono); display: flex; align-items: baseline; justify-content: space-between; gap: 4px; }
+      .room-code { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
+      .room-state { font-size: 8px; letter-spacing: 0.12em; color: var(--dim); }
+      .room[data-state="active"] .room-state { color: var(--amber); }
+      .room[data-state="done"] .room-state { color: var(--accent); }
+      .room[data-state="failed"] .room-state { color: var(--red); }
+      .room-name { font-family: var(--mono); font-size: 10px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      @media (min-width: 640px) { .room-name { font-size: 11px; } }
+      .hub {
+        position: absolute; display: flex; align-items: center; justify-content: center;
+        border: 1px solid rgba(255,90,78,0.5); border-radius: 6px; background: rgba(42,15,12,0.9);
+      }
+      .hub-dot { width: 12px; height: 12px; border-radius: 999px; background: var(--red); box-shadow: 0 0 10px rgba(255,90,78,0.8); margin: 0 auto; }
+      .hub-label { font-family: var(--mono); margin-top: 4px; font-size: 8px; font-weight: 700; letter-spacing: 0.12em; color: #ff9a92; text-align: center; }
+      .dots-layer { pointer-events: none; position: absolute; inset: 0; }
+      .dot-wrap { position: absolute; left: 0; top: 0; width: 100%; height: 100%; will-change: transform; }
+      .dot { border-radius: 999px; }
+
+      /* Room interiors */
+      .in-lines { margin-top: 6px; padding: 0 2px; display: grid; gap: 4px; }
+      .in-lines div { height: 3px; border-radius: 2px; background: rgba(34,255,136,0.5); }
+      .in-swatches { margin-top: 6px; padding: 0 2px; display: flex; gap: 4px; flex-wrap: wrap; }
+      .in-swatches div { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.2); }
+      .in-frame { position: relative; margin: 6px 2px 0; height: 32px; border: 1px dashed rgba(103,232,249,0.5); }
+      .in-frame .v { position: absolute; left: 50%; top: 0; height: 100%; width: 1px; background: rgba(103,232,249,0.3); }
+      .in-frame .h { position: absolute; left: 0; top: 50%; width: 100%; height: 1px; background: rgba(103,232,249,0.3); }
+      .in-frame .c { position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; transform: translate(-50%,-50%); border-radius: 999px; border: 1px solid var(--cyan); }
+      .in-render { display: flex; align-items: center; gap: 12px; padding: 4px 4px 0; }
+      .render-core {
+        width: 36px; height: 36px; flex-shrink: 0; border-radius: 999px;
+        border: 2px solid var(--cyan); background: rgba(103,232,249,0.25);
+        box-shadow: 0 0 18px rgba(103,232,249,0.7); animation: pulse-core 1.6s ease-in-out infinite;
+      }
+      .in-bars { display: flex; flex: 1; align-items: flex-end; gap: 4px; }
+      .in-bars div { width: 100%; border-radius: 2px 2px 0 0; background: rgba(103,232,249,0.6); }
+      .in-sliders { margin-top: 6px; padding: 0 2px; display: grid; gap: 6px; }
+      .in-sliders .track { position: relative; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.15); }
+      .in-sliders .knob { position: absolute; top: 50%; width: 8px; height: 8px; transform: translateY(-50%); border-radius: 999px; background: var(--amber); }
+      .in-vault { margin-top: 6px; padding: 0 2px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+      .in-vault div { height: 24px; border-radius: 4px; border: 1px solid rgba(34,255,136,0.25); background: rgba(34,255,136,0.05); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 8px; letter-spacing: 0.1em; color: var(--dim); overflow: hidden; padding: 0; }
+      .in-vault div.filled { border-color: rgba(34,255,136,0.6); }
+      .in-vault img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+      /* Terminal log */
+      .terminal {
+        font-family: var(--mono); margin-top: 8px; border: 1px solid var(--border); border-radius: var(--radius);
+        background: rgba(0,0,0,0.5); padding: 8px 12px; font-size: 11px; line-height: 1.7; color: #9fe8bb;
+        min-height: 104px;
+      }
+      .terminal p { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+      /* Layout below map */
+      .cols { margin-top: 20px; display: grid; gap: 24px; }
+      @media (min-width: 1024px) { .cols { grid-template-columns: 1fr 380px; } }
+      h2.sec {
+        font-family: var(--mono); font-size: 14px; font-weight: 700; letter-spacing: 0.12em;
+        color: var(--accent); margin: 0;
+      }
+      .sub { margin: 4px 0 0; font-size: 14px; color: var(--dim); }
+      .flabel { font-family: var(--mono); display: block; margin-top: 16px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
+      textarea, input[type="text"] {
+        width: 100%; margin-top: 6px; border: 1px solid var(--border); border-radius: var(--radius);
+        background: var(--surface); padding: 10px 12px; color: var(--text); font: inherit;
+      }
+      textarea { font-size: 16px; resize: vertical; }
+      input[type="text"] { font-size: 14px; }
+      textarea::placeholder, input::placeholder { color: var(--faint); }
+      textarea:focus, input[type="text"]:focus { border-color: var(--accent); outline: none; }
+      .field-error { margin: 4px 0 0; font-size: 14px; color: var(--red-soft); }
+      .chips { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+      .chip {
+        border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; font-size: 14px;
+        background: var(--surface); color: var(--text); cursor: pointer; min-height: 36px;
+      }
+      .chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+      .seg { margin-top: 6px; display: flex; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); }
+      .seg button {
+        flex: 1; padding: 8px; font-size: 14px; text-transform: capitalize; cursor: pointer;
+        background: var(--surface); color: var(--text); border: 0; min-height: 40px;
+      }
+      .seg button[aria-pressed="true"] { background: var(--accent-dim); color: var(--accent); }
+      .seg-grid { display: grid; gap: 12px; margin-top: 16px; }
+      @media (min-width: 640px) { .seg-grid { grid-template-columns: 1fr 1fr; } }
+      .seg-grid .flabel { margin-top: 0; }
+      .run-btn {
+        font-family: var(--mono); margin-top: 16px; width: 100%; border: 0; border-radius: var(--radius);
+        background: var(--accent); padding: 14px 16px; font-size: 16px; font-weight: 700; letter-spacing: 0.12em;
+        color: #000; cursor: pointer; min-height: 52px;
+      }
+      .run-btn:disabled { opacity: 0.5; cursor: default; }
+      .run-note { margin: 8px 0 0; text-align: center; font-size: 12px; color: var(--dim); }
+      .form-error {
+        margin-top: 12px; border: 1px solid rgba(255,90,78,0.4); background: rgba(255,90,78,0.1);
+        border-radius: var(--radius); padding: 8px 12px; font-size: 14px; color: var(--red-soft);
+      }
+
+      /* Pipeline list */
+      .pipe { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+      .pipe li {
+        display: flex; align-items: flex-start; gap: 10px; border: 1px solid var(--border);
+        border-radius: var(--radius); background: var(--surface); padding: 8px 12px;
+      }
+      .pipe li[data-state="active"] { border-color: rgba(255,176,32,0.6); background: rgba(255,176,32,0.05); }
+      .pipe li[data-state="done"] { border-color: rgba(34,255,136,0.4); background: rgba(34,255,136,0.05); }
+      .pipe .code {
+        font-family: var(--mono); margin-top: 2px; display: flex; width: 36px; height: 24px; flex-shrink: 0;
+        align-items: center; justify-content: center; border-radius: 4px; font-size: 10px; font-weight: 700;
+        background: rgba(255,255,255,0.1); color: var(--dim);
+      }
+      .pipe li[data-state="active"] .code { background: var(--amber); color: #000; }
+      .pipe li[data-state="done"] .code { background: var(--accent); color: #000; }
+      .pipe .pname { display: block; font-size: 14px; font-weight: 500; line-height: 1.3; }
+      .pipe .ptask { display: block; font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .pipe .pstate { font-family: var(--mono); margin-left: auto; flex-shrink: 0; font-size: 10px; letter-spacing: 0.12em; color: var(--dim); padding-top: 4px; }
+
+      /* Result / prompt output */
+      .result { margin-top: 16px; }
+      .result h3 { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); margin: 0; }
+      .result-img { margin-top: 8px; width: 100%; border-radius: var(--radius); border: 1px solid rgba(34,255,136,0.4); display: block; background: #000; }
+      .result-meta { font-family: var(--mono); margin: 6px 0 0; font-size: 11px; color: var(--dim); overflow-wrap: anywhere; }
+      .prompt-box {
+        font-family: var(--mono); margin-top: 8px; border: 1px solid var(--border); border-radius: var(--radius);
+        background: rgba(0,0,0,0.4); padding: 10px 12px; font-size: 11px; line-height: 1.7; color: #9fe8bb;
+        display: grid; gap: 8px; overflow-wrap: anywhere;
+      }
+      .prompt-box .k { color: var(--dim); }
+      .prompt-box p { margin: 0; }
+      .btn-row { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+      .btn {
+        font-family: var(--mono); display: inline-flex; align-items: center; min-height: 40px;
+        border-radius: var(--radius); padding: 8px 14px; font-size: 14px; font-weight: 700;
+        border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;
+        text-decoration: none;
+      }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #000; }
+      .empty-note {
+        margin-top: 16px; border: 1px dashed var(--border); border-radius: var(--radius);
+        padding: 16px 12px; text-align: center; font-size: 14px; color: var(--dim);
+      }
+      .copied { font-family: var(--mono); font-size: 11px; color: var(--accent); align-self: center; }
+
+      /* README / repo sections */
+      .section { margin-top: 36px; }
+      .readme {
+        margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius);
+        background: var(--surface); padding: 18px;
+      }
+      .readme h3 { font-family: var(--mono); font-size: 13px; letter-spacing: 0.1em; color: var(--accent); margin: 20px 0 8px; }
+      .readme h3:first-child { margin-top: 0; }
+      .readme p { margin: 0 0 10px; font-size: 14px; color: #c9e6d0; }
+      .readme ul { margin: 0 0 10px; padding-left: 20px; font-size: 14px; color: #c9e6d0; }
+      .readme li { margin-bottom: 4px; }
+      .readme code { font-family: var(--mono); font-size: 12px; background: rgba(34,255,136,0.1); padding: 1px 5px; border-radius: 4px; color: var(--accent); }
+      .files { margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+      .files table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--surface); }
+      .files th {
+        font-family: var(--mono); text-align: left; font-size: 11px; letter-spacing: 0.1em; color: var(--dim);
+        padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--surface2);
+      }
+      .files td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+      .files tr:last-child td { border-bottom: 0; }
+      .files .fname { font-family: var(--mono); font-size: 13px; color: var(--text); white-space: nowrap; }
+      .files .fdesc { color: var(--dim); font-size: 13px; }
+      @media (max-width: 560px) {
+        .files .fdesc { display: none; }
+        .files th.desc { display: none; }
+      }
+      footer {
+        margin-top: 40px; border-top: 1px solid var(--border); padding-top: 16px;
+        font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--dim);
+        display: flex; flex-wrap: wrap; gap: 6px 18px;
+      }
+      footer a { color: var(--dim); }
+      footer a:hover { color: var(--accent); }
+
+      @keyframes pulse-core { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.18); opacity: 1; } }
+      @keyframes blink-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+      @media (prefers-reduced-motion: reduce) {
+        .render-core, .blink-dot { animation: none; }
+        html { scroll-behavior: auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <!-- Status strip -->
+      <div class="status-strip" aria-label="System status">
+        <span class="online"><span class="blink-dot" aria-hidden="true"></span> SYS ONLINE</span>
+        <span>ROOMS 6</span>
+        <span id="stat-runs">RUNS 0</span>
+        <span id="stat-agents">AGENTS 4</span>
+        <span class="spacer">GRID // SAT-VIEW</span>
+      </div>
+
+      <!-- Repo bar -->
+      <div class="repo-bar">
+        <div class="repo-path">
+          <a href="https://github.com/Git-FED">Git-FED</a>
+          <span class="sep">/</span>
+          <a class="name" href="https://github.com/Git-FED/MuseAi-image-ecosystem">MuseAi-image-ecosystem</a>
+          <span class="badge">Public</span>
+          <span class="badge">GitHub Pages</span>
+        </div>
+        <div class="repo-links">
+          <a href="https://github.com/Git-FED/MuseAi-image-ecosystem">View repository</a>
+          <a class="primary" href="#brief">Run the pipeline</a>
+        </div>
+      </div>
+      <p class="repo-desc">
+        <strong>Muse AI Image Ecosystem.</strong> A working image-generation pipeline drawn as a satellite
+        grid: six rooms, one relay hub, and a crew of agent dots that stay quiet until a brief fires —
+        then they wake up, multiply, and move the job room to room until a finished image comes out.
+      </p>
+
+      <!-- Satellite grid map -->
+      <section class="map" aria-label="Ecosystem map">
+        <div class="street-h" style="top:31%;height:7%" aria-hidden="true"></div>
+        <div class="street-h" style="top:63%;height:7%" aria-hidden="true"></div>
+        <div class="street-v" style="left:32%;width:4%" aria-hidden="true"></div>
+        <div class="street-v" style="left:64%;width:4%" aria-hidden="true"></div>
+        <div class="street-line-h" style="top:34.5%" aria-hidden="true"></div>
+        <div class="street-line-h" style="top:66.5%" aria-hidden="true"></div>
+
+        <div class="room" id="room-prompt-office" data-state="idle" style="left:2%;top:3%;width:30%;height:25%">
+          <div class="room-head"><span class="room-code">R01</span><span class="room-state">IDLE</span></div>
+          <div class="room-name">Prompt Office</div>
+          <div class="in-lines" aria-hidden="true"><div style="width:92%"></div><div style="width:74%"></div><div style="width:84%"></div><div style="width:58%"></div></div>
+        </div>
+
+        <div class="room" id="room-style-lab" data-state="idle" style="left:36%;top:3%;width:28%;height:25%">
+          <div class="room-head"><span class="room-code">R02</span><span class="room-state">IDLE</span></div>
+          <div class="room-name">Style Lab</div>
+          <div class="in-swatches" aria-hidden="true">
+            <div style="background:#ffb020"></div><div style="background:#67e8f9"></div><div style="background:#ff5a4e"></div>
+            <div style="background:#22ff88"></div><div style="background:#c084fc"></div><div style="background:#e6f5e9"></div>
+          </div>
+        </div>
+
+        <div class="room gallery" id="room-gallery-vault" data-state="idle" style="left:68%;top:3%;width:30%;height:30%">
+          <div class="room-head"><span class="room-code">R06</span><span class="room-state">IDLE</span></div>
+          <div class="room-name">Gallery Vault</div>
+          <div class="in-vault" aria-hidden="true"><div class="vault-tile">EMPTY</div><div class="vault-tile">EMPTY</div><div class="vault-tile">EMPTY</div><div class="vault-tile">EMPTY</div></div>
+        </div>
+
+        <div class="room" id="room-composition-bay" data-state="idle" style="left:2%;top:35%;width:30%;height:25%">
+          <div class="room-head"><span class="room-code">R03</span><span class="room-state">IDLE</span></div>
+          <div class="room-name">Composition Bay</div>
+          <div class="in-frame" aria-hidden="true"><div class="v"></div><div class="h"></div><div class="c"></div></div>
+        </div>
+
+        <div class="hub" style="left:41%;top:37%;width:18%;height:17%" aria-hidden="true">
+          <div><div class="hub-dot"></div><div class="hub-label">RELAY</div></div>
+        </div>
+
+        <div class="room" id="room-detail-forge" data-state="idle" style="left:68%;top:40%;width:30%;height:21%">
+          <div class="room-head"><span class="room-code">R05</span><span class="room-state">IDLE</span></div>
+          <div class="room-name">Detail Forge</div>
+          <div class="in-sliders" aria-hidden="true">
+            <div class="track"><div class="knob" style="left:80%"></div></div>
+            <div class="track"><div class="knob" style="left:55%"></div></div>
+            <div class="track"><div class="knob" style="left:90%"></div></div>
+          </div>
+        </div>
+
+        <div class="room render" id="room-render-engine" data-state="idle" style="left:18%;top:67%;width:64%;height:29%">
+          <div class="room-head"><span class="room-code">R04</span><span class="room-state">IDLE</span></div>
+          <div class="room-name">Render Engine</div>
+          <div class="in-render" aria-hidden="true">
+            <div class="render-core"></div>
+            <div class="in-bars">
+              <div style="height:11px"></div><div style="height:21px"></div><div style="height:15px"></div><div style="height:27px"></div>
+              <div style="height:18px"></div><div style="height:24px"></div><div style="height:14px"></div><div style="height:20px"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dots-layer" id="dots-layer" aria-hidden="true"></div>
+      </section>
+
+      <!-- Terminal log -->
+      <section class="terminal" aria-label="Terminal log" id="terminal"></section>
+
+      <div class="cols">
+        <!-- Brief / control room -->
+        <div id="brief">
+          <h2 class="sec">NEW BRIEF</h2>
+          <p class="sub">Describe the picture. The rooms work it in order — Prompt Office expands the brief, Style Lab locks the look, Composition Bay frames it, Render Engine generates the image, Detail Forge sharpens it — and the finished image lands in the vault panel with the exact prompt the rooms built.</p>
+
+          <label class="flabel" for="subject">WHAT SHOULD IT MAKE?</label>
+          <textarea id="subject" rows="3" placeholder="A lighthouse keeper's cottage on a cliff at stormy dusk, waves below…"></textarea>
+          <p class="field-error" id="subject-error" hidden>Give the ecosystem something to make — one sentence is enough.</p>
+
+          <span class="flabel" id="style-label">STYLE — R02 STYLE LAB</span>
+          <div class="chips" role="group" aria-labelledby="style-label" id="style-chips"></div>
+          <label class="flabel" for="custom-style" style="margin-top:10px">OR YOUR OWN STYLE</label>
+          <input type="text" id="custom-style" placeholder="Type your own style…" />
+
+          <span class="flabel" id="mood-label">MOOD</span>
+          <div class="chips" role="group" aria-labelledby="mood-label" id="mood-chips"></div>
+          <label class="flabel" for="custom-mood" style="margin-top:10px">OR YOUR OWN MOOD</label>
+          <input type="text" id="custom-mood" placeholder="Type your own mood…" />
+
+          <div class="seg-grid">
+            <div>
+              <span class="flabel" id="format-label">FORMAT</span>
+              <div class="seg" role="group" aria-labelledby="format-label" id="format-seg"></div>
+            </div>
+            <div>
+              <span class="flabel" id="detail-label">DETAIL</span>
+              <div class="seg" role="group" aria-labelledby="detail-label" id="detail-seg"></div>
+            </div>
+          </div>
+
+          <label class="flabel" for="details">EXTRA DETAILS (OPTIONAL)</label>
+          <textarea id="details" rows="2" placeholder="Camera angle, colours, objects that must appear…"></textarea>
+
+          <label class="flabel" for="negative">KEEP OUT (OPTIONAL)</label>
+          <input type="text" id="negative" placeholder="People, cars, text…" />
+
+          <p class="form-error" id="form-error" hidden></p>
+
+          <button type="button" class="run-btn" id="run-btn">RUN PIPELINE</button>
+          <p class="run-note">Watch the grid: the agents are few and slow at rest. Fire a run and they swarm.</p>
+        </div>
+
+        <!-- Pipeline status + result -->
+        <div>
+          <h2 class="sec">PIPELINE</h2>
+          <ol class="pipe" id="pipe-list"></ol>
+
+          <div class="result" id="result" hidden>
+            <h3 id="result-title">OUT OF THE VAULT — LATEST IMAGE</h3>
+            <img class="result-img" id="result-img" alt="" />
+            <p class="result-meta" id="result-meta"></p>
+            <div class="btn-row">
+              <button type="button" class="btn primary" id="download-img-btn">DOWNLOAD IMAGE</button>
+              <button type="button" class="btn" id="copy-btn">COPY PROMPT</button>
+              <button type="button" class="btn" id="download-btn">PROMPT .TXT</button>
+              <span class="copied" id="copied-note" hidden>COPIED</span>
+            </div>
+            <div class="prompt-box" id="prompt-box" style="margin-top:12px"></div>
+            <p class="sub" style="margin-top:10px">The Render Engine draws each image live on a canvas in your browser, driven by your brief and the palette the Style Lab locked — so this static Pages build hands you a real image file with no server behind it. The prompt the rooms built is shown with it, ready to copy.</p>
+          </div>
+
+          <p class="empty-note" id="empty-note">No run yet. The vault panel fills in here when a pipeline finishes.</p>
+        </div>
+      </div>
+
+      <!-- Repository files -->
+      <section class="section" aria-label="Repository files">
+        <h2 class="sec">REPOSITORY</h2>
+        <div class="files">
+          <table>
+            <thead><tr><th scope="col">File</th><th scope="col" class="desc">What it is</th></tr></thead>
+            <tbody>
+              <tr><td class="fname">index.html</td><td class="fdesc">This page — the whole ecosystem as one static file, served by GitHub Pages</td></tr>
+              <tr><td class="fname">README.md</td><td class="fdesc">What the ecosystem is, how a run moves through the rooms, and how the agents behave</td></tr>
+              <tr><td class="fname">assets/</td><td class="fdesc">Static assets served alongside the page</td></tr>
+              <tr><td class="fname">.nojekyll</td><td class="fdesc">Tells GitHub Pages to serve the files exactly as they are</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- README -->
+      <section class="section" aria-label="Readme">
+        <h2 class="sec">README</h2>
+        <div class="readme">
+          <h3>WHAT IT IS</h3>
+          <p>The Muse AI Image Ecosystem is a working image pipeline drawn the way the ecosystem is supposed to look: a top-down satellite view on a dark grid, rooms as blocks, corridors like streets, and AI agents as little moving dots travelling room to room. You write a brief; the ecosystem turns it into a finished image, stage by stage, in the open — and shows you the exact prompt it built along the way.</p>
+          <h3>THE SIX ROOMS</h3>
+          <ul>
+            <li><code>R01 Prompt Office</code> — expands your one-line brief into a full descriptive prompt.</li>
+            <li><code>R02 Style Lab</code> — locks the style, mood, lighting and palette.</li>
+            <li><code>R03 Composition Bay</code> — frames the shot for the format you picked: square, landscape or portrait.</li>
+            <li><code>R04 Render Engine</code> — generates the image; on this Pages build it renders live on a canvas in your browser, driven by your brief.</li>
+            <li><code>R05 Detail Forge</code> — sharpens detail language and applies your keep-out list.</li>
+            <li><code>R06 Gallery Vault</code> — where finished work lands.</li>
+          </ul>
+          <h3>HOW THE AGENTS BEHAVE</h3>
+          <p>At rest the grid is quiet: <code>4 agents</code>, drifting slowly along the streets. The moment a pipeline run fires, traffic ramps with every stage — more dots join the grid and every dot speeds up, up to all <code>30 agents</code> at full pace while the Render Engine works. When the run ends, the grid settles back down to idle. The agent count in the status strip is live.</p>
+          <h3>RUN IT</h3>
+          <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, and it appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
+        </div>
+      </section>
+
+      <footer>
+        <span>Git-FED / MuseAi-image-ecosystem</span>
+        <a href="https://github.com/Git-FED/MuseAi-image-ecosystem">github.com/Git-FED/MuseAi-image-ecosystem</a>
+        <a href="https://git-fed.github.io/MuseAi-image-ecosystem/">git-fed.github.io/MuseAi-image-ecosystem</a>
+        <span>GRID // SAT-VIEW</span>
+      </footer>
+    </main>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var STAGES = [
+          { id: "prompt-office", code: "R01", name: "Prompt Office", task: "Expands your brief into a full prompt" },
+          { id: "style-lab", code: "R02", name: "Style Lab", task: "Locks style, mood, lighting and palette" },
+          { id: "composition-bay", code: "R03", name: "Composition Bay", task: "Frames the shot for your format" },
+          { id: "render-engine", code: "R04", name: "Render Engine", task: "Generates the actual image" },
+          { id: "detail-forge", code: "R05", name: "Detail Forge", task: "Refines detail and strips flaws" },
+          { id: "gallery-vault", code: "R06", name: "Gallery Vault", task: "Finished work lands in the vault" }
+        ];
+        var STAGE_ORDER = ["prompt-office", "style-lab", "composition-bay", "render-engine", "detail-forge", "gallery-vault"];
+        var STYLE_CHIPS = ["Cinematic", "Photoreal", "Anime", "Oil painting", "Watercolor", "3D render", "Pixel art", "Cyberpunk"];
+        var MOOD_CHIPS = ["Golden hour", "Moody", "Bright and clean", "Dreamy", "Dark", "Serene"];
+        var FORMATS = ["square", "landscape", "portrait"];
+        var DETAILS = ["medium", "high", "ultra"];
+
+        var STYLE_WORDS = {
+          "Cinematic": "cinematic composition, dramatic motivated lighting, shallow depth of field, film-grade colour",
+          "Photoreal": "photorealistic, shot on a full-frame camera, natural skin and material texture, true-to-life colour",
+          "Anime": "clean anime illustration, bold linework, cel shading, expressive colour palette",
+          "Oil painting": "classical oil painting, visible brushwork, rich impasto texture, deep warm tones",
+          "Watercolor": "loose watercolor painting, soft pigment blooms, visible paper texture, gentle washes",
+          "3D render": "polished 3D render, soft studio lighting, clean materials, high-poly detail",
+          "Pixel art": "detailed pixel art, limited palette, crisp clusters, retro game sprite clarity",
+          "Cyberpunk": "cyberpunk neon-noir, rain-slick surfaces, magenta and cyan glow, dense atmosphere"
+        };
+        var MOOD_WORDS = {
+          "Golden hour": "bathed in warm golden-hour light, long soft shadows, calm and hopeful",
+          "Moody": "low-key moody atmosphere, deep shadows, restrained colour, quiet tension",
+          "Bright and clean": "bright, clean and airy, even daylight, fresh uncluttered feel",
+          "Dreamy": "dreamy and ethereal, soft haze, gentle glow, slightly surreal calm",
+          "Dark": "dark and brooding, heavy shadow, a single hard light source, ominous stillness",
+          "Serene": "serene and peaceful, soft even light, balanced calm composition"
+        };
+        var FORMAT_WORDS = {
+          square: "square 1:1 frame, centred subject with balanced margins on all sides",
+          landscape: "wide 16:9 landscape frame, subject placed on a thirds intersection with room to breathe",
+          portrait: "vertical 4:5 portrait frame, subject stacked with headroom and a strong vertical lead line"
+        };
+        var DETAIL_WORDS = {
+          medium: "clean, clear detail with no visual noise",
+          high: "highly detailed, fine texture work, crisp edges throughout",
+          ultra: "ultra-detailed, intricate micro-texture, every surface resolved, maximum sharpness"
+        };
+
+        // ---------- Form state ----------
+        var state = {
+          styleSel: "Cinematic", moodSel: "Golden hour",
+          format: "square", detail: "high",
+          running: false, stageIdx: -1, runs: 0,
+          activity: 0, lastPrompt: null
+        };
+
+        function el(id) { return document.getElementById(id); }
+
+        function buildChips(containerId, chips, key) {
+          var box = el(containerId);
+          chips.forEach(function (chip) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.className = "chip";
+            b.textContent = chip;
+            b.setAttribute("aria-label", (key === "styleSel" ? "Style " : "Mood ") + chip);
+            b.setAttribute("aria-pressed", state[key] === chip ? "true" : "false");
+            b.addEventListener("click", function () {
+              state[key] = chip;
+              if (key === "styleSel") el("custom-style").value = "";
+              else el("custom-mood").value = "";
+              refreshChips(containerId, key);
+            });
+            box.appendChild(b);
+          });
+        }
+        function refreshChips(containerId, key) {
+          var custom = key === "styleSel" ? el("custom-style").value.trim() : el("custom-mood").value.trim();
+          var box = el(containerId);
+          Array.prototype.forEach.call(box.children, function (b) {
+            b.setAttribute("aria-pressed", (!custom && b.textContent === state[key]) ? "true" : "false");
+          });
+        }
+        function buildSeg(containerId, options, key) {
+          var box = el(containerId);
+          options.forEach(function (opt) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.textContent = opt;
+            b.setAttribute("aria-label", (key === "format" ? "Format " : "Detail ") + opt);
+            b.setAttribute("aria-pressed", state[key] === opt ? "true" : "false");
+            b.addEventListener("click", function () {
+              state[key] = opt;
+              Array.prototype.forEach.call(box.children, function (c) {
+                c.setAttribute("aria-pressed", c.textContent === opt ? "true" : "false");
+              });
+            });
+            box.appendChild(b);
+          });
+        }
+        buildChips("style-chips", STYLE_CHIPS, "styleSel");
+        buildChips("mood-chips", MOOD_CHIPS, "moodSel");
+        buildSeg("format-seg", FORMATS, "format");
+        buildSeg("detail-seg", DETAILS, "detail");
+        el("custom-style").addEventListener("input", function () { refreshChips("style-chips", "styleSel"); });
+        el("custom-mood").addEventListener("input", function () { refreshChips("mood-chips", "moodSel"); });
+
+        // ---------- Pipeline list ----------
+        var pipeList = el("pipe-list");
+        STAGES.forEach(function (s) {
+          var li = document.createElement("li");
+          li.id = "pipe-" + s.id;
+          li.setAttribute("data-state", "idle");
+          li.innerHTML = '<span class="code"></span><span style="min-width:0"><span class="pname"></span><span class="ptask"></span></span><span class="pstate"></span>';
+          li.querySelector(".code").textContent = s.code;
+          li.querySelector(".pname").textContent = s.name;
+          li.querySelector(".ptask").textContent = s.task;
+          pipeList.appendChild(li);
+        });
+
+        function setStageStates() {
+          STAGE_ORDER.forEach(function (id, idx) {
+            var st = "idle";
+            if (state.running) st = idx < state.stageIdx ? "done" : idx === state.stageIdx ? "active" : "idle";
+            else if (state.stageIdx >= 5) st = "done";
+            else if (state.stageIdx >= 0) st = idx <= state.stageIdx ? "done" : "idle";
+            var room = el("room-" + id);
+            if (room) {
+              room.setAttribute("data-state", st);
+              room.querySelector(".room-state").textContent = st === "active" ? "WORKING" : st === "done" ? "DONE" : "IDLE";
+            }
+            var li = el("pipe-" + id);
+            if (li) {
+              li.setAttribute("data-state", st);
+              li.querySelector(".pstate").textContent = st === "active" ? "WORKING" : st === "done" ? "DONE" : "";
+            }
+          });
+        }
+
+        // ---------- Terminal ----------
+        var termLines = [];
+        function log(line) {
+          termLines.push(line);
+          if (termLines.length > 5) termLines = termLines.slice(-5);
+          var t = el("terminal");
+          t.innerHTML = "";
+          termLines.forEach(function (l) {
+            var p = document.createElement("p");
+            p.textContent = "> " + l;
+            t.appendChild(p);
+          });
+        }
+        log("SYS // image-ecosystem online — 6 rooms, agents quiet until a run fires");
+        log("PAGE // MuseAi-image-ecosystem on GitHub Pages — same grid as the live space");
+
+        // ---------- Agent dots ----------
+        var NODES = [
+          [34, 31], [50, 31], [66, 31],
+          [34, 63], [50, 63], [66, 63],
+          [17, 31], [83, 31], [17, 63], [83, 63],
+          [50, 45], [34, 45], [66, 45],
+          [50, 81], [17, 81], [83, 81]
+        ];
+        var TOTAL_DOTS = 30, IDLE_DOTS = 4;
+        var COLORS = ["#22ff88", "#22ff88", "#67e8f9", "#e6f5e9", "#ffb020"];
+        var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var dots = [];
+        var layer = el("dots-layer");
+        for (var i = 0; i < TOTAL_DOTS; i++) {
+          var start = NODES[i % NODES.length];
+          var target = NODES[(i * 7 + 3) % NODES.length];
+          var size = 4 + (i % 3);
+          var color = COLORS[i % COLORS.length];
+          var wrap = document.createElement("div");
+          wrap.className = "dot-wrap";
+          var dot = document.createElement("div");
+          dot.className = "dot";
+          dot.style.width = size + "px";
+          dot.style.height = size + "px";
+          dot.style.background = color;
+          dot.style.boxShadow = "0 0 6px " + color;
+          dot.style.marginLeft = (-size / 2) + "px";
+          dot.style.marginTop = (-size / 2) + "px";
+          wrap.appendChild(dot);
+          wrap.style.transform = "translate(" + start[0] + "%, " + start[1] + "%)";
+          layer.appendChild(wrap);
+          dots.push({
+            x: start[0], y: start[1], tx: target[0], ty: target[1], phase: 0,
+            speed: 7 + ((i * 13) % 9), wait: 0, el: wrap
+          });
+        }
+
+        function activeAgents() { return Math.round(IDLE_DOTS + state.activity * (TOTAL_DOTS - IDLE_DOTS)); }
+
+        if (!reduced) {
+          var last = performance.now();
+          var tick = function (now) {
+            var dt = Math.min(0.05, (now - last) / 1000);
+            last = now;
+            // Ease activity toward its target: 0 at rest, climbing per stage in a run.
+            var target = state.running ? Math.min(1, 0.35 + Math.max(0, state.stageIdx) * 0.16) : 0;
+            state.activity += (target - state.activity) * 0.02;
+            if (Math.abs(target - state.activity) < 0.002) state.activity = target;
+            var level = Math.max(0, Math.min(1, state.activity));
+            var count = Math.round(IDLE_DOTS + level * (TOTAL_DOTS - IDLE_DOTS));
+            var mult = 0.3 + level * 2.4;
+            dots.forEach(function (d, idx) {
+              if (idx >= count) { d.el.style.display = "none"; return; }
+              d.el.style.display = "";
+              if (d.wait > 0) {
+                d.wait -= dt;
+              } else {
+                var tx = d.phase === 0 ? d.tx : d.x;
+                var ty = d.phase === 0 ? d.y : d.ty;
+                var dx = tx - d.x, dy = ty - d.y;
+                var dist = d.phase === 0 ? Math.abs(dx) : Math.abs(dy);
+                var step = d.speed * mult * dt;
+                if (dist <= step) {
+                  if (d.phase === 0) { d.x = tx; d.phase = 1; }
+                  else {
+                    d.y = ty;
+                    d.wait = 0.4 + ((idx * 37) % 10) / 6;
+                    var next = NODES[Math.floor(Math.random() * NODES.length)];
+                    d.tx = next[0]; d.ty = next[1]; d.phase = 0;
+                  }
+                } else if (d.phase === 0) {
+                  d.x += Math.sign(dx) * step;
+                } else {
+                  d.y += Math.sign(dy) * step;
+                }
+              }
+              d.el.style.transform = "translate(" + d.x + "%, " + d.y + "%)";
+            });
+            el("stat-agents").textContent = "AGENTS " + count;
+            requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        } else {
+          dots.forEach(function (d, idx) { if (idx >= IDLE_DOTS) d.el.style.display = "none"; });
+        }
+
+        // ---------- Prompt building (the rooms' real work, done in-page) ----------
+        function tidy(s) { return s.replace(/\s+/g, " ").replace(/\.\s*$/, "").trim(); }
+
+        function buildPrompts(brief) {
+          var style = el("custom-style").value.trim() || state.styleSel;
+          var mood = el("custom-mood").value.trim() || state.moodSel;
+          var styleWords = STYLE_WORDS[style] || (tidy(style).toLowerCase() + " style, rendered with intent and control");
+          var moodWords = MOOD_WORDS[mood] || ("an atmosphere that feels " + tidy(mood).toLowerCase());
+          var expanded = tidy(brief.subject) + ". " +
+            (brief.details ? "Key details that must appear: " + tidy(brief.details) + ". " : "") +
+            "Rendered as " + styleWords + ", " + moodWords + ".";
+          var composition = "Composition: " + FORMAT_WORDS[brief.format] + "; " + DETAIL_WORDS[brief.detail] + ".";
+          var final = expanded + " " + composition +
+            (brief.negative ? " Keep out: " + tidy(brief.negative) + "." : "");
+          return { style: style, mood: mood, expanded: expanded, composition: composition, final: final };
+        }
+
+        // ---------- Render Engine: draws the image live on a canvas ----------
+        var MOOD_PALETTES = {
+          "Golden hour": { sky: ["#2e1a47", "#b34a2e", "#f2a541"], ground: ["#59331f", "#3a1f16", "#1d0f0c"], glow: "#ffd98a", accent: "#ffb020" },
+          "Moody": { sky: ["#10151d", "#2b3648", "#55677f"], ground: ["#232c38", "#161d26", "#0a0e13"], glow: "#aebfd4", accent: "#67e8f9" },
+          "Bright and clean": { sky: ["#7ec8e3", "#bfe6f2", "#eef9fb"], ground: ["#5d8a68", "#40614a", "#2a4433"], glow: "#ffffff", accent: "#ffd94d" },
+          "Dreamy": { sky: ["#3d2b5c", "#7a5ba6", "#d9a7c7"], ground: ["#4a3566", "#33244a", "#1e1430"], glow: "#ffd7f0", accent: "#ff9ad5" },
+          "Dark": { sky: ["#02040a", "#0a1220", "#16233a"], ground: ["#0d1522", "#070c14", "#02040a"], glow: "#cfe4ff", accent: "#ff5a4e" },
+          "Serene": { sky: ["#0e2e35", "#2e6b6b", "#9fd8cb"], ground: ["#1d4a3a", "#123024", "#08170f"], glow: "#eafff5", accent: "#22ff88" }
+        };
+
+        function hashSeed(str) {
+          var h = 2166136261;
+          for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+          return h >>> 0;
+        }
+        function rng(seed) {
+          var s = seed >>> 0;
+          return function () {
+            s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+            return s / 4294967296;
+          };
+        }
+        function shade(hex, f) {
+          var n = parseInt(hex.slice(1), 16);
+          var r = Math.min(255, Math.max(0, Math.round(((n >> 16) & 255) * f)));
+          var g = Math.min(255, Math.max(0, Math.round(((n >> 8) & 255) * f)));
+          var b = Math.min(255, Math.max(0, Math.round((n & 255) * f)));
+          return "rgb(" + r + "," + g + "," + b + ")";
+        }
+
+        function renderImage(brief, prompts) {
+          var moodKey = MOOD_PALETTES[prompts.mood] ? prompts.mood : null;
+          var pal = moodKey ? MOOD_PALETTES[moodKey] : { sky: ["#14202e", "#33506b", "#7fa8c9"], ground: ["#24382a", "#16241a", "#0a120c"], glow: "#e6f5e9", accent: "#22ff88" };
+          if (prompts.style === "Cyberpunk") pal = { sky: ["#0b0221", "#2b0f54", "#711c91"], ground: ["#160a33", "#0d0620", "#05030f"], glow: "#67e8f9", accent: "#ff2ea6" };
+          var dims = brief.format === "landscape" ? [960, 540] : brief.format === "portrait" ? [640, 800] : [768, 768];
+          var W = dims[0], H = dims[1];
+          var canvas = document.createElement("canvas");
+          canvas.width = W; canvas.height = H;
+          var ctx = canvas.getContext("2d");
+          var rand = rng(hashSeed(brief.subject + "|" + prompts.style + "|" + prompts.mood + "|" + state.runs));
+          var horizon = H * (0.52 + rand() * 0.12);
+
+          // Sky
+          var sky = ctx.createLinearGradient(0, 0, 0, horizon * 1.15);
+          sky.addColorStop(0, pal.sky[0]); sky.addColorStop(0.55, pal.sky[1]); sky.addColorStop(1, pal.sky[2]);
+          ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+
+          // Stars for dark-leaning moods
+          if (prompts.mood === "Dark" || prompts.mood === "Dreamy" || prompts.mood === "Moody" || prompts.style === "Cyberpunk") {
+            ctx.fillStyle = "rgba(255,255,255,0.85)";
+            for (var i = 0; i < 130; i++) {
+              var sx = rand() * W, sy = rand() * horizon * 0.8, sr = rand() * 1.4 + 0.3;
+              ctx.globalAlpha = 0.25 + rand() * 0.7;
+              ctx.beginPath(); ctx.arc(sx, sy, sr, 0, 7); ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+          }
+
+          // Light source (sun / moon) with glow
+          var lx = W * (0.2 + rand() * 0.6), ly = horizon * (0.3 + rand() * 0.35), lr = Math.min(W, H) * (0.05 + rand() * 0.045);
+          var glow = ctx.createRadialGradient(lx, ly, 0, lx, ly, lr * 6);
+          glow.addColorStop(0, pal.glow); glow.addColorStop(0.25, pal.glow); glow.addColorStop(1, "rgba(0,0,0,0)");
+          ctx.globalAlpha = 0.5; ctx.fillStyle = glow; ctx.fillRect(lx - lr * 6, ly - lr * 6, lr * 12, lr * 12);
+          ctx.globalAlpha = 1; ctx.fillStyle = pal.glow;
+          ctx.beginPath(); ctx.arc(lx, ly, lr, 0, 7); ctx.fill();
+
+          // Subject silhouette, keyed off words in the brief
+          var text = (brief.subject + " " + brief.details).toLowerCase();
+          function ridge(baseY, amp, color, seedBump) {
+            ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, H);
+            var steps = 14, pts = [];
+            for (var s2 = 0; s2 <= steps; s2++) pts.push(baseY - rand() * amp + Math.sin(s2 * 1.7 + seedBump) * amp * 0.3);
+            for (var s3 = 0; s3 <= steps; s3++) ctx.lineTo((W / steps) * s3, pts[s3]);
+            ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+          }
+          function tower(x, baseY, w, h, color, litColor) {
+            ctx.fillStyle = color; ctx.fillRect(x - w / 2, baseY - h, w, h);
+            ctx.beginPath(); ctx.moveTo(x - w * 0.8, baseY - h); ctx.lineTo(x, baseY - h - w * 0.7); ctx.lineTo(x + w * 0.8, baseY - h); ctx.closePath(); ctx.fill();
+            var lamp = ctx.createRadialGradient(x, baseY - h - w * 0.2, 0, x, baseY - h - w * 0.2, w * 1.6);
+            lamp.addColorStop(0, litColor); lamp.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.globalAlpha = 0.75; ctx.fillStyle = lamp; ctx.fillRect(x - w * 1.6, baseY - h - w * 1.8, w * 3.2, w * 3.2);
+            ctx.globalAlpha = 1; ctx.fillStyle = litColor;
+            ctx.beginPath(); ctx.arc(x, baseY - h - w * 0.2, Math.max(2.5, w * 0.14), 0, 7); ctx.fill();
+          }
+          function tree(x, baseY, s, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x - s * 0.06, baseY - s * 0.4, s * 0.12, s * 0.4);
+            for (var t = 0; t < 3; t++) {
+              var tw = s * (0.62 - t * 0.16), ty2 = baseY - s * (0.35 + t * 0.26);
+              ctx.beginPath(); ctx.moveTo(x - tw / 2, ty2); ctx.lineTo(x, ty2 - s * 0.34); ctx.lineTo(x + tw / 2, ty2); ctx.closePath(); ctx.fill();
+            }
+          }
+          var midColor = pal.ground[0], nearColor = pal.ground[1], darkColor = pal.ground[2];
+          ridge(horizon + H * 0.02, H * 0.10, midColor, 1.3);
+
+          // Water band when the brief calls for it
+          var hasWater = /sea|ocean|water|lake|river|wave|coast|beach|harbou?r|cliff|island|shore/.test(text);
+          if (hasWater) {
+            var water = ctx.createLinearGradient(0, horizon, 0, H);
+            water.addColorStop(0, shade(pal.sky[2].startsWith("#") ? pal.sky[2] : "#888888", 0.9));
+            water.addColorStop(1, pal.ground[2]);
+            if (!pal.sky[2].startsWith("#")) water = pal.ground[1];
+            ctx.fillStyle = water; ctx.fillRect(0, horizon + H * 0.03, W, H);
+            ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.lineWidth = 1.4;
+            for (var wv = 0; wv < 46; wv++) {
+              var wy = horizon + H * 0.05 + rand() * H * 0.4, wx = rand() * W, wl = 14 + rand() * 60;
+              ctx.globalAlpha = 0.12 + rand() * 0.3;
+              ctx.beginPath(); ctx.moveTo(wx, wy); ctx.lineTo(wx + wl, wy); ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+            var refl = ctx.createLinearGradient(0, horizon, 0, H);
+            refl.addColorStop(0, pal.glow); refl.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.globalAlpha = 0.22; ctx.fillStyle = refl;
+            ctx.fillRect(lx - lr * 0.8, horizon + H * 0.03, lr * 1.6, H - horizon);
+            ctx.globalAlpha = 1;
+          } else {
+            ridge(horizon + H * 0.14, H * 0.09, nearColor, 4.1);
+          }
+
+          var groundBase = hasWater ? horizon + H * 0.06 : horizon + H * 0.22;
+          ctx.fillStyle = darkColor;
+          ctx.fillRect(0, H * 0.86, W, H * 0.14);
+
+          if (/lighthouse/.test(text)) {
+            tower(W * (0.3 + rand() * 0.4), H * 0.88, Math.min(W, H) * 0.075, H * (0.3 + rand() * 0.12), darkColor, pal.glow);
+          } else if (/cottage|house|cabin|hut|home/.test(text)) {
+            var hx = W * (0.3 + rand() * 0.4), hw = Math.min(W, H) * 0.17, hh = hw * 0.62, hy = H * 0.88;
+            ctx.fillStyle = darkColor; ctx.fillRect(hx - hw / 2, hy - hh, hw, hh);
+            ctx.beginPath(); ctx.moveTo(hx - hw * 0.62, hy - hh); ctx.lineTo(hx, hy - hh - hw * 0.42); ctx.lineTo(hx + hw * 0.62, hy - hh); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = pal.accent; ctx.globalAlpha = 0.95;
+            ctx.fillRect(hx - hw * 0.16, hy - hh * 0.62, hw * 0.13, hh * 0.3);
+            ctx.fillRect(hx + hw * 0.05, hy - hh * 0.62, hw * 0.13, hh * 0.3);
+            ctx.globalAlpha = 1;
+          } else if (/city|tower|skyline|building|street/.test(text)) {
+            var bx = W * 0.06;
+            while (bx < W * 0.94) {
+              var bw = W * (0.05 + rand() * 0.07), bh = H * (0.18 + rand() * 0.3);
+              ctx.fillStyle = darkColor; ctx.fillRect(bx, H * 0.88 - bh, bw, bh);
+              ctx.fillStyle = pal.accent;
+              for (var wy2 = 0; wy2 < 4; wy2++) for (var wx2 = 0; wx2 < 3; wx2++) {
+                if (rand() > 0.45) { ctx.globalAlpha = 0.5 + rand() * 0.5; ctx.fillRect(bx + bw * (0.15 + wx2 * 0.28), H * 0.88 - bh + bh * (0.12 + wy2 * 0.2), bw * 0.13, bh * 0.09); }
+              }
+              ctx.globalAlpha = 1;
+              bx += bw + W * 0.015;
+            }
+          } else if (/forest|tree|wood|mountain|hill|valley/.test(text)) {
+            ridge(horizon + H * 0.1, H * 0.16, nearColor, 7.7);
+            for (var tr = 0; tr < 16; tr++) tree(rand() * W, H * (0.82 + rand() * 0.08), H * (0.1 + rand() * 0.14), darkColor);
+          } else {
+            ridge(groundBase, H * 0.07, nearColor, 9.2);
+            for (var tr2 = 0; tr2 < 7; tr2++) tree(rand() * W, H * (0.84 + rand() * 0.06), H * (0.08 + rand() * 0.1), darkColor);
+          }
+
+          // Style treatment
+          if (prompts.style === "Pixel art") {
+            var small = document.createElement("canvas");
+            small.width = 128; small.height = Math.round(128 * H / W);
+            var sctx = small.getContext("2d");
+            sctx.drawImage(canvas, 0, 0, small.width, small.height);
+            ctx.imageSmoothingEnabled = false;
+            ctx.clearRect(0, 0, W, H);
+            ctx.drawImage(small, 0, 0, small.width, small.height, 0, 0, W, H);
+            ctx.imageSmoothingEnabled = true;
+          }
+          if (prompts.style === "Watercolor" || prompts.style === "Oil painting") {
+            ctx.globalAlpha = 0.1;
+            for (var b = 0; b < 260; b++) {
+              ctx.fillStyle = rand() > 0.5 ? pal.sky[1] : pal.ground[0];
+              ctx.beginPath(); ctx.arc(rand() * W, rand() * H, 4 + rand() * 22, 0, 7); ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+          }
+          if (prompts.style === "Anime") {
+            ctx.strokeStyle = "rgba(10,10,20,0.5)"; ctx.lineWidth = 3;
+            ctx.strokeRect(4, 4, W - 8, H - 8);
+          }
+          if (prompts.style === "Cyberpunk") {
+            ctx.strokeStyle = pal.accent; ctx.globalAlpha = 0.5; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(0, horizon + H * 0.03); ctx.lineTo(W, horizon + H * 0.03); ctx.stroke();
+            ctx.globalAlpha = 1;
+          }
+          // Detail pass: fine grain, heavier at higher detail levels
+          var grainCount = brief.detail === "ultra" ? 5200 : brief.detail === "high" ? 3200 : 1400;
+          for (var g = 0; g < grainCount; g++) {
+            ctx.fillStyle = rand() > 0.5 ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)";
+            ctx.fillRect(rand() * W, rand() * H, 1.3, 1.3);
+          }
+          // Vignette
+          var vig = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.42, W / 2, H / 2, Math.max(W, H) * 0.78);
+          vig.addColorStop(0, "rgba(0,0,0,0)"); vig.addColorStop(1, "rgba(0,0,0,0.38)");
+          ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
+
+          return canvas.toDataURL("image/png");
+        }
+
+        // ---------- Run the pipeline ----------
+        var runBtn = el("run-btn");
+        var timers = [];
+        function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+        function finishRun(brief, prompts) {
+          state.running = false;
+          state.stageIdx = 5;
+          setStageStates();
+          state.runs += 1;
+          el("stat-runs").textContent = "RUNS " + state.runs;
+          var imageUrl = renderImage(brief, prompts);
+          state.lastPrompt = { brief: brief, prompts: prompts, imageUrl: imageUrl };
+          log("DONE // image generated and secured in Gallery Vault — run #" + state.runs);
+          log("TRAFFIC // agents easing back down to idle");
+          el("result-title").textContent = "OUT OF THE VAULT — RUN #" + state.runs;
+          var img = el("result-img");
+          img.src = imageUrl;
+          img.alt = brief.subject;
+          el("result-meta").textContent = brief.subject + " — " + prompts.style + " · " + prompts.mood + " · " + brief.format + " · detail " + brief.detail;
+          var tiles = document.querySelectorAll(".vault-tile");
+          if (tiles.length) {
+            tiles[0].classList.add("filled");
+            tiles[0].innerHTML = "";
+            var thumb = document.createElement("img");
+            thumb.src = imageUrl;
+            thumb.alt = "";
+            tiles[0].appendChild(thumb);
+          }
+          var box = el("prompt-box");
+          box.innerHTML = "";
+          [["EXPANDED //", prompts.expanded], ["COMPOSITION //", prompts.composition], ["FINAL //", prompts.final]].forEach(function (pair) {
+            var p = document.createElement("p");
+            var k = document.createElement("span");
+            k.className = "k";
+            k.textContent = pair[0] + " ";
+            p.appendChild(k);
+            p.appendChild(document.createTextNode(pair[1]));
+            box.appendChild(p);
+          });
+          el("result").hidden = false;
+          el("empty-note").hidden = true;
+          el("copied-note").hidden = true;
+          runBtn.disabled = false;
+          runBtn.textContent = "RUN PIPELINE";
+        }
+
+        runBtn.addEventListener("click", function () {
+          el("form-error").hidden = true;
+          var subject = el("subject").value.trim();
+          if (!subject) {
+            el("subject-error").hidden = false;
+            el("subject").focus();
+            return;
+          }
+          el("subject-error").hidden = true;
+          var brief = {
+            subject: subject,
+            details: el("details").value.trim(),
+            negative: el("negative").value.trim(),
+            format: state.format,
+            detail: state.detail
+          };
+          var prompts = buildPrompts(brief);
+          clearTimers();
+          state.running = true;
+          state.stageIdx = 0;
+          setStageStates();
+          runBtn.disabled = true;
+          runBtn.textContent = "PIPELINE RUNNING…";
+          log("JOB // \"" + subject.slice(0, 42) + "\" — brief accepted by R01 Prompt Office");
+          log("TRAFFIC // agents waking — traffic climbing with every stage");
+          var stageMs = 2100;
+          STAGE_ORDER.forEach(function (id, idx) {
+            if (idx === 0) return;
+            timers.push(setTimeout(function () {
+              state.stageIdx = idx;
+              setStageStates();
+              var s = STAGES[idx];
+              log("FLOW // brief moving room to room — " + s.name + " active");
+              if (id === "render-engine") log("RENDER // Render Engine drawing the image from the locked prompt");
+            }, stageMs * idx));
+          });
+          timers.push(setTimeout(function () { finishRun(brief, prompts); }, stageMs * 5 + 500));
+        });
+
+        el("download-img-btn").addEventListener("click", function () {
+          if (!state.lastPrompt || !state.lastPrompt.imageUrl) return;
+          var a = document.createElement("a");
+          a.href = state.lastPrompt.imageUrl;
+          a.download = "muse-image-" + state.runs + ".png";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        });
+
+        el("copy-btn").addEventListener("click", function () {
+          if (!state.lastPrompt) return;
+          var text = state.lastPrompt.prompts.final;
+          function done() { el("copied-note").hidden = false; }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+          } else { fallback(); }
+          function fallback() {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); done(); } catch (e) { /* clipboard unavailable */ }
+            document.body.removeChild(ta);
+          }
+        });
+
+        el("download-btn").addEventListener("click", function () {
+          if (!state.lastPrompt) return;
+          var p = state.lastPrompt.prompts;
+          var text = "MUSE AI IMAGE ECOSYSTEM — RUN #" + state.runs + "\n\n" +
+            "BRIEF: " + state.lastPrompt.brief.subject + "\n" +
+            "STYLE: " + p.style + " · MOOD: " + p.mood + " · FORMAT: " + state.lastPrompt.brief.format + " · DETAIL: " + state.lastPrompt.brief.detail + "\n\n" +
+            "EXPANDED PROMPT:\n" + p.expanded + "\n\n" +
+            "COMPOSITION:\n" + p.composition + "\n\n" +
+            "FINAL PROMPT:\n" + p.final + "\n";
+          var blob = new Blob([text], { type: "text/plain" });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download = "muse-image-prompt-" + state.runs + ".txt";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+        });
+
+        setStageStates();
+      })();
+    </script>
+  </body>
+</html>
