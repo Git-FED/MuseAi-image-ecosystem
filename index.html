@@ -438,6 +438,15 @@
         .dock { display: none; } .agent-label .agent-task { display: none; } .rn-task { display: none; }
         .agent-label .agent-call { display: none; }
         .agent-label { font-size: 8px; padding: 1px 5px; }
+        /* Phone-width rooms are too narrow for the in-room status lines AND
+           the crew nameplates that stand on the same floor area — the plates
+           landed on the text and neither could be read. The identical live
+           status text stays fully readable in the crew roster cards and the
+           Agent Inspector below the map, so the in-room lines yield here. */
+        .room-now { display: none; }
+        /* The hazard-bar title is one nowrap line; at phone width its wide
+           letter-spacing pushed both ends off the bar. Tighten it to fit. */
+        .hazard-bar span { font-size: 7px; letter-spacing: 0.1em; padding: 1px 6px; }
         /* Phone-width: the crew is spread two to a room across the whole floor,
            so every agent's compact name tag fits next to its own dot — tags stay
            visible at rest, while travelling, and while working. */
@@ -541,17 +550,20 @@
          the Render Engine floor or the bay stays visible the whole way. */
       #dots-layer { z-index: 3; }
       /* The overhead gantry crane travels the floor on its own loop. It rides
-         ABOVE the rooms and trails (z-index 5) with a hazard-striped trolley,
-         a drop cable and hook, and a pool of work light under the hook — the
-         old beam was the same dark green as the floor, so its traverse was
-         happening the whole time and nobody could see it. */
-      .crane { z-index: 5; opacity: 1; width: 14px; background: linear-gradient(90deg, #5d8269, #2c4a37 55%, #182a1f); border-left: 1px solid rgba(255,255,255,0.4); border-right: 1px solid rgba(0,0,0,0.85); box-shadow: 6px 0 16px rgba(0,0,0,0.5), -2px 0 8px rgba(0,0,0,0.4); animation: crane-run 20s ease-in-out infinite; }
+         BELOW the room boxes (z-index 1; rooms are 2, agents are 6), so it
+         slides behind the rooms and can never paint over a room title, a
+         status line or an agent nameplate. It stays visible where a gantry
+         belongs: in the street corridors, across the Deployment Bay gap and
+         over open floor. (It previously rode at z-index 5, above the rooms,
+         and its opaque column + light cone sliced through room text and
+         crew tags at rest and mid-run — the floor read as broken.) */
+      .crane { z-index: 1; opacity: 1; width: 14px; background: linear-gradient(90deg, #5d8269, #2c4a37 55%, #182a1f); border-left: 1px solid rgba(255,255,255,0.4); border-right: 1px solid rgba(0,0,0,0.85); box-shadow: 6px 0 16px rgba(0,0,0,0.5), -2px 0 8px rgba(0,0,0,0.4); animation: crane-run 20s ease-in-out infinite; }
       @keyframes crane-run { 0%, 100% { left: 15%; } 50% { left: 83%; } }
       .crane::before { content: ""; position: absolute; left: 50%; top: 34%; width: 28px; height: 19px; margin-left: -14px; border-radius: 3px; background: repeating-linear-gradient(-45deg, #d9b62e 0 7px, #161c13 7px 14px); border: 1px solid rgba(0,0,0,0.85); box-shadow: 0 4px 10px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.35); }
       .crane::after { content: ""; position: absolute; left: 50%; top: 12%; width: 8px; height: 8px; margin-left: -4px; border-radius: 999px; background: var(--amber); box-shadow: 0 0 12px var(--amber); animation: blink-dot 1.4s step-end infinite; }
       .crane-cable { position: absolute; left: 50%; top: calc(34% + 19px); width: 2px; height: 104px; margin-left: -1px; background: linear-gradient(180deg, rgba(230,245,233,0.8), rgba(230,245,233,0.3)); }
       .crane-cable::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 13px; height: 10px; margin-left: -6.5px; border-radius: 2px; background: linear-gradient(180deg, #ffd98a, #b97f10); border: 1px solid rgba(0,0,0,0.6); box-shadow: 0 0 12px rgba(255,176,32,0.6), inset 0 1px 0 rgba(255,255,255,0.55); }
-      .crane-cable::before { content: ""; position: absolute; left: 50%; top: calc(100% + 7px); width: 120px; height: 120px; transform: translateX(-50%); background: radial-gradient(ellipse 50% 100% at 50% 0%, rgba(255,176,32,0.17), transparent 70%); pointer-events: none; }
+      .crane-cable::before { content: ""; position: absolute; left: 50%; top: calc(100% + 7px); width: 72px; height: 72px; transform: translateX(-50%); background: radial-gradient(ellipse 50% 100% at 50% 0%, rgba(255,176,32,0.17), transparent 70%); pointer-events: none; }
       /* Bay beacon breathes at rest too, not only during a run. */
       .hub-dot { animation: pulse-core 2.8s ease-in-out infinite; }
       /* Parked until the pipeline starts: with no job running the floor is
