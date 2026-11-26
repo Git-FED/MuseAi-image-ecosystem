@@ -205,7 +205,7 @@
         box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 0 -16px 24px rgba(0,0,0,0.65), 7px 9px 0 #0d0302, 7px 9px 0 1px #6b2a22, 14px 20px 28px rgba(0,0,0,0.72), 0 0 24px rgba(255,90,78,0.22);
       }
       /* Bay nameplate: its own strip across the top edge of the bay, above the
-         staging rows on every screen size, so no dot or tag can cover it */
+         agent dots on every screen size, so no dot or tag can cover it */
       .bay-tag {
         position: absolute; left: 50%; top: 32.6%; transform: translateX(-50%); z-index: 5; pointer-events: none;
         font-family: var(--mono); font-size: 8px; font-weight: 800; letter-spacing: 0.12em; color: #ff9a92;
@@ -413,13 +413,13 @@
       /* Staged at the bay: compact name-only tag centred below the dot. The crew stages in a
          4x3 formation across the enlarged bay, so every tag sits in the clear gap under its
          own dot — no tag ever lands on another dot, another tag, or the bay's own label. */
-      .agent-wrap[data-status="AT BAY"] .agent-label,
+      .agent-wrap[data-status="AT POST"] .agent-label,
       .agent-wrap[data-status="DONE"] .agent-label {
         left: 50%; right: auto; top: 11px; bottom: auto; transform: translateX(-50%); text-align: center;
         font-size: 8px; padding: 1px 5px;
       }
-      .agent-wrap[data-status="AT BAY"] .agent-call,
-      .agent-wrap[data-status="AT BAY"] .agent-task,
+      .agent-wrap[data-status="AT POST"] .agent-call,
+      .agent-wrap[data-status="AT POST"] .agent-task,
       .agent-wrap[data-status="DONE"] .agent-call,
       .agent-wrap[data-status="DONE"] .agent-task { display: none; }
       .dock { position: absolute; bottom: 5px; font-family: var(--mono); font-size: 7px; letter-spacing: .1em; color: var(--faint); border: 1px dashed rgba(255,255,255,.22); padding: 2px 4px; border-radius: 3px; }
@@ -428,14 +428,9 @@
         .room-name { white-space: normal; overflow: visible; text-overflow: clip; font-size: 9px; line-height: 1.2; }
         .dock { display: none; } .agent-label .agent-task { display: none; } .rn-task { display: none; }
         .agent-label .agent-call { display: none; }
-        /* Phone-width: the bay formation is too narrow for 12 tags at once, so staged tags
-           hide except the tapped agent's — its lettered dot, the room lines and the crew
-           cards below still name every agent. Tags return in full while an agent travels
-           or works, when only one room's pair is out at a time. */
-        .agent-wrap[data-status="AT BAY"] .agent-label,
-        .agent-wrap[data-status="DONE"] .agent-label { display: none; }
-        .agent-wrap.selected[data-status="AT BAY"] .agent-label,
-        .agent-wrap.selected[data-status="DONE"] .agent-label { display: block; }
+        /* Phone-width: the crew is spread two to a room across the whole floor,
+           so every agent's compact name tag fits next to its own dot — tags stay
+           visible at rest, while travelling, and while working. */
       }
       .room-now { font-family: var(--mono); margin-top: 6px; font-size: 8.5px; line-height: 1.65; letter-spacing: .03em; color: var(--dim); overflow-wrap: anywhere; }
       .room-now b { color: var(--text); font-weight: 800; }
@@ -487,7 +482,7 @@
       @keyframes blink-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
       /* Idle life: staged agents bob gently (staggered per agent) so the bay never reads as mannequins */
       @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
-      .agent-wrap[data-status="AT BAY"] .agent-dot, .agent-wrap[data-status="DONE"] .agent-dot { animation: bob 2.8s ease-in-out infinite; }
+      .agent-wrap[data-status="AT POST"] .agent-dot, .agent-wrap[data-status="DONE"] .agent-dot { animation: bob 2.8s ease-in-out infinite; }
       /* --- Factory coupling: the floor reacts to the real run state --- */
       /* Belts crawl at rest, run at pace during a job (class toggled by setStageStates) */
       .map.running .street-h::after, .map.running .street-v::after { animation-duration: 1.1s; opacity: 0.32; }
@@ -555,7 +550,7 @@
         </div>
       </div>
       <p class="repo-desc">
-        <strong>Muse AI Image Ecosystem — live ops view.</strong> All 12 named agents start at the Deployment Bay in the centre of the map. When a job fires, each room's pair deploys out of the bay, travels the streets to its room, and works there — its name rides with it on the map, its room shows what it is doing, and the feed logs every move with a timestamp. Then the finished image lands in the vault.
+        <strong>Muse AI Image Ecosystem — live ops view.</strong> The 12 named agents live out on the factory floor — two posted in each room, constantly roaming their room, the conveyor streets and the central Deployment Bay, so the map is alive even with no job running. When a job fires, each room's pair routes through the bay to its workstation and works there — its name rides with it on the map, its room shows what it is doing, and the feed logs every move with a timestamp. Then the finished image lands in the vault.
       </p>
 
       <!-- Factory floor map -->
@@ -610,7 +605,7 @@
         <div class="hub" style="left:34%;top:32%;width:32%;height:32%" aria-hidden="true">
           <div class="hub-dot"></div>
         </div>
-        <div class="bay-tag" aria-hidden="true">DEPLOYMENT BAY<span>CREW DEPLOYS FROM HERE</span></div>
+        <div class="bay-tag" aria-hidden="true">DEPLOYMENT BAY<span>CREW ROUTES THROUGH HERE</span></div>
 
         <div class="room" id="room-detail-forge" data-state="idle" style="left:68%;top:40%;width:30%;height:21%">
           <div class="room-head"><span class="room-code">R05</span><span class="room-state">IDLE</span></div>
@@ -648,12 +643,12 @@
       <!-- Live backend / ops -->
       <section aria-label="Live operations" style="margin-top:20px">
         <h2 class="sec">LIVE OPS — WHO IS DOING WHAT, AND WHEN</h2>
-        <p class="sub">This is the live engine for this page, built the way real agent fleets are wired: the server owns the truth, and the map only renders what the server says. On this static GitHub Pages build the server is a module inside the page — there is no network server behind a Pages site; the full network-server version of this ecosystem is the Space. Inside this page the split is strict all the same: The server creates the job, and for every move it issues an agent's whole route — waypoints, departure time and speed — for deploys, workstation patrols, idle roams and the matching return trip to the Deployment Bay. The map animates those routes locally at 60 frames a second, but no animation starts, stops or changes direction except when the server's state changes. The server reports every agent four times a second; if an agent ever stops reporting, it is marked OFFLINE with its last-seen time and its animation holds — it never keeps walking on its own. No anonymous dots do job work — the 12 named crew below do. The smaller background dots are street traffic only.</p>
-        <div class="legend"><span>● NAMED CREW — 12 agents staged in a labelled formation at the Deployment Bay, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room, patrolling between its benches while it works</span><span>· DONE — the agent has travelled back to the bay and shuffles at its staging slot</span><span>· OFFLINE — the server stopped reporting the agent: grey, held at its last reported position, last-seen time shown</span><span>· The conveyor belts run at full pace only while a job is live</span></div>
+        <p class="sub">This is the live engine for this page, built the way real agent fleets are wired: the server owns the truth, and the map only renders what the server says. On this static GitHub Pages build the server is a module inside the page — there is no network server behind a Pages site; the full network-server version of this ecosystem is the Space. Inside this page the split is strict all the same: The server creates the job, and for every move it issues an agent's whole route — waypoints, departure time and speed — for deploys, workstation patrols, and the wide idle roam that keeps every agent touring its room, the streets and the bay between jobs. The map animates those routes locally at 60 frames a second, but no animation starts, stops or changes direction except when the server's state changes. The server reports every agent four times a second; if an agent ever stops reporting, it is marked OFFLINE with its last-seen time and its animation holds — it never keeps walking on its own. No anonymous dots do job work — the 12 named crew below do. The smaller background dots are street traffic only.</p>
+        <div class="legend"><span>● NAMED CREW — 12 agents spread across all 6 rooms on constant floor patrol, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room, patrolling between its benches while it works</span><span>· DONE — the stage is filed and the agent is back out roaming the floor from its home room</span><span>· OFFLINE — the server stopped reporting the agent: grey, held at its last reported position, last-seen time shown</span><span>· The conveyor belts run at full pace only while a job is live</span></div>
         <div class="ops-grid">
           <div class="panel">
             <h3><span>CURRENT JOB + DEPLOYMENT FEED</span><span id="feed-live">LIVE · POLL 2s</span></h3>
-            <div class="job-subject" id="job-subject">No job running — the crew is staged at the Deployment Bay.</div>
+            <div class="job-subject" id="job-subject">No job running — the crew is out on the floor, two agents patrolling each room.</div>
             <div class="job-meta" id="job-meta">JOB — · STAGE — · ELAPSED 0.0s · HEARTBEAT —</div>
             <div class="progress" aria-hidden="true"><i id="job-progress"></i></div>
             <ol class="feed" id="ops-feed" aria-live="polite"></ol>
@@ -663,10 +658,10 @@
             <div class="inspector-name" id="insp-name">Quill</div>
             <div class="inspector-role" id="insp-role">Prompt Expander — R01 Prompt Office</div>
             <dl class="kv">
-              <dt>STATUS</dt><dd><span class="pill" id="insp-status">AT BAY</span></dd>
-              <dt>DEPLOYED FROM</dt><dd id="insp-from">Deployment Bay (map centre)</dd>
-              <dt>NOW AT</dt><dd id="insp-at">Deployment Bay · staging</dd>
-              <dt>DOING NOW</dt><dd id="insp-task">Staged at the Deployment Bay, waiting for a job.</dd>
+              <dt>STATUS</dt><dd><span class="pill" id="insp-status">AT POST</span></dd>
+              <dt>DEPLOYED FROM</dt><dd id="insp-from">R01 Prompt Office post · via Deployment Bay</dd>
+              <dt>NOW AT</dt><dd id="insp-at">R01 Prompt Office · floor patrol</dd>
+              <dt>DOING NOW</dt><dd id="insp-task">On floor patrol from R01 Prompt Office — roaming its room, the streets and the bay.</dd>
               <dt>JOB</dt><dd id="insp-job">—</dd>
               <dt>LAST EVENT</dt><dd id="insp-last">—</dd>
               <dt>LAST SEEN</dt><dd id="insp-seen">—</dd>
@@ -678,7 +673,7 @@
       <!-- Crew roster -->
       <section aria-label="Crew roster" style="margin-top:28px">
         <h2 class="sec">WHO'S WHO — THE 12-AGENT CREW</h2>
-        <p class="sub">Two agents per room, all staged at the Deployment Bay. When a stage fires, that room's pair deploys from the bay to the room, works it, and the next pair goes. Each agent only ever works its own room's stage, so who did what never blurs. Tap any agent to inspect them on the map and in the panel above.</p>
+        <p class="sub">Two agents per room, posted in their own room and roaming the whole floor between jobs — nobody waits in the bay. When a stage fires, that room's pair routes through the bay to its workstation, works it, and heads back out on patrol. Each agent only ever works its own room's stage, so who did what never blurs. Tap any agent to inspect them on the map and in the panel above.</p>
         <div class="crew-grid" id="crew-grid"></div>
       </section>
 
@@ -722,7 +717,7 @@
           <p class="form-error" id="form-error" hidden></p>
 
           <button type="button" class="run-btn" id="run-btn">RUN PIPELINE</button>
-          <p class="run-note">Watch the grid and the Live Ops feed: at rest the named crew waits at the Deployment Bay in the centre, shuffling at their slots, and traffic is few and slow. Fire a run and each room's two agents deploy out of the bay in turn, travel to their room, patrol their workstations while they work, then travel back to the bay when their stage is done — and the conveyor belts speed up for as long as the job is live.</p>
+          <p class="run-note">Watch the grid and the Live Ops feed: at rest the named crew is spread across all six rooms, roaming room to room along the conveyor streets through the Deployment Bay, and traffic is few and slow. Fire a run and each room's two agents deploy in turn, travel to their workstation, patrol it while they work, then head back out on floor patrol when their stage is done — and the conveyor belts speed up for as long as the job is live.</p>
         </div>
 
         <!-- Pipeline status + result -->
@@ -785,9 +780,9 @@
             <li><code>R06 Gallery Vault</code> — where finished work lands, and where Photo Scout, the Vault's search worker, files the real openly licensed photos it finds for your brief.</li>
           </ul>
           <h3>WHO THE AGENTS ARE — AND WHERE THEY DEPLOY FROM</h3>
-          <p>Job work is done by <code>12 named agents</code>, two per room, and every one of them deploys from the same place: the <code>Deployment Bay</code> at the centre of the map. <code>Quill + Scribe</code> work R01 Prompt Office, <code>Palette + Mood</code> R02 Style Lab, <code>Frame + Rule</code> R03 Composition Bay, <code>Forge + Kiln</code> R04 Render Engine, <code>Hone + Polish</code> R05 Detail Forge, and <code>Vault + Courier</code> R06 Gallery Vault — Courier also runs the carry from R04 to R06 through the bay. When a stage fires, that room's pair leaves the bay, travels the streets to the room, and works at the room's workstation; when the job closes, everyone returns to the bay. Each agent's name rides with it on the map, its room shows what it is doing, and its card, the Agent Inspector and the feed all show the same live task string, so there is one answer to “who is doing what” everywhere you look.</p>
+          <p>Job work is done by <code>12 named agents</code>, two per room, each based in its own room and roaming the whole factory floor — its room, the conveyor streets and the <code>Deployment Bay</code> at the centre of the map — whenever no job is running. <code>Quill + Scribe</code> work R01 Prompt Office, <code>Palette + Mood</code> R02 Style Lab, <code>Frame + Rule</code> R03 Composition Bay, <code>Forge + Kiln</code> R04 Render Engine, <code>Hone + Polish</code> R05 Detail Forge, and <code>Vault + Courier</code> R06 Gallery Vault — Courier also runs the carry from R04 to R06 through the bay. When a stage fires, that room's pair routes through the bay, travels the streets to its workstation, and works there; when the stage closes, the pair heads back out on floor patrol from its home room. Each agent's name rides with it on the map, its room shows what it is doing, and its card, the Agent Inspector and the feed all show the same live task string, so there is one answer to “who is doing what” everywhere you look.</p>
           <h3>THE LIVE ENGINE (SERVER OWNS THE TRUTH)</h3>
-          <p>GitHub Pages has no network server to add, so the server lives in the page as a module — but the split is the real one used by live agent fleets. The server owns every agent's state and is the only thing that can change it: it creates a numbered job from your brief, and for every move it issues the agent's whole route — waypoints, departure time and speed — covering deploys out of the Deployment Bay, patrol legs around a workstation while a stage runs, roam legs for idle agents at the bay, and a matching return route to the bay for every deploy. The map is a renderer only: it animates the server's routes locally at 60 frames a second and never starts, stops or redirects a walk by itself. The server reports every agent four times a second and appends every deployment, arrival, handoff and filing to a timestamped event log (the Deployment Feed and terminal); an agent whose reports go stale is marked <code>OFFLINE</code> with its last-seen time and its animation holds until it reports again. The 18 smaller dots are street traffic only — they ramp from 4 slow at rest toward full pace during a run, but they never carry a job. The full server version of this ecosystem is the Space; this Page is its live public face.</p>
+          <p>GitHub Pages has no network server to add, so the server lives in the page as a module — but the split is the real one used by live agent fleets. The server owns every agent's state and is the only thing that can change it: it creates a numbered job from your brief, and for every move it issues the agent's whole route — waypoints, departure time and speed — covering deploys routed through the Deployment Bay, patrol legs around a workstation while a stage runs, and wide roam legs that keep idle agents touring their rooms, the streets and the bay instead of sitting in one box. The map is a renderer only: it animates the server's routes locally at 60 frames a second and never starts, stops or redirects a walk by itself. The server reports every agent four times a second and appends every deployment, arrival, handoff and filing to a timestamped event log (the Deployment Feed and terminal); an agent whose reports go stale is marked <code>OFFLINE</code> with its last-seen time and its animation holds until it reports again. The 18 smaller dots are street traffic only — they ramp from 4 slow at rest toward full pace during a run, but they never carry a job. The full server version of this ecosystem is the Space; this Page is its live public face.</p>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
         </div>
@@ -831,18 +826,25 @@
         ];
         var BAY = [50, 48];
         CREW.forEach(function(a, ai){
-          a.home=a.bay; a.status="AT BAY"; a.task=a.taskIdle; a.at="Deployment Bay \u00B7 staging"; a.last="\u2014"; a.x=a.bay[0]; a.y=a.bay[1]; a.workTask="";
+          a.home=a.work.slice(); a.status="AT POST"; a.taskIdle="On floor patrol from "+a.roomCode+" "+a.roomName+" \u2014 roaming its room, the conveyor streets and the Deployment Bay."; a.task=a.taskIdle; a.at=a.roomCode+" "+a.roomName+" \u00B7 floor patrol"; a.last="\u2014"; a.x=a.work[0]; a.y=a.work[1]; a.workTask="";
           // Patrol / roam loops the SERVER issues legs from: a WORKING agent walks
-          // a small rectangle around its workstation; an idle agent roams gently
-          // around its staging slot. offX flips by dock so a room's pair patrols
+          // a small rectangle around its workstation; an idle agent roams a wide
+          // factory tour from its home room. offX flips by dock so a room's pair patrols
           // in opposite directions and never overlaps.
           var offX = a.dock==="Dock B" ? -6 : 6;
           a.patrol=[[a.work[0],a.work[1]],[a.work[0]+offX,a.work[1]],[a.work[0]+offX,a.work[1]+3.5],[a.work[0],a.work[1]+3.5]];
-          a.bayLoop=[[a.bay[0],a.bay[1]],[a.bay[0]+1.8,a.bay[1]+0.8],[a.bay[0],a.bay[1]+1.6],[a.bay[0]-1.8,a.bay[1]+0.8]];
+          var streetY = a.work[1] < 32 ? 34.5 : a.work[1] > 64 ? 66.5 : 34.5;
+          var streetNear = [Math.max(6, Math.min(94, a.work[0])), streetY];
+          var streetFar = [a.work[0] < 50 ? 66 : 34, a.work[1] < 50 ? 66.5 : 34.5];
+          // Idle roam is a factory-wide tour, not a shuffle inside one box:
+          // workstation -> room corner -> street by its room -> bay centre ->
+          // its bay slot -> far street -> back across its room.
+          a.bayLoop=[[a.work[0],a.work[1]],[a.work[0]+offX,a.work[1]+3.5],streetNear,[50,48],a.bay.slice(),streetFar,[a.work[0]+offX,a.work[1]],[a.work[0],a.work[1]+3.5]];
+          a.roamLoop=a.bayLoop;
           a.patrolIdx = ai % 4;
           // Server-owned truth fields. The renderer never decides anything: it
           // draws the agent at the position the server's current route implies.
-          a.anchor = a.bay.slice();   // where the agent rests when it has no route
+          a.anchor = a.work.slice();  // where the agent rests when it has no route
           a.route = null;             // {from, points, departAt, speed, endsAt, purpose, doneText}
           a.lastSeen = Date.now();    // last server report for this agent
           a.nextLegAt = Date.now() + 400 + (ai % 6) * 260; // when the server may issue its next patrol/roam leg
@@ -869,7 +871,7 @@
             CREW.forEach(function(a){
               if(a.room!==roomId) return;
               var esc = a.task.replace(/</g,"&lt;");
-              var what = a.status==="WORKING" ? "working<span class=\"rn-task\"> \u2014 "+esc+"</span>" : a.status==="DEPLOYED" ? (/^(Finished|Done)/.test(a.task) ? "returning to bay\u2026" : "deploying from bay\u2026") : a.status==="DONE" ? "done \u00B7 at bay" : "at bay";
+              var what = a.status==="WORKING" ? "working<span class=\"rn-task\"> \u2014 "+esc+"</span>" : a.status==="DEPLOYED" ? (/^(Finished|Done)/.test(a.task) ? "heading back out\u2026" : "deploying via the bay\u2026") : a.status==="DONE" ? "done \u00B7 roaming the floor" : "on floor patrol";
               parts.push("<b>"+a.name.toUpperCase()+"</b> "+what);
             });
             box.innerHTML=parts.join("<br>");
@@ -884,12 +886,12 @@
             card.setAttribute("data-status", a.status); card.classList.toggle("selected", selectedAgent===a);
             card.querySelector(".crew-task").textContent=a.task;
             card.querySelector(".pill").textContent=a.offline?"OFFLINE":a.status; card.querySelector(".pill").className="pill "+(a.offline?"offline":pillClass(a.status));
-            card.querySelector(".crew-from").textContent="DEPLOYS FROM DEPLOYMENT BAY \u2192 POST "+a.roomCode+" "+a.roomName.toUpperCase()+" \u00B7 NOW: "+a.at.toUpperCase();
+            card.querySelector(".crew-from").textContent="BASED AT "+a.roomCode+" "+a.roomName.toUpperCase()+" \u00B7 DEPLOYS VIA DEPLOYMENT BAY \u00B7 NOW: "+a.at.toUpperCase();
             var wrap=document.getElementById("agent-"+a.id);
             if(wrap){
               wrap.setAttribute("data-status", a.status); wrap.classList.toggle("selected", selectedAgent===a);
               var t=wrap.querySelector(".agent-task");
-              if(t) t.textContent = a.offline ? "OFFLINE \u2014 last seen "+clockTime(new Date(a.lastSeen)) : a.status==="WORKING" ? a.task : a.status==="DEPLOYED" ? (/^(Finished|Done)/.test(a.task) ? "Returning to the bay\u2026" : "Deploying from the bay\u2026") : "";
+              if(t) t.textContent = a.offline ? "OFFLINE \u2014 last seen "+clockTime(new Date(a.lastSeen)) : a.status==="WORKING" ? a.task : a.status==="DEPLOYED" ? (/^(Finished|Done)/.test(a.task) ? "Heading back out on floor patrol\u2026" : "Deploying via the bay\u2026") : "";
             }
           });
           roomNow();
@@ -899,7 +901,7 @@
           nm.textContent=a.name;
           document.getElementById("insp-role").textContent=a.role+" \u2014 "+a.roomCode+" "+a.roomName;
           var st=document.getElementById("insp-status"); st.textContent=a.offline?"OFFLINE":a.status; st.className="pill "+(a.offline?"offline":pillClass(a.status));
-          document.getElementById("insp-from").textContent="Deployment Bay (map centre)";
+          document.getElementById("insp-from").textContent=a.roomCode+" "+a.roomName+" post \u00B7 routes via Deployment Bay";
           document.getElementById("insp-at").textContent=a.offline?"Last reported position \u2014 animation held":a.at;
           document.getElementById("insp-task").textContent=a.offline?"Not reporting \u2014 the server has not heard from this agent. It does not animate until it reports again.":a.task;
           document.getElementById("insp-job").textContent=backend.job?("#"+backend.job.num+" \u00B7 "+backend.job.subject):"\u2014";
@@ -1075,7 +1077,7 @@
           });
         }
         buildCrew();
-        emit(null, "Backend live — 12 named agents staged at the Deployment Bay. No job yet.");
+        emit(null, "Backend live — 12 named agents spread across all 6 rooms on floor patrol. No job yet.");
         log("SYS // image-ecosystem online — 6 rooms, agents quiet until a run fires");
         log("PAGE // MuseAi-image-ecosystem on GitHub Pages — same grid as the live space");
 
@@ -1791,7 +1793,7 @@
         //    arrival transition when a route's end time passes.
         //  - Every deploy gets a matching return route: when a stage closes, the
         //    server routes that room's pair back to the Deployment Bay.
-        //  - Idle agents roam: the server issues short roam legs around the bay.
+        //  - Idle agents roam: the server issues wide roam legs touring each agent's room, the streets and the bay.
         //  - The server reports every agent on every tick (lastSeen). The
         //    RENDERER (the rAF loop) never starts, stops or redirects a walk on
         //    its own — it draws each agent where the server's route puts it at
@@ -1799,7 +1801,7 @@
         //    OFFLINE with its last-seen time and holds its animation.
         var jobTimer = null;
         var STAGE_MS = 2100;
-        var TRAVEL_SPEED = 26, PATROL_SPEED = 8.5, ROAM_SPEED = 5;
+        var TRAVEL_SPEED = 26, PATROL_SPEED = 10, ROAM_SPEED = 11;
 
         function routeDistance(from, points){
           var d=0, px=from[0], py=from[1];
@@ -1832,8 +1834,8 @@
         }
         function sendToBay(a, doneText){
           a.status="DEPLOYED"; a.task=doneText;
-          a.at="Returning to the Deployment Bay";
-          issueRoute(a, [BAY, a.bay], TRAVEL_SPEED*(a.speed||1), "return", doneText);
+          a.at="Heading back via the Deployment Bay \u2192 "+a.roomCode+" "+a.roomName;
+          issueRoute(a, [BAY, a.work], TRAVEL_SPEED*(a.speed||1), "return", doneText);
         }
         function arriveWork(a){
           a.status="WORKING"; a.task=a.workTask;
@@ -1856,13 +1858,13 @@
             }
             arriveWork(a);
           } else if(purpose==="return"){
-            a.status="DONE"; a.task=doneText+" \u2014 back at the bay."; a.at="Deployment Bay \u00B7 staging";
-            a.nextLegAt=now+700;
-            emit(a, "Back at the Deployment Bay \u2014 stage work filed.");
+            a.status="DONE"; a.task=doneText+" \u2014 back on floor patrol."; a.at=a.roomCode+" "+a.roomName+" \u00B7 floor patrol";
+            a.nextLegAt=now+350;
+            emit(a, "Back at "+a.roomCode+" "+a.roomName+" \u2014 stage work filed, resuming floor patrol.");
             renderCrew();
           } else {
             // Patrol / roam leg finished: pause; the server issues the next leg.
-            a.nextLegAt = now + (a.status==="WORKING" ? 320+((a.patrolIdx*37)%280) : 900+((a.patrolIdx*53)%900));
+            a.nextLegAt = now + (a.status==="WORKING" ? 320+((a.patrolIdx*37)%280) : 240+((a.patrolIdx*53)%320));
           }
         }
         function advanceStage(idx, brief, prompts){
@@ -1870,24 +1872,24 @@
             var roomIdx = STAGE_ORDER.indexOf(a.room);
             if(roomIdx < idx){
               if(a.status==="WORKING" || (a.status==="DEPLOYED" && a.route && a.route.purpose==="deploy")){
-                emit(a, "Stage complete \u2014 returning to the Deployment Bay.");
+                emit(a, "Stage complete \u2014 heading back out on floor patrol.");
                 sendToBay(a, "Finished "+a.roomCode+": "+(a.workTask||a.taskWork(brief,prompts)));
               }
             }
             else if(roomIdx === idx){
               a.workTask=a.taskWork(brief,prompts);
               a.status="DEPLOYED";
-              a.task="Deploying from the Deployment Bay to "+a.roomCode+" "+a.roomName+"\u2026";
+              a.task="Deploying via the Deployment Bay to "+a.roomCode+" "+a.roomName+"\u2026";
               a.at="En route \u00B7 Deployment Bay \u2192 "+a.roomCode+" "+a.roomName;
               if(a.id==="courier"){
                 issueRoute(a, [[42,81], BAY, a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
-                emit(a, "Deployed from the Deployment Bay \u2192 R04 Render Engine pickup, then on to R06 Gallery Vault with the image.");
+                emit(a, "Deployed via the Deployment Bay \u2192 R04 Render Engine pickup, then on to R06 Gallery Vault with the image.");
               } else {
-                issueRoute(a, [a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
-                emit(a, "Deployed from the Deployment Bay \u2192 "+a.roomCode+" "+a.roomName+".");
+                issueRoute(a, [BAY, a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
+                emit(a, "Deployed via the Deployment Bay \u2192 "+a.roomCode+" "+a.roomName+".");
               }
-            } else if(a.status==="AT BAY"){
-              a.task=a.taskIdle; a.at="Deployment Bay \u00B7 staging";
+            } else if(a.status==="AT POST"){
+              a.task=a.taskIdle; a.at=a.roomCode+" "+a.roomName+" \u00B7 floor patrol";
             }
           });
           var jobEl=document.getElementById("job-subject"); if(jobEl && backend.job) jobEl.textContent="Job #"+backend.job.num+": "+brief.subject;
@@ -1905,7 +1907,7 @@
             if(a.route && now>=a.route.endsAt) onRouteEnd(a);
             if(!a.route && now>=a.nextLegAt){
               var isWork = a.status==="WORKING";
-              if(isWork || a.status==="AT BAY" || a.status==="DONE"){
+              if(isWork || a.status==="AT POST" || a.status==="DONE"){
                 // Issue the next leg of the agent's loop, skipping any corner
                 // the agent is already standing on — a zero-distance route
                 // would read as standing still.
@@ -1968,7 +1970,7 @@
             else { a.status="DONE"; a.task=doneText; }
           });
           emit(CREW[10], "Vault filed the finished image in slot 1. Job #"+state.runs+" complete.");
-          emit(null, "Job #"+state.runs+" complete in "+((Date.now()-backend.startedAt)/1000).toFixed(1)+"s \u2014 all 12 agents returning to the Deployment Bay.");
+          emit(null, "Job #"+state.runs+" complete in "+((Date.now()-backend.startedAt)/1000).toFixed(1)+"s \u2014 all 12 agents back out on floor patrol across their rooms.");
           var prog2=document.getElementById("job-progress"); if(prog2) prog2.style.width="100%";
           renderCrew();
                     log("DONE // image generated and secured in Gallery Vault — run #" + state.runs);
@@ -2085,7 +2087,7 @@
           runBtn.disabled = true;
           runBtn.textContent = "PIPELINE RUNNING…";
           backend.job={num: state.runs+1, subject: subject, brief: brief, prompts: prompts, finished: false}; backend.startedAt=Date.now();
-          CREW.forEach(function(a){ a.status="AT BAY"; a.task=a.taskIdle; a.at="Deployment Bay \u00B7 staging"; a.route=null; a.anchor=a.bay.slice(); a.x=a.bay[0]; a.y=a.bay[1]; a.nextLegAt=Date.now()+1200; });
+          CREW.forEach(function(a){ var pos=agentPosAt(a, Date.now()); a.status="AT POST"; a.task=a.taskIdle; a.at=a.roomCode+" "+a.roomName+" \u00B7 floor patrol"; a.route=null; a.anchor=pos.slice(); a.x=pos[0]; a.y=pos[1]; a.nextLegAt=Date.now()+300; });
           emit(null, "Server created Job #"+backend.job.num+" from the brief and queued all 6 stages.");
           advanceStage(0, brief, prompts);
                     log("JOB // \"" + subject.slice(0, 42) + "\" — brief accepted by R01 Prompt Office");
