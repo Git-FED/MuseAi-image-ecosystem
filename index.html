@@ -47,7 +47,9 @@
           linear-gradient(90deg, rgba(34,255,136,0.045) 1px, transparent 1px),
           linear-gradient(180deg, #08130c 0%, #050a07 340px, #040805 100%);
         background-size: auto, auto, auto, 34px 34px, 34px 34px, auto;
-        background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
+        /* No background-attachment: fixed — on phone GPUs it forces a repaint
+           of all six layers on every frame and the crew's walk turns into a
+           slideshow. The grid still reads identically at rest. */
       }
       /* Factory skyline silhouette fixed behind everything */
       body::before {
@@ -142,14 +144,21 @@
       /* Conveyor streets: dark belt + moving chevrons + glowing centre line */
       .street-h { position: absolute; left: 0; width: 100%; background: linear-gradient(180deg, #131f16, #0d1710 50%, #131f16); box-shadow: inset 0 2px 0 rgba(255,255,255,0.07), inset 0 -2px 0 rgba(0,0,0,0.7), 0 1px 0 rgba(34,255,136,0.08); overflow: hidden; }
       .street-v { position: absolute; top: 0; height: 100%; background: linear-gradient(90deg, #131f16, #0d1710 50%, #131f16); box-shadow: inset 2px 0 0 rgba(255,255,255,0.07), inset -2px 0 0 rgba(0,0,0,0.7); overflow: hidden; }
+      /* The belt chevrons ride on a transform, not background-position:
+         background-position animation repaints the whole street every frame
+         (four full-width strips), which is a big slice of why the floor ran
+         at slideshow speed on a phone. A transform is composited — same
+         moving belt, almost no paint. The strip is one pattern period wider
+         than the street and slides exactly one period, so the loop is seamless. */
       .street-h::after, .street-v::after {
-        content: ""; position: absolute; inset: 0; opacity: 0.16;
+        content: ""; position: absolute; opacity: 0.16; will-change: transform;
         background-image: repeating-linear-gradient(90deg, transparent 0 18px, rgba(34,255,136,0.9) 18px 26px);
-        background-size: 44px 100%; animation: belt-move 2.8s linear infinite;
+        background-size: 44px 100%;
       }
-      .street-v::after { background-image: repeating-linear-gradient(180deg, transparent 0 18px, rgba(34,255,136,0.9) 18px 26px); background-size: 100% 44px; animation-name: belt-move-v; }
-      @keyframes belt-move { from { background-position: 0 0; } to { background-position: 44px 0; } }
-      @keyframes belt-move-v { from { background-position: 0 0; } to { background-position: 0 44px; } }
+      .street-h::after { top: 0; bottom: 0; left: -44px; width: calc(100% + 44px); animation: belt-move 2.8s linear infinite; }
+      .street-v::after { left: 0; right: 0; top: -44px; height: calc(100% + 44px); background-image: repeating-linear-gradient(180deg, transparent 0 18px, rgba(34,255,136,0.9) 18px 26px); background-size: 100% 44px; animation: belt-move-v 2.8s linear infinite; }
+      @keyframes belt-move { from { transform: translateX(0); } to { transform: translateX(44px); } }
+      @keyframes belt-move-v { from { transform: translateY(0); } to { transform: translateY(44px); } }
       .street-line-h { position: absolute; left: 0; width: 100%; height: 2px; background: repeating-linear-gradient(90deg, rgba(34,255,136,0.55) 0 16px, transparent 16px 30px); }
       /* Overhead factory dressing: pipes + crane beam (decor only) */
       .pipe-h { position: absolute; left: 0; width: 100%; height: 7px; z-index: 1; pointer-events: none;
@@ -428,6 +437,7 @@
         .room-name { white-space: normal; overflow: visible; text-overflow: clip; font-size: 9px; line-height: 1.2; }
         .dock { display: none; } .agent-label .agent-task { display: none; } .rn-task { display: none; }
         .agent-label .agent-call { display: none; }
+        .agent-label { font-size: 8px; padding: 1px 5px; }
         /* Phone-width: the crew is spread two to a room across the whole floor,
            so every agent's compact name tag fits next to its own dot — tags stay
            visible at rest, while travelling, and while working. */
@@ -519,17 +529,29 @@
       @keyframes walk-bob { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3px) scale(1.12); } }
       .agent-wrap.walking .agent-dot { animation: walk-bob 0.38s ease-in-out infinite; }
       .agent-wrap.walking .agent-label { border-color: rgba(230,245,233,0.55); }
-      /* Breadcrumb trail: a fading dot dropped behind every walking agent a
-         few times a second — the path it just walked stays visible ~1s. */
-      .crumb { position: absolute; width: 7px; height: 7px; margin-left: -3.5px; margin-top: -3.5px; border-radius: 999px; opacity: 0.8; pointer-events: none; animation: crumb-fade 1.5s ease-out forwards; }
-      @keyframes crumb-fade { from { opacity: 0.8; transform: scale(1); } to { opacity: 0; transform: scale(0.35); } }
+      /* Breadcrumb trails are drawn on ONE canvas that rides ABOVE the room
+         boxes (z-index 4; rooms are 2, agents are 6). The old DOM crumbs sat
+         in a layer with no z-index, so every crumb dropped inside a room was
+         painted over by that room — trails only ever showed on the streets,
+         which is why they "didn't exist" in tests. A canvas also replaces
+         ~80 constantly spawning/dying DOM nodes (each repainting the complex
+         room shadows underneath) with a single cheap redraw per frame. */
+      #trail-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; }
+      /* Street traffic likewise rides above the room boxes, so a dot crossing
+         the Render Engine floor or the bay stays visible the whole way. */
+      #dots-layer { z-index: 3; }
       /* The overhead gantry crane travels the floor on its own loop. It rides
-         ABOVE the room boxes (z-index 3, rooms are 2) so its traverse is
-         actually visible, with a lit trolley block riding the beam. */
-      .crane { z-index: 3; opacity: 0.9; width: 14px; background: linear-gradient(90deg, #3a5c44, #16261a 55%, #0c1710); border-left: 1px solid rgba(255,255,255,0.28); border-right: 1px solid rgba(0,0,0,0.8); box-shadow: 0 0 14px rgba(0,0,0,0.55); animation: crane-run 26s ease-in-out infinite; }
+         ABOVE the rooms and trails (z-index 5) with a hazard-striped trolley,
+         a drop cable and hook, and a pool of work light under the hook — the
+         old beam was the same dark green as the floor, so its traverse was
+         happening the whole time and nobody could see it. */
+      .crane { z-index: 5; opacity: 1; width: 14px; background: linear-gradient(90deg, #5d8269, #2c4a37 55%, #182a1f); border-left: 1px solid rgba(255,255,255,0.4); border-right: 1px solid rgba(0,0,0,0.85); box-shadow: 6px 0 16px rgba(0,0,0,0.5), -2px 0 8px rgba(0,0,0,0.4); animation: crane-run 20s ease-in-out infinite; }
       @keyframes crane-run { 0%, 100% { left: 15%; } 50% { left: 83%; } }
-      .crane::before { content: ""; position: absolute; left: 50%; top: 34%; width: 22px; height: 16px; margin-left: -11px; border-radius: 3px; background: linear-gradient(180deg, #8a6a24, #5c4714); border: 1px solid rgba(0,0,0,0.7); box-shadow: 0 3px 8px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.35); }
-      .crane::after { content: ""; position: absolute; left: 50%; top: 12%; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 999px; background: var(--amber); box-shadow: 0 0 10px var(--amber); animation: blink-dot 1.4s step-end infinite; }
+      .crane::before { content: ""; position: absolute; left: 50%; top: 34%; width: 28px; height: 19px; margin-left: -14px; border-radius: 3px; background: repeating-linear-gradient(-45deg, #d9b62e 0 7px, #161c13 7px 14px); border: 1px solid rgba(0,0,0,0.85); box-shadow: 0 4px 10px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.35); }
+      .crane::after { content: ""; position: absolute; left: 50%; top: 12%; width: 8px; height: 8px; margin-left: -4px; border-radius: 999px; background: var(--amber); box-shadow: 0 0 12px var(--amber); animation: blink-dot 1.4s step-end infinite; }
+      .crane-cable { position: absolute; left: 50%; top: calc(34% + 19px); width: 2px; height: 104px; margin-left: -1px; background: linear-gradient(180deg, rgba(230,245,233,0.8), rgba(230,245,233,0.3)); }
+      .crane-cable::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 13px; height: 10px; margin-left: -6.5px; border-radius: 2px; background: linear-gradient(180deg, #ffd98a, #b97f10); border: 1px solid rgba(0,0,0,0.6); box-shadow: 0 0 12px rgba(255,176,32,0.6), inset 0 1px 0 rgba(255,255,255,0.55); }
+      .crane-cable::before { content: ""; position: absolute; left: 50%; top: calc(100% + 7px); width: 120px; height: 120px; transform: translateX(-50%); background: radial-gradient(ellipse 50% 100% at 50% 0%, rgba(255,176,32,0.17), transparent 70%); pointer-events: none; }
       /* Bay beacon breathes at rest too, not only during a run. */
       .hub-dot { animation: pulse-core 2.8s ease-in-out infinite; }
       @media (prefers-reduced-motion: reduce) {
@@ -537,8 +559,8 @@
         .agent-wrap .agent-dot, .room[data-state="active"] .in-bars div,
         .room[data-state="active"] .in-sliders .knob, .room[data-state="active"] .in-lines div,
         .room[data-state="active"] .in-swatches div, .map.running .hub-dot { animation: none; }
-        .agent-wrap.walking .agent-dot, .crane, .crane::after, .hub-dot, .crumb { animation: none; }
-        .crumb { display: none; }
+        .agent-wrap.walking .agent-dot, .crane, .crane::after, .hub-dot { animation: none; }
+        #trail-canvas { display: none; }
         html { scroll-behavior: auto; }
       }
     </style>
@@ -587,7 +609,7 @@
         <div class="street-line-h" style="top:66.5%" aria-hidden="true"></div>
         <div class="pipe-h" style="top:29.2%" aria-hidden="true"></div>
         <div class="pipe-h" style="top:70.5%" aria-hidden="true"></div>
-        <div class="crane" style="left:49.4%" aria-hidden="true"></div>
+        <div class="crane" style="left:49.4%" aria-hidden="true"><i class="crane-cable"></i></div>
         <span class="floor-tag" style="left:3%;top:29%" aria-hidden="true">CONVEYOR A →</span>
         <span class="floor-tag" style="left:69%;top:61%" aria-hidden="true">CONVEYOR B →</span>
         <span class="floor-tag" style="left:3%;bottom:1.5%" aria-hidden="true">BAY 04 · RENDER LINE</span>
@@ -657,7 +679,7 @@
         </div>
 
         <div class="dots-layer" id="dots-layer" aria-hidden="true"></div>
-        <div class="dots-layer" id="trail-layer" aria-hidden="true"></div>
+        <canvas id="trail-canvas" aria-hidden="true"></canvas>
         <div class="dots-layer" id="agents-layer" style="pointer-events:none"></div>
       </section>
 
@@ -1163,19 +1185,36 @@
         // last report for an agent is over 7s old, the agent is OFFLINE —
         // greyed, labelled with its last-seen time, and NOT animated again
         // until the server reports it fresh.
-        var trailLayer = el("trail-layer");
-        var crumbCount = 0;
+        // Breadcrumb trails live on a single canvas above the rooms (see the
+        // #trail-canvas CSS note): crumbs are plain data here, redrawn once
+        // per frame — no DOM nodes are born or die for a trail any more.
+        var trailCanvas = el("trail-canvas");
+        var trailCtx = trailCanvas ? trailCanvas.getContext("2d") : null;
+        var crumbs = []; // {x, y in map %, color, born}
+        var TRAIL_LIFE = 1600;
         var frameSlow = false; // set by the rAF loop: true when frames run under ~30fps (weak phone GPU)
         var mapElCache = null, mapW = 0, mapH = 0, frameNo = 0;
         function spawnCrumb(x, y, color){
-          if(!trailLayer || crumbCount > 90) return;
-          var c = document.createElement("div");
-          c.className = "crumb";
-          c.style.left = x + "%"; c.style.top = y + "%"; c.style.background = color;
-          trailLayer.appendChild(c); crumbCount++;
-          var done = function(){ if(c.parentNode) c.parentNode.removeChild(c); crumbCount--; };
-          c.addEventListener("animationend", done);
-          setTimeout(done, 1700); // safety net if animationend never fires
+          if(!trailCtx || crumbs.length > 280) return;
+          crumbs.push({ x: x, y: y, color: color, born: Date.now() });
+        }
+        function drawTrails(now){
+          if(!trailCtx || mapW <= 0) return;
+          var dpr = Math.min(2, window.devicePixelRatio || 1);
+          var tw = Math.round(mapW * dpr), th = Math.round(mapH * dpr);
+          if(trailCanvas.width !== tw || trailCanvas.height !== th){ trailCanvas.width = tw; trailCanvas.height = th; }
+          trailCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          trailCtx.clearRect(0, 0, mapW, mapH);
+          crumbs = crumbs.filter(function(c){ return now - c.born < TRAIL_LIFE; });
+          for(var i = 0; i < crumbs.length; i++){
+            var c = crumbs[i], age = (now - c.born) / TRAIL_LIFE;
+            trailCtx.globalAlpha = 0.85 * (1 - age);
+            trailCtx.fillStyle = c.color;
+            trailCtx.beginPath();
+            trailCtx.arc(c.x / 100 * mapW, c.y / 100 * mapH, 3.6 - 2 * age, 0, 7);
+            trailCtx.fill();
+          }
+          trailCtx.globalAlpha = 1;
         }
         function renderAgentPositions(){
           var now = Date.now();
@@ -1208,15 +1247,16 @@
             }
             a.el.classList.toggle("flip", a.x > 62);
             // Walking state: the agent is mid-route right now. The class
-            // drives the step-bob in CSS; the breadcrumb trail drops a
-            // fading dot behind it several times a second so its path stays
-            // visible. On slow frames the trail thins out but never vanishes —
-            // a weak phone is exactly where the proof of motion matters.
+            // drives the step-bob in CSS; the trail canvas drops a fading
+            // dot behind it several times a second so its path stays visible
+            // — above the rooms, where it can actually be seen. On slow
+            // frames the trail thins out but never vanishes — a weak phone
+            // is exactly where the proof of motion matters.
             var walking = !!a.route && now < a.route.endsAt;
             if(walking){
               movingCount++;
               if(!a.el.classList.contains("walking")) a.el.classList.add("walking");
-              if(!reduced && now - (a.lastCrumb || 0) > (frameSlow ? 420 : 200)){
+              if(!reduced && now - (a.lastCrumb || 0) > (frameSlow ? 380 : 170)){
                 a.lastCrumb = now;
                 spawnCrumb(p[0], p[1], a.color);
               }
@@ -1224,6 +1264,7 @@
               a.el.classList.remove("walking");
             }
           });
+          if(!reduced) drawTrails(now);
           // On-page proof of motion: how many of the 12 are walking right now.
           if(now - (renderAgentPositions.lastCount || 0) > 250){
             renderAgentPositions.lastCount = now;
@@ -1885,8 +1926,8 @@
         //    60fps — and if an agent's last report goes stale it marks the agent
         //    OFFLINE with its last-seen time and holds its animation.
         var jobTimer = null;
-        var WORK_MS = 2400;
-        var TRAVEL_SPEED = 52, PATROL_SPEED = 31, ROAM_SPEED = 23;
+        var WORK_MS = 1900;
+        var TRAVEL_SPEED = 58, PATROL_SPEED = 31, ROAM_SPEED = 23;
 
         function routeDistance(from, points){
           var d=0, px=from[0], py=from[1];
@@ -2242,7 +2283,7 @@
           el("subject").value = demoSubject;
           log("SELF-TEST // no brief yet — running one on its own so you can watch the crew work");
           beginRun({ subject: demoSubject, details: "", negative: "", format: state.format, detail: state.detail });
-        }, 4000);
+        }, 3000);
 
         el("download-img-btn").addEventListener("click", function () {
           if (!state.lastPrompt || !state.lastPrompt.imageUrl) return;
