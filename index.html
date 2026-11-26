@@ -717,7 +717,7 @@
           <p class="form-error" id="form-error" hidden></p>
 
           <button type="button" class="run-btn" id="run-btn">RUN PIPELINE</button>
-          <p class="run-note">Watch the grid and the Live Ops feed: at rest the named crew is spread across all six rooms, roaming room to room along the conveyor streets through the Deployment Bay, and traffic is few and slow. Fire a run and each room's two agents deploy in turn, travel to their workstation, patrol it while they work, then head back out on floor patrol when their stage is done — and the conveyor belts speed up for as long as the job is live.</p>
+          <p class="run-note">Watch the grid and the Live Ops feed: at rest the named crew is spread across all six rooms, roaming room to room along the conveyor streets through the Deployment Bay, and traffic is few and slow. Fire a run and each room's two agents deploy in turn, travel to their workstation, and patrol bench to bench across their room while they work — a stage only hands the brief on once its pair has actually arrived and put in its working time there, so the pair doing the job is always the pair visibly moving. When their stage is done they head back out on floor patrol — and the conveyor belts speed up for as long as the job is live.</p>
         </div>
 
         <!-- Pipeline status + result -->
@@ -832,7 +832,8 @@
           // factory tour from its home room. offX flips by dock so a room's pair patrols
           // in opposite directions and never overlaps.
           var offX = a.dock==="Dock B" ? -6 : 6;
-          a.patrol=[[a.work[0],a.work[1]],[a.work[0]+offX,a.work[1]],[a.work[0]+offX,a.work[1]+3.5],[a.work[0],a.work[1]+3.5]];
+          var patrolOffX = a.dock==="Dock B" ? -10 : 10;
+          a.patrol=[[a.work[0],a.work[1]],[a.work[0]+patrolOffX,a.work[1]],[a.work[0]+patrolOffX,a.work[1]+6],[a.work[0],a.work[1]+6]];
           var streetY = a.work[1] < 32 ? 34.5 : a.work[1] > 64 ? 66.5 : 34.5;
           var streetNear = [Math.max(6, Math.min(94, a.work[0])), streetY];
           var streetFar = [a.work[0] < 50 ? 66 : 34, a.work[1] < 50 ? 66.5 : 34.5];
@@ -1078,7 +1079,7 @@
         }
         buildCrew();
         emit(null, "Backend live — 12 named agents spread across all 6 rooms on floor patrol. No job yet.");
-        log("SYS // image-ecosystem online — 6 rooms, agents quiet until a run fires");
+        log("SYS // image-ecosystem online — 6 rooms, crew out on floor patrol until a run fires");
         log("PAGE // MuseAi-image-ecosystem on GitHub Pages — same grid as the live space");
 
         // ---------- Agent dots ----------
@@ -1800,8 +1801,8 @@
         //    60fps — and if an agent's last report goes stale it marks the agent
         //    OFFLINE with its last-seen time and holds its animation.
         var jobTimer = null;
-        var STAGE_MS = 2100;
-        var TRAVEL_SPEED = 26, PATROL_SPEED = 10, ROAM_SPEED = 11;
+        var WORK_MS = 3000;
+        var TRAVEL_SPEED = 36, PATROL_SPEED = 19, ROAM_SPEED = 11;
 
         function routeDistance(from, points){
           var d=0, px=from[0], py=from[1];
@@ -1840,7 +1841,7 @@
         function arriveWork(a){
           a.status="WORKING"; a.task=a.workTask;
           a.at=a.roomCode+" "+a.roomName+" \u00B7 workstation";
-          a.nextLegAt=Date.now()+300;
+          a.nextLegAt=Date.now()+120;
           emit(a, "Arrived at "+a.roomCode+" "+a.roomName+" \u2014 working: "+a.task);
           renderCrew();
         }
@@ -1864,10 +1865,11 @@
             renderCrew();
           } else {
             // Patrol / roam leg finished: pause; the server issues the next leg.
-            a.nextLegAt = now + (a.status==="WORKING" ? 320+((a.patrolIdx*37)%280) : 240+((a.patrolIdx*53)%320));
+            a.nextLegAt = now + (a.status==="WORKING" ? 120+((a.patrolIdx*37)%140) : 240+((a.patrolIdx*53)%320));
           }
         }
         function advanceStage(idx, brief, prompts){
+          if(backend.job){ backend.job.stageStartedAt=Date.now(); backend.job.workStartedAt=null; }
           CREW.forEach(function(a){
             var roomIdx = STAGE_ORDER.indexOf(a.room);
             if(roomIdx < idx){
@@ -1924,13 +1926,40 @@
           });
           var job=backend.job;
           if(job && state.running && !job.finished){
-            var idx=Math.min(5, Math.floor((now-backend.startedAt)/STAGE_MS));
-            if(idx>state.stageIdx){
-              state.stageIdx=idx; setStageStates(); advanceStage(idx, job.brief, job.prompts);
-              log("FLOW // brief moving room to room \u2014 "+STAGES[idx].name+" active");
-              if(STAGE_ORDER[idx]==="render-engine") log("RENDER // Render Engine drawing the image from the locked prompt");
+            // A stage NEVER advances on a blind timer. It advances only after
+            // its pair has actually ARRIVED at its workstations and then spent
+            // WORK_MS visibly working there (patrolling its benches at patrol
+            // speed). Before this fix the stage clock (2.1s) was shorter than
+            // the deploy trip through the bay, so every pair was recalled
+            // mid-journey and never worked at all — while idle agents, on
+            // long roam tours, were the only ones visibly moving. That was
+            // the inversion: working = still, not working = busy.
+            var stageRoom = STAGE_ORDER[state.stageIdx];
+            var pair = CREW.filter(function(a){ return a.room===stageRoom; });
+            var allWorking = pair.length>0 && pair.every(function(a){ return a.status==="WORKING"; });
+            if(!allWorking && job.stageStartedAt && now - job.stageStartedAt > 12000){
+              // Watchdog: a deploy must never stall a run forever. Settle any
+              // pair member still in transit straight onto its workstation.
+              pair.forEach(function(a){
+                if(a.status!=="WORKING"){ a.route=null; a.anchor=a.work.slice(); arriveWork(a); }
+              });
+              allWorking = true;
             }
-            if(now>=backend.startedAt + STAGE_MS*5 + 4000){ job.finished=true; finishRun(job.brief, job.prompts); }
+            if(allWorking && !job.workStartedAt){
+              job.workStartedAt = now;
+              emit(null, STAGES[state.stageIdx].name+" pair is at its workstations \u2014 working the stage before the brief moves on.");
+            }
+            if(job.workStartedAt && now - job.workStartedAt >= WORK_MS){
+              if(state.stageIdx >= 5){
+                job.finished=true; finishRun(job.brief, job.prompts);
+              } else {
+                var nextIdx = state.stageIdx + 1;
+                state.stageIdx = nextIdx;
+                setStageStates(); advanceStage(nextIdx, job.brief, job.prompts);
+                log("FLOW // brief moving room to room \u2014 "+STAGES[nextIdx].name+" active");
+                if(STAGE_ORDER[nextIdx]==="render-engine") log("RENDER // Render Engine drawing the image from the locked prompt");
+              }
+            }
           }
           var seen=document.getElementById("insp-seen");
           if(seen && selectedAgent) seen.textContent=clockTime(new Date(selectedAgent.lastSeen))+(selectedAgent.offline?" \u00B7 OFFLINE":"");
@@ -2086,7 +2115,7 @@
           setStageStates();
           runBtn.disabled = true;
           runBtn.textContent = "PIPELINE RUNNING…";
-          backend.job={num: state.runs+1, subject: subject, brief: brief, prompts: prompts, finished: false}; backend.startedAt=Date.now();
+          backend.job={num: state.runs+1, subject: subject, brief: brief, prompts: prompts, finished: false, workStartedAt: null, stageStartedAt: Date.now()}; backend.startedAt=Date.now();
           CREW.forEach(function(a){ var pos=agentPosAt(a, Date.now()); a.status="AT POST"; a.task=a.taskIdle; a.at=a.roomCode+" "+a.roomName+" \u00B7 floor patrol"; a.route=null; a.anchor=pos.slice(); a.x=pos[0]; a.y=pos[1]; a.nextLegAt=Date.now()+300; });
           emit(null, "Server created Job #"+backend.job.num+" from the brief and queued all 6 stages.");
           advanceStage(0, brief, prompts);

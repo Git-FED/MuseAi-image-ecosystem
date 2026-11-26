@@ -1,6 +1,6 @@
 # Muse AI Image Ecosystem
 
-![Status](https://img.shields.io/badge/Status-v1.3.1-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-v1.3.2-brightgreen?style=for-the-badge)
 ![Live](https://img.shields.io/badge/Live-GitHub_Pages-2ea44f?style=for-the-badge)
 
 **A real working image generation workflow, built like a satellite station.**
@@ -43,6 +43,7 @@ Write a brief, hit Run Pipeline, watch the rooms light up in order, get an image
 
 ## History
 
+- **v1.3.2 — Nov 26, 2026:** Fixed the inverted agent behaviour. Stages used to advance on a fixed 2.1-second timer, but a deploy trip through the Deployment Bay takes up to 3.6 seconds, so every pair was recalled mid-journey and never reached its workstation, while idle agents roamed the whole factory. Now a stage never advances on a timer: it waits until its pair has actually arrived, then the pair spends a full 3 seconds visibly working, patrolling bench to bench across a wider loop at faster-than-roam speed, before the brief moves on. A 12-second watchdog means a run can never stall.
 - **v1.3.1 — Nov 25, 2026:** Idle agents no longer sit in one box. Each pair now starts posted in its own home room, spread across all six rooms, and idle agents run a constant factory-wide tour: workstation, room corner, conveyor street, through the Deployment Bay, out to a far street, and back, at more than double the old roam speed. Starting a job no longer teleports everyone back into the bay; stages deploy via the bay, and finished pairs head back out on floor patrol. Status renamed AT POST.
 - **v1.3.0 — Nov 25, 2026:** Factory upgrade. 3D raised room boxes, conveyor streets, hazard header, green industrial background. Agents rebuilt on server-owns-the-truth: the in-page server issues every agent's whole route (waypoints, departure, speed) for deploys, patrols, roam, and a matching return for every deploy. The map only renders, never moves an agent itself. Agents patrol while working, walk back when done, idle roam, and go OFFLINE grey with a last-seen time if their reports go stale. Live Ops and README say plainly the Page has no network server.
 - **v1.2.0 — Nov 25, 2026:** Trees bug fixed. The painter only recognised 4 subjects and everything else fell through to pine trees. Now about 20 subject scenes (cat, dog, rocket, sailboat, car, train, castle, robot, dragon, bird, portrait, flowers, desert, snow, mountains, city, cottage, lighthouse, and more), trees only when the brief asks for a forest. New Photo Scout worker searches the Openverse archive for real openly licensed photos matching the brief, up to 4 per run, with credit and source link.
