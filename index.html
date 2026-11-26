@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="nebula">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -560,6 +560,118 @@
       .map:not(.running) .street-h::after, .map:not(.running) .street-v::after { animation-play-state: paused; }
       .map:not(.running) .crane { animation-play-state: paused; }
       .map:not(.running) .agent-wrap .agent-dot { animation: none; }
+      /* ============ EVOLUTION BUILD — themes, 3D diorama, mini crews, beams ============ */
+      /* Theme palettes: the whole scene (rooms included) recolours from these. */
+      :root[data-theme="nebula"] { --bg:#070714; --surface:#10101f; --surface2:#17172c; --text:#e9eaff; --dim:#9d9ec9; --faint:#60619a; --border:#2e2e57; --accent:#6ea8ff; --accent-rgb:110,168,255; --accent-dim:#152a4d; --floor:#0a0a1e; --room-a:#26265a; --room-b:#181838; --room-c:#0f0f26; --room-edge:#4a4a8f; }
+      :root[data-theme="emerald"] { --bg:#050a07; --surface:#0d1510; --surface2:#111c14; --text:#e6f5e9; --dim:#8aa892; --faint:#54705c; --border:#1e3324; --accent:#22ff88; --accent-rgb:34,255,136; --accent-dim:#0f3d24; --floor:#0a120c; --room-a:#1b2f20; --room-b:#122016; --room-c:#0a120c; --room-edge:#3a5c44; }
+      :root[data-theme="cyan"] { --bg:#03141a; --surface:#08222b; --surface2:#0b2c37; --text:#e2f7fc; --dim:#8fc3d1; --faint:#4f7e8d; --border:#17424f; --accent:#22d3ee; --accent-rgb:34,211,238; --accent-dim:#0a3442; --floor:#051a21; --room-a:#123c49; --room-b:#0b2833; --room-c:#061820; --room-edge:#2f6b7d; }
+      :root[data-theme="amber"] { --bg:#100b02; --surface:#1c1406; --surface2:#261b09; --text:#fdf3dd; --dim:#cbb27f; --faint:#8a744a; --border:#4a3814; --accent:#ffb020; --accent-rgb:255,176,32; --accent-dim:#42300a; --floor:#171004; --room-a:#3d2c0d; --room-b:#291d08; --room-c:#180f03; --room-edge:#7a5f22; }
+      :root[data-theme="violet"] { --bg:#0d0618; --surface:#180b2b; --surface2:#211038; --text:#f3eafd; --dim:#bda6dd; --faint:#7d639f; --border:#3b2560; --accent:#c084fc; --accent-rgb:192,132,252; --accent-dim:#33195c; --floor:#120826; --room-a:#2e1a52; --room-b:#1e1138; --room-c:#120826; --room-edge:#5f439b; }
+      :root[data-theme="rose"] { --bg:#130610; --surface:#220a1a; --surface2:#2d0f22; --text:#fdeef3; --dim:#d3a3b8; --faint:#96617c; --border:#52203c; --accent:#fb7185; --accent-rgb:251,113,133; --accent-dim:#471327; --floor:#1a0813; --room-a:#42152c; --room-b:#2b0e1e; --room-c:#1a0813; --room-edge:#7d3355; }
+      body { background-image:
+        radial-gradient(ellipse 900px 420px at 50% -60px, rgba(var(--accent-rgb),0.16), transparent 65%),
+        radial-gradient(ellipse 600px 500px at 100% 30%, rgba(var(--accent-rgb),0.06), transparent 60%),
+        radial-gradient(ellipse 600px 500px at 0% 70%, rgba(103,232,249,0.04), transparent 60%),
+        linear-gradient(rgba(var(--accent-rgb),0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(var(--accent-rgb),0.05) 1px, transparent 1px),
+        linear-gradient(180deg, var(--surface) 0%, var(--bg) 340px, var(--bg) 100%); }
+      body::before { background-color: var(--surface); }
+      .wrap { max-width: 76rem; }
+      /* Status strip is now a bordered HUD panel */
+      .status-strip { border: 1px solid var(--border); border-radius: var(--radius); background: linear-gradient(180deg, var(--surface2), var(--surface)); padding: 10px 14px; margin-top: 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 0 rgba(0,0,0,0.55); }
+      .online .blink-dot, .blink-dot { background: var(--accent); }
+      .status-strip .online { color: var(--accent); }
+      /* Theme picker */
+      .theme-bar { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+      .theme-bar .tlabel { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); margin-right: 2px; }
+      .theme-btn { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font-family: var(--mono); font-size: 12px; font-weight: 700; cursor: pointer; }
+      .theme-btn .sw { width: 12px; height: 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 0 8px currentColor; }
+      .theme-btn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+      /* 3D diorama: starfield viewport + tilted floating slab */
+      .diorama { margin-top: 14px; padding: 16px 12px 20px; border: 1px solid var(--border); border-radius: 14px; position: relative;
+        background-color: #04040d;
+        background-image:
+          radial-gradient(1.5px 1.5px at 12% 22%, rgba(255,255,255,0.9) 50%, transparent 51%),
+          radial-gradient(1px 1px at 32% 68%, rgba(255,255,255,0.7) 50%, transparent 51%),
+          radial-gradient(1.5px 1.5px at 54% 14%, rgba(255,255,255,0.8) 50%, transparent 51%),
+          radial-gradient(1px 1px at 71% 42%, rgba(255,255,255,0.65) 50%, transparent 51%),
+          radial-gradient(1.5px 1.5px at 86% 76%, rgba(255,255,255,0.85) 50%, transparent 51%),
+          radial-gradient(1px 1px at 93% 18%, rgba(255,255,255,0.6) 50%, transparent 51%),
+          radial-gradient(1px 1px at 6% 84%, rgba(255,255,255,0.55) 50%, transparent 51%),
+          radial-gradient(ellipse 70% 90% at 50% 0%, rgba(var(--accent-rgb),0.14), transparent 70%),
+          linear-gradient(180deg, #070716, #04040d);
+        box-shadow: inset 0 0 60px rgba(0,0,0,0.7); }
+      .diorama .hazard-bar { margin-top: 0; }
+      @media (min-width: 900px) {
+        .diorama { perspective: 1400px; padding: 20px 18px 26px; }
+        .diorama .map { height: 620px; transform: rotateX(4deg); transform-origin: 50% 100%; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.8), inset 0 18px 34px rgba(0,0,0,0.55), inset 0 -18px 34px rgba(0,0,0,0.55), 0 34px 54px rgba(0,0,0,0.8), 0 10px 0 rgba(0,0,0,0.6); }
+      }
+      /* Rooms take the theme: gradient, edge and glow all follow the palette */
+      .room { background: linear-gradient(180deg, var(--room-a) 0%, var(--room-b) 34%, var(--room-c) 100%); border-color: var(--room-edge);
+        box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 2px 0 0 rgba(255,255,255,0.07), inset 0 -16px 24px rgba(0,0,0,0.62), inset 0 0 0 1px rgba(0,0,0,0.45), 9px 12px 0 rgba(0,0,0,0.55), 9px 12px 0 1px var(--room-edge), 18px 26px 34px rgba(0,0,0,0.75); }
+      .room.render { background: linear-gradient(180deg, var(--room-a) 0%, var(--room-b) 34%, var(--room-c) 100%); border-color: var(--room-edge); box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 2px 0 0 rgba(255,255,255,0.07), inset 0 -16px 24px rgba(0,0,0,0.62), inset 0 0 0 1px rgba(0,0,0,0.45), 9px 12px 0 rgba(0,0,0,0.55), 9px 12px 0 1px var(--room-edge), 18px 26px 34px rgba(0,0,0,0.75), 0 0 26px rgba(var(--accent-rgb),0.3); }
+      .room.gallery { background: linear-gradient(180deg, var(--room-a) 0%, var(--room-b) 34%, var(--room-c) 100%); }
+      .room[data-state="staged"] { border-color: var(--cyan); box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 0 -14px 22px rgba(0,0,0,0.6), 9px 12px 0 rgba(0,0,0,0.55), 9px 12px 0 1px #155e6b, 18px 26px 34px rgba(0,0,0,0.75), 0 0 24px rgba(103,232,249,0.4); }
+      .room[data-state="staged"] .room-state { color: var(--cyan); }
+      .room-code { color: var(--text); }
+      h2.sec { color: var(--accent); }
+      .panel h3 { color: var(--accent); }
+      .readme h3 { color: var(--accent); }
+      .readme code { background: rgba(var(--accent-rgb),0.12); color: var(--accent); }
+      .run-btn { background: linear-gradient(180deg, var(--accent) 0%, var(--accent) 55%, var(--accent-dim) 130%); border-color: var(--accent); box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), inset 0 -6px 10px rgba(0,0,0,0.3), 0 6px 0 rgba(0,0,0,0.65), 0 12px 22px rgba(0,0,0,0.6); }
+      .chip[aria-pressed="true"], .seg button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+      .terminal { color: rgba(var(--accent-rgb),0.95); }
+      .prompt-box { color: rgba(var(--accent-rgb),0.95); }
+      /* Scan sweep across the floor while a run is live */
+      .map.running::after { content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+        background: linear-gradient(180deg, transparent 0%, rgba(var(--accent-rgb),0.13) 48%, rgba(var(--accent-rgb),0.3) 50%, rgba(var(--accent-rgb),0.13) 52%, transparent 100%);
+        background-size: 100% 240px; animation: scan-sweep 3.2s linear infinite; }
+      @keyframes scan-sweep { from { background-position: 0 -240px; } to { background-position: 0 640px; } }
+      /* Activation beams: bay -> room, flowing dashes + packet while that room is being activated or worked */
+      #beams { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+      #beams line { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 7 9; opacity: 0; vector-effect: non-scaling-stroke; }
+      #beams line.on { opacity: 0.95; animation: beam-flow 0.7s linear infinite; filter: drop-shadow(0 0 5px rgba(var(--accent-rgb),0.9)); }
+      @keyframes beam-flow { to { stroke-dashoffset: -16; } }
+      /* Mini crews: two small 3D figures per room, dormant at rest, working only while their stage runs */
+      .mini-crew { position: absolute; left: 8px; bottom: 7px; display: flex; gap: 14px; z-index: 1; pointer-events: none; }
+      .mini-fig { position: relative; width: 12px; height: 20px; opacity: 0.42; filter: grayscale(0.7) brightness(0.75); transition: opacity 0.4s, filter 0.4s; }
+      .mini-fig .mh { position: absolute; left: 50%; top: 0; width: 8px; height: 8px; margin-left: -4px; border-radius: 999px; background: var(--mini, var(--accent)); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 -2px 2px rgba(0,0,0,0.45); display: block; }
+      .mini-fig .mb { position: absolute; left: 50%; bottom: 0; width: 11px; height: 12px; margin-left: -5.5px; border-radius: 5px 5px 3px 3px; background: linear-gradient(180deg, var(--mini, var(--accent)), rgba(0,0,0,0.55)); border: 1px solid rgba(0,0,0,0.6); box-shadow: 2px 3px 0 rgba(0,0,0,0.55), inset 0 2px 0 rgba(255,255,255,0.4); display: block; }
+      .room[data-state="active"] .mini-fig { opacity: 1; filter: none; animation: mini-patrol 1.15s ease-in-out infinite alternate; }
+      .room[data-state="active"] .mini-fig:last-child { animation-delay: 0.45s; animation-duration: 1.4s; }
+      .room[data-state="staged"] .mini-fig { opacity: 0.75; filter: none; }
+      .room[data-state="done"] .mini-fig { opacity: 0.9; filter: none; }
+      @keyframes mini-patrol { from { transform: translateX(-4px) translateY(0); } 50% { transform: translateX(2px) translateY(-2px); } to { transform: translateX(7px) translateY(0); } }
+      @media (max-width: 639px) { .mini-crew { display: none; } }
+      /* Pipeline staged + timer notes */
+      .pipe li[data-state="staged"] { border-color: rgba(103,232,249,0.65); background: rgba(103,232,249,0.06); }
+      .pipe li[data-state="staged"] .code { background: var(--cyan); color: #000; }
+      .pipe li[data-state="staged"] .pstate { color: var(--cyan); }
+      .pipe .pslow { display: block; font-size: 11px; color: var(--amber); margin-top: 2px; }
+      /* Ops stats bar */
+      .stats-bar { margin-top: 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      @media (min-width: 700px) { .stats-bar { grid-template-columns: repeat(3, 1fr); } }
+      @media (min-width: 1100px) { .stats-bar { grid-template-columns: repeat(6, 1fr); } }
+      .stat-cell { border: 1px solid var(--border); border-radius: var(--radius); background: linear-gradient(180deg, var(--surface2), var(--surface)); padding: 10px 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+      .stat-cell .sv { font-family: var(--mono); font-size: 20px; font-weight: 800; color: var(--accent); line-height: 1.1; }
+      .stat-cell .sl { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; color: var(--dim); margin-top: 3px; }
+      /* Surprise + star */
+      .surprise-btn { font-family: var(--mono); margin-top: 10px; width: 100%; border: 1px dashed var(--accent); border-radius: var(--radius); background: var(--accent-dim); padding: 11px 14px; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent); cursor: pointer; min-height: 46px; }
+      .surprise-btn:active { transform: translateY(2px); }
+      .btn.starred { background: var(--amber); border-color: var(--amber); color: #000; }
+      .vault-tile { cursor: pointer; }
+      .result-img { cursor: zoom-in; }
+      /* Lightbox */
+      .lightbox { position: fixed; inset: 0; z-index: 60; background: rgba(2,2,10,0.94); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 18px; }
+      .lightbox[hidden] { display: none; }
+      .lightbox img { max-width: min(92vw, 880px); max-height: 74vh; border: 1px solid var(--accent); border-radius: 10px; box-shadow: 0 24px 60px rgba(0,0,0,0.8); }
+      .lightbox .lb-cap { font-family: var(--mono); font-size: 12px; color: var(--text); text-align: center; overflow-wrap: anywhere; max-width: 880px; }
+      .lightbox .lb-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+      @media (min-width: 1280px) { .crew-grid { grid-template-columns: repeat(4, 1fr); } }
+      @media (prefers-reduced-motion: reduce) {
+        .map.running::after, #beams line.on, .room[data-state="active"] .mini-fig { animation: none; }
+        .diorama .map { transform: none; }
+      }
       @media (prefers-reduced-motion: reduce) {
         .render-core, .blink-dot, .street-h::after, .street-v::after,
         .agent-wrap .agent-dot, .room[data-state="active"] .in-bars div,
@@ -594,18 +706,30 @@
           <a class="name" href="https://github.com/Git-FED/MuseAi-image-ecosystem">MuseAi-image-ecosystem</a>
           <span class="badge">Public</span>
           <span class="badge">GitHub Pages</span>
+          <span class="badge">3D Diorama Build</span>
+          <span class="badge">Updated Nov 26, 2026</span>
         </div>
         <div class="repo-links">
           <a href="https://github.com/Git-FED/MuseAi-image-ecosystem">View repository</a>
           <a class="primary" href="#brief">Run the pipeline</a>
         </div>
       </div>
+      <div class="theme-bar" role="group" aria-label="Console theme">
+        <span class="tlabel">THEME</span>
+        <button type="button" class="theme-btn" data-theme-btn="nebula" aria-pressed="true"><span class="sw" style="background:#6ea8ff;color:#6ea8ff"></span>Nebula</button>
+        <button type="button" class="theme-btn" data-theme-btn="emerald" aria-pressed="false"><span class="sw" style="background:#22ff88;color:#22ff88"></span>Emerald</button>
+        <button type="button" class="theme-btn" data-theme-btn="cyan" aria-pressed="false"><span class="sw" style="background:#22d3ee;color:#22d3ee"></span>Cyan</button>
+        <button type="button" class="theme-btn" data-theme-btn="amber" aria-pressed="false"><span class="sw" style="background:#ffb020;color:#ffb020"></span>Amber</button>
+        <button type="button" class="theme-btn" data-theme-btn="violet" aria-pressed="false"><span class="sw" style="background:#c084fc;color:#c084fc"></span>Violet</button>
+        <button type="button" class="theme-btn" data-theme-btn="rose" aria-pressed="false"><span class="sw" style="background:#fb7185;color:#fb7185"></span>Rose</button>
+      </div>
       <p class="repo-desc">
-        <strong>Muse AI Image Ecosystem — live ops view.</strong> The 12 named agents wait at their posts — two posted in each room, still and holding position while no job is running. They do not move until you start the pipeline. When a job fires, each room's pair routes through the bay to its workstation and works there — its name rides with it on the map, its room shows what it is doing, and the feed logs every move with a timestamp. Then the finished image lands in the vault and the crew returns to its posts and stops.
+        <strong>Muse AI Image Ecosystem — live ops view, 3D diorama build.</strong> The factory floor is now a tilted 3D slab floating in a starfield: six raised rooms with real depth, a Deployment Bay tower at the centre, and a two-person mini crew inside every room. The 12 named agents wait at their posts — two posted in each room, still and holding position while no job is running. They do not move until you start the pipeline. When a job fires, the bay fires an activation beam to each room in turn, the room's pair routes through the bay to its workstation, and that room's mini crew wakes up and works the benches while the stage runs — rooms waiting with their crew in place read STAGED, not WORKING. Then the finished image lands in the vault and the crew returns to its posts and stops. Six console themes recolour the whole scene, rooms included.
       </p>
 
-      <!-- Factory floor map -->
-      <div class="hazard-bar" aria-hidden="true"><span>MUSE IMAGE WORKS — FACTORY FLOOR 01</span></div>
+      <!-- Factory floor map — 3D diorama -->
+      <div class="diorama">
+      <div class="hazard-bar" aria-hidden="true"><span>MUSE IMAGE WORKS — FACTORY FLOOR 01 · 3D DIORAMA</span></div>
       <section class="map" aria-label="Ecosystem map">
         <div class="street-h" style="top:31%;height:7%" aria-hidden="true"></div>
         <div class="street-h" style="top:63%;height:7%" aria-hidden="true"></div>
@@ -625,6 +749,7 @@
           <div class="room-name">Prompt Office</div><span class="dock dock-a">DOCK A · QUILL</span><span class="dock dock-b">DOCK B · SCRIBE</span>
           <div class="in-lines" aria-hidden="true"><div style="width:92%"></div><div style="width:74%"></div><div style="width:84%"></div><div style="width:58%"></div></div>
           <div class="crates" aria-hidden="true"><div class="crate"></div><div class="crate tall"></div></div>
+          <div class="mini-crew" aria-hidden="true"><span class="mini-fig" style="--mini:#22ff88"><i class="mh"></i><i class="mb"></i></span><span class="mini-fig" style="--mini:#86efac"><i class="mh"></i><i class="mb"></i></span></div>
           <div class="room-now" id="now-prompt-office"></div>
         </div>
 
@@ -635,6 +760,7 @@
             <div style="background:#ffb020"></div><div style="background:#67e8f9"></div><div style="background:#ff5a4e"></div>
             <div style="background:#22ff88"></div><div style="background:#c084fc"></div><div style="background:#e6f5e9"></div>
           </div>
+          <div class="mini-crew" aria-hidden="true"><span class="mini-fig" style="--mini:#ffb020"><i class="mh"></i><i class="mb"></i></span><span class="mini-fig" style="--mini:#fde68a"><i class="mh"></i><i class="mb"></i></span></div>
           <div class="room-now" id="now-style-lab"></div>
         </div>
 
@@ -642,6 +768,7 @@
           <div class="room-head"><span class="room-code">R06</span><span class="room-state">IDLE</span></div>
           <div class="room-name">Gallery Vault</div><span class="dock dock-a">DOCK A · VAULT</span><span class="dock dock-b">DOCK B · COURIER</span>
           <div class="in-vault" aria-hidden="true"><div class="vault-tile">EMPTY</div><div class="vault-tile">EMPTY</div><div class="vault-tile">EMPTY</div><div class="vault-tile">EMPTY</div></div>
+          <div class="mini-crew" aria-hidden="true"><span class="mini-fig" style="--mini:#22ff88"><i class="mh"></i><i class="mb"></i></span><span class="mini-fig" style="--mini:#bbf7d0"><i class="mh"></i><i class="mb"></i></span></div>
           <div class="room-now" id="now-gallery-vault"></div>
         </div>
 
@@ -650,16 +777,17 @@
           <div class="room-name">Composition Bay</div><span class="dock dock-a">DOCK A · FRAME</span><span class="dock dock-b">DOCK B · RULE</span>
           <div class="in-frame" aria-hidden="true"><div class="v"></div><div class="h"></div><div class="c"></div></div>
           <div class="crates" aria-hidden="true"><div class="crate cyan"></div><div class="crate cyan tall"></div></div>
+          <div class="mini-crew" aria-hidden="true"><span class="mini-fig" style="--mini:#67e8f9"><i class="mh"></i><i class="mb"></i></span><span class="mini-fig" style="--mini:#a5f3fc"><i class="mh"></i><i class="mb"></i></span></div>
           <div class="room-now" id="now-composition-bay"></div>
         </div>
 
         <div class="hub" style="left:34%;top:32%;width:32%;height:32%" aria-hidden="true">
           <div class="hub-dot"></div>
         </div>
-        <div class="bay-tag" aria-hidden="true">DEPLOYMENT BAY<span>CREW ROUTES THROUGH HERE</span></div>
+        <div class="bay-tag" aria-hidden="true">DEPLOYMENT BAY<span id="bay-status">CREW ROUTES THROUGH HERE</span></div>
 
         <div class="room" id="room-detail-forge" data-state="idle" style="left:68%;top:40%;width:30%;height:21%">
-          <div class="room-head"><span class="room-code">R05</span><span class="room-state">IDLE</span></div>
+          <div class="room-head"><span class="room-code">R04</span><span class="room-state">IDLE</span></div>
           <div class="room-name">Detail Forge</div><span class="dock dock-a">DOCK A · HONE</span><span class="dock dock-b">DOCK B · POLISH</span>
           <div class="in-sliders" aria-hidden="true">
             <div class="track"><div class="knob" style="left:80%"></div></div>
@@ -667,11 +795,12 @@
             <div class="track"><div class="knob" style="left:90%"></div></div>
           </div>
           <div class="crates" aria-hidden="true"><div class="crate amber"></div><div class="crate amber tall"></div><div class="crate amber"></div></div>
+          <div class="mini-crew" aria-hidden="true"><span class="mini-fig" style="--mini:#c084fc"><i class="mh"></i><i class="mb"></i></span><span class="mini-fig" style="--mini:#e9d5ff"><i class="mh"></i><i class="mb"></i></span></div>
           <div class="room-now" id="now-detail-forge"></div>
         </div>
 
         <div class="room render" id="room-render-engine" data-state="idle" style="left:18%;top:67%;width:64%;height:29%">
-          <div class="room-head"><span class="room-code">R04</span><span class="room-state">IDLE</span></div>
+          <div class="room-head"><span class="room-code">R05</span><span class="room-state">IDLE</span></div>
           <div class="room-name">Render Engine</div><span class="dock dock-a">DOCK A · FORGE</span><span class="dock dock-b">DOCK B · KILN</span>
           <div class="in-render" aria-hidden="true">
             <div class="render-core"></div>
@@ -681,13 +810,23 @@
             </div>
           </div>
           <div class="crates" aria-hidden="true"><div class="crate cyan tall"></div><div class="crate cyan"></div><div class="crate cyan tall"></div></div>
+          <div class="mini-crew" aria-hidden="true"><span class="mini-fig" style="--mini:#22d3ee"><i class="mh"></i><i class="mb"></i></span><span class="mini-fig" style="--mini:#67e8f9"><i class="mh"></i><i class="mb"></i></span></div>
           <div class="room-now" id="now-render-engine"></div>
         </div>
 
+        <svg id="beams" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <line id="beam-prompt-office" x1="50" y1="48" x2="17" y2="15"></line>
+          <line id="beam-style-lab" x1="50" y1="48" x2="50" y2="15"></line>
+          <line id="beam-gallery-vault" x1="50" y1="48" x2="83" y2="18"></line>
+          <line id="beam-composition-bay" x1="50" y1="48" x2="17" y2="47"></line>
+          <line id="beam-detail-forge" x1="50" y1="48" x2="83" y2="50"></line>
+          <line id="beam-render-engine" x1="50" y1="48" x2="50" y2="81"></line>
+        </svg>
         <div class="dots-layer" id="dots-layer" aria-hidden="true"></div>
         <canvas id="trail-canvas" aria-hidden="true"></canvas>
         <div class="dots-layer" id="agents-layer" style="pointer-events:none"></div>
       </section>
+      </div>
 
       <!-- Terminal log -->
       <section class="terminal" aria-label="Terminal log" id="terminal"></section>
@@ -697,6 +836,14 @@
         <h2 class="sec">LIVE OPS — WHO IS DOING WHAT, AND WHEN</h2>
         <p class="sub">This is the live engine for this page, built the way real agent fleets are wired: the server owns the truth, and the map only renders what the server says. On this static GitHub Pages build the server is a module inside the page — there is no network server behind a Pages site; the full network-server version of this ecosystem is the Space. Inside this page the split is strict all the same: The server creates the job, and for every move it issues an agent's whole route — waypoints, departure time and speed — for deploys and workstation patrols during a run. No route is issued while no pipeline is running, so every agent holds its post and does not move until you start a pipeline. The map animates those routes locally at 60 frames a second, but no animation starts, stops or changes direction except when the server's state changes. The server reports every agent four times a second; if an agent ever stops reporting, it is marked OFFLINE with its last-seen time and its animation holds — it never keeps walking on its own. No anonymous dots do job work — the 12 named crew below do. The smaller background dots are street traffic only, and they only move while a job is live.</p>
         <div class="legend"><span>● NAMED CREW — 12 agents posted across all 6 rooms, holding still at their posts until a pipeline starts, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job, and only moving while a job is live</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room, patrolling between its benches while it works</span><span>· DONE — the stage is filed and the agent is back at its post, holding still</span><span>· OFFLINE — the server stopped reporting the agent: grey, held at its last reported position, last-seen time shown</span><span>· The conveyor belts run only while a job is live</span><span>· IN MOTION — the status strip counts the crew walking at this moment; it reads 0/12 until a pipeline starts. A walking agent bobs at step pace and leaves a fading dotted trail on the path it just walked</span><span>· The overhead gantry crane travels the floor only while a job is live</span></div>
+        <div class="stats-bar" aria-label="Operations statistics">
+          <div class="stat-cell"><div class="sv" id="ops-runs">0</div><div class="sl">TOTAL RUNS</div></div>
+          <div class="stat-cell"><div class="sv" id="ops-done">0</div><div class="sl">COMPLETED</div></div>
+          <div class="stat-cell"><div class="sv" id="ops-success">—</div><div class="sl">SUCCESS RATE</div></div>
+          <div class="stat-cell"><div class="sv" id="ops-avg">—</div><div class="sl">AVG RUN TIME</div></div>
+          <div class="stat-cell"><div class="sv" id="ops-topstyle">—</div><div class="sl">TOP STYLE</div></div>
+          <div class="stat-cell"><div class="sv" id="ops-starred">0</div><div class="sl">STARRED IMAGES</div></div>
+        </div>
         <div class="ops-grid">
           <div class="panel">
             <h3><span>CURRENT JOB + DEPLOYMENT FEED</span><span id="feed-live">LIVE · POLL 2s</span></h3>
@@ -733,7 +880,7 @@
         <!-- Brief / control room -->
         <div id="brief">
           <h2 class="sec">NEW BRIEF</h2>
-          <p class="sub">Describe the picture. The rooms work it in order — Prompt Office expands the brief, Style Lab locks the look, Composition Bay frames it, Render Engine generates the image, Detail Forge sharpens it — and the finished image lands in the vault panel with the exact prompt the rooms built.</p>
+          <p class="sub">Describe the picture. The rooms work it in order — Prompt Office expands the brief, Style Lab locks the look, Composition Bay frames it, Detail Forge sharpens it, Render Engine generates the image — and the finished image lands in the vault panel with the exact prompt the rooms built.</p>
 
           <label class="flabel" for="subject">WHAT SHOULD IT MAKE?</label>
           <textarea id="subject" rows="3" placeholder="A lighthouse keeper's cottage on a cliff at stormy dusk, waves below…"></textarea>
@@ -769,6 +916,7 @@
           <p class="form-error" id="form-error" hidden></p>
 
           <button type="button" class="run-btn" id="run-btn">RUN PIPELINE</button>
+          <button type="button" class="surprise-btn" id="surprise-btn">SURPRISE ME — THE CREW INVENTS A BRIEF</button>
           <p class="run-note">Watch the grid and the Live Ops feed: at rest the named crew holds still at its posts across all six rooms — nobody walks, the IN MOTION count in the status strip reads 0/12, and the belts, crane and street traffic are held too. The agents only move once you start the pipeline. Fire a run and each room's two agents deploy in turn, travel to their workstation, and patrol bench to bench across their room while they work — a stage only hands the brief on once its pair has actually arrived and put in its working time there, so the pair doing the job is always the pair visibly moving, and every walking agent leaves a fading dotted trail along the path it just took. When their stage is done they return to their posts and stop, and the floor goes still again until the next run.</p>
         </div>
 
@@ -783,6 +931,7 @@
             <p class="result-meta" id="result-meta"></p>
             <div class="btn-row">
               <button type="button" class="btn primary" id="download-img-btn">DOWNLOAD IMAGE</button>
+              <button type="button" class="btn" id="star-btn" aria-pressed="false">☆ STAR</button>
               <button type="button" class="btn" id="copy-btn">COPY PROMPT</button>
               <button type="button" class="btn" id="download-btn">PROMPT .TXT</button>
               <span class="copied" id="copied-note" hidden>COPIED</span>
@@ -827,18 +976,37 @@
             <li><code>R01 Prompt Office</code> — expands your one-line brief into a full descriptive prompt.</li>
             <li><code>R02 Style Lab</code> — locks the style, mood, lighting and palette.</li>
             <li><code>R03 Composition Bay</code> — frames the shot for the format you picked: square, landscape or portrait.</li>
-            <li><code>R04 Render Engine</code> — generates the image; on this Pages build it renders live on a canvas in your browser. The painter reads the subject in your brief — a cat, a rocket, a castle, a coastline each get their own scene — and trees appear only when the brief actually asks for a forest.</li>
-            <li><code>R05 Detail Forge</code> — sharpens detail language and applies your keep-out list.</li>
+            <li><code>R04 Detail Forge</code> — sharpens detail language and applies your keep-out list. The forge runs before the render, in the true stage order.</li>
+            <li><code>R05 Render Engine</code> — generates the image; on this Pages build it renders live on a canvas in your browser. The painter reads the subject in your brief — a cat, a rocket, a castle, a coastline each get their own scene — and trees appear only when the brief actually asks for a forest. This is the slow step of the run.</li>
             <li><code>R06 Gallery Vault</code> — where finished work lands, and where Photo Scout, the Vault's search worker, files the real openly licensed photos it finds for your brief.</li>
           </ul>
           <h3>WHO THE AGENTS ARE — AND WHERE THEY DEPLOY FROM</h3>
-          <p>Job work is done by <code>12 named agents</code>, two per room, each based in its own room and holding still at its post whenever no job is running — the crew does not move unless the pipeline is started. <code>Quill + Scribe</code> work R01 Prompt Office, <code>Palette + Mood</code> R02 Style Lab, <code>Frame + Rule</code> R03 Composition Bay, <code>Forge + Kiln</code> R04 Render Engine, <code>Hone + Polish</code> R05 Detail Forge, and <code>Vault + Courier</code> R06 Gallery Vault — Courier also runs the carry from R04 to R06 through the bay. When a stage fires, that room's pair routes through the bay, travels the streets to its workstation, and works there; when the stage closes, the pair returns to its post and stops. Each agent's name rides with it on the map, its room shows what it is doing, and its card, the Agent Inspector and the feed all show the same live task string, so there is one answer to “who is doing what” everywhere you look.</p>
+          <p>Job work is done by <code>12 named agents</code>, two per room, each based in its own room and holding still at its post whenever no job is running — the crew does not move unless the pipeline is started. <code>Quill + Scribe</code> work R01 Prompt Office, <code>Palette + Mood</code> R02 Style Lab, <code>Frame + Rule</code> R03 Composition Bay, <code>Hone + Polish</code> R04 Detail Forge, <code>Forge + Kiln</code> R05 Render Engine, and <code>Vault + Courier</code> R06 Gallery Vault — Courier also runs the carry from R05 to R06 through the bay. When a stage fires, that room's pair routes through the bay, travels the streets to its workstation, and works there; when the stage closes, the pair returns to its post and stops. Each agent's name rides with it on the map, its room shows what it is doing, and its card, the Agent Inspector and the feed all show the same live task string, so there is one answer to “who is doing what” everywhere you look.</p>
           <h3>THE LIVE ENGINE (SERVER OWNS THE TRUTH)</h3>
           <p>GitHub Pages has no network server to add, so the server lives in the page as a module — but the split is the real one used by live agent fleets. The server owns every agent's state and is the only thing that can change it: it creates a numbered job from your brief, and for every move it issues the agent's whole route — waypoints, departure time and speed — covering deploys routed through the Deployment Bay and patrol legs around a workstation while a stage runs. While no job is running it issues no routes at all, so the crew sits at its posts. The map is a renderer only: it animates the server's routes locally at 60 frames a second and never starts, stops or redirects a walk by itself. The server reports every agent four times a second and appends every deployment, arrival, handoff and filing to a timestamped event log (the Deployment Feed and terminal); an agent whose reports go stale is marked <code>OFFLINE</code> with its last-seen time and its animation holds until it reports again. The 18 smaller dots are street traffic only — they stay held at rest and move only during a run, and they never carry a job. The full server version of this ecosystem is the Space; this Page is its live public face.</p>
+          <h3>THE 3D DIORAMA BUILD — WHAT IS NEW IN THIS UPDATE</h3>
+          <ul>
+            <li><code>3D diorama floor</code> — the flat map is now a tilted slab floating in a starfield viewport, rooms as raised blocks with deeper extrusion and a scan sweep across the floor while a run is live.</li>
+            <li><code>Mini crews</code> — every room holds its own two-person mini crew at its benches. They sit dormant and dim at rest; when the bay activates their room they light up and patrol bench to bench while that stage works.</li>
+            <li><code>Activation beams</code> — the Deployment Bay fires a flowing beam along the streets to each room as its stage starts, so a run reads as the bay waking the floor room by room. The bay nameplate reads ACTIVATING ROOM CREWS while a run is live.</li>
+            <li><code>STAGED, not WORKING</code> — a room whose crew has arrived but whose stage has not started reads STAGED in cyan. Rooms only read WORKING while their pair is genuinely at its workstations. Stages are numbered in the true order: Detail Forge is R04 and runs before Render Engine R05.</li>
+            <li><code>Six themes</code> — Nebula (the new default, deep indigo and electric blue), Emerald, Cyan, Amber, Violet and Rose. Switching themes recolours the whole scene, rooms included.</li>
+            <li><code>Ops stats, Surprise Me, starred vault</code> — a stats bar computed from this session's real run history, a SURPRISE ME button that invents a fresh brief, star any finished image, and a full-screen lightbox from the result or any vault tile.</li>
+          </ul>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
         </div>
       </section>
+
+      <!-- Lightbox -->
+      <div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Image viewer">
+        <img id="lightbox-img" alt="" />
+        <p class="lb-cap" id="lightbox-cap"></p>
+        <div class="lb-row">
+          <button type="button" class="btn" id="lightbox-star" aria-pressed="false">☆ STAR</button>
+          <button type="button" class="btn primary" id="lightbox-close">CLOSE</button>
+        </div>
+      </div>
 
       <footer>
         <span>Git-FED / MuseAi-image-ecosystem</span>
@@ -856,11 +1024,11 @@
           { id: "prompt-office", code: "R01", name: "Prompt Office", task: "Expands your brief into a full prompt" },
           { id: "style-lab", code: "R02", name: "Style Lab", task: "Locks style, mood, lighting and palette" },
           { id: "composition-bay", code: "R03", name: "Composition Bay", task: "Frames the shot for your format" },
-          { id: "render-engine", code: "R04", name: "Render Engine", task: "Generates the actual image" },
-          { id: "detail-forge", code: "R05", name: "Detail Forge", task: "Refines detail and strips flaws" },
+          { id: "detail-forge", code: "R04", name: "Detail Forge", task: "Refines detail and strips flaws" },
+          { id: "render-engine", code: "R05", name: "Render Engine", task: "Generates the actual image — the slow step" },
           { id: "gallery-vault", code: "R06", name: "Gallery Vault", task: "Finished work lands in the vault" }
         ];
-        var STAGE_ORDER = ["prompt-office", "style-lab", "composition-bay", "render-engine", "detail-forge", "gallery-vault"];
+        var STAGE_ORDER = ["prompt-office", "style-lab", "composition-bay", "detail-forge", "render-engine", "gallery-vault"];
         // ---------- Named crew: who is who, where they deploy from ----------
         var CREW = [
           { id:"quill", name:"Quill", call:"R01-A", room:"prompt-office", roomName:"Prompt Office", roomCode:"R01", role:"Prompt Expander", dock:"Dock A", color:"#22ff88", bay:[38.5,40], work:[16,14], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Expanding the brief into a full prompt: \u201C"+b.subject.slice(0,54)+"\u201D";} },
@@ -869,12 +1037,12 @@
           { id:"mood", name:"Mood", call:"R02-B", room:"style-lab", roomName:"Style Lab", roomCode:"R02", role:"Lighting & Mood", dock:"Dock B", color:"#fde68a", bay:[61,40], work:[56,18], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b,pr){return "Setting mood \u201C"+pr.mood+"\u201D — lighting, shadow and atmosphere.";} },
           { id:"frame", name:"Frame", call:"R03-A", room:"composition-bay", roomName:"Composition Bay", roomCode:"R03", role:"Composition Lead", dock:"Dock A", color:"#67e8f9", bay:[38.5,48.5], work:[16,45], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Framing the shot for "+b.format+" format on the framing table.";} },
           { id:"rule", name:"Rule", call:"R03-B", room:"composition-bay", roomName:"Composition Bay", roomCode:"R03", role:"Thirds & Margins Checker", dock:"Dock B", color:"#a5f3fc", bay:[46,48.5], work:[22,49], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Checking thirds, margins and headroom for "+b.format+".";} },
-          { id:"forge", name:"Forge", call:"R04-A", room:"render-engine", roomName:"Render Engine", roomCode:"R04", role:"Render Lead", dock:"Dock A", color:"#22d3ee", bay:[53.5,48.5], work:[42,81], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Rendering the image on canvas from the locked final prompt.";} },
-          { id:"kiln", name:"Kiln", call:"R04-B", room:"render-engine", roomName:"Render Engine", roomCode:"R04", role:"Render Core & Grain", dock:"Dock B", color:"#67e8f9", bay:[61,48.5], work:[58,84], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Firing the render core — grain and detail pass at "+b.detail+" detail.";} },
-          { id:"hone", name:"Hone", call:"R05-A", room:"detail-forge", roomName:"Detail Forge", roomCode:"R05", role:"Detail Sharpener", dock:"Dock A", color:"#c084fc", bay:[38.5,57], work:[78,48], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Sharpening detail language and resolving fine texture.";} },
-          { id:"polish", name:"Polish", call:"R05-B", room:"detail-forge", roomName:"Detail Forge", roomCode:"R05", role:"Flaw & Keep-Out Checker", dock:"Dock B", color:"#e9d5ff", bay:[46,57], work:[88,51], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return b.negative ? "Stripping keep-out items: "+b.negative+"." : "Checking for flaws — no keep-out list on this brief.";} },
+          { id:"forge", name:"Forge", call:"R05-A", room:"render-engine", roomName:"Render Engine", roomCode:"R05", role:"Render Lead", dock:"Dock A", color:"#22d3ee", bay:[53.5,48.5], work:[42,81], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Rendering the image on canvas from the locked final prompt.";} },
+          { id:"kiln", name:"Kiln", call:"R05-B", room:"render-engine", roomName:"Render Engine", roomCode:"R05", role:"Render Core & Grain", dock:"Dock B", color:"#67e8f9", bay:[61,48.5], work:[58,84], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Firing the render core — grain and detail pass at "+b.detail+" detail.";} },
+          { id:"hone", name:"Hone", call:"R04-A", room:"detail-forge", roomName:"Detail Forge", roomCode:"R04", role:"Detail Sharpener", dock:"Dock A", color:"#c084fc", bay:[38.5,57], work:[78,48], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Sharpening detail language and resolving fine texture.";} },
+          { id:"polish", name:"Polish", call:"R04-B", room:"detail-forge", roomName:"Detail Forge", roomCode:"R04", role:"Flaw & Keep-Out Checker", dock:"Dock B", color:"#e9d5ff", bay:[46,57], work:[88,51], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return b.negative ? "Stripping keep-out items: "+b.negative+"." : "Checking for flaws — no keep-out list on this brief.";} },
           { id:"vault", name:"Vault", call:"R06-A", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Vault Keeper", dock:"Dock A", color:"#22ff88", bay:[53.5,57], work:[78,15], speed:1.3, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Opening vault slot 1 and filing the finished image.";} },
-          { id:"courier", name:"Courier", call:"R06-B", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Image Courier — R04 to R06", dock:"Dock B", color:"#bbf7d0", bay:[61,57], work:[88,19], speed:1.8, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Carrying the finished image from the Render Engine (R04) through the bay to the Gallery Vault (R06).";} }
+          { id:"courier", name:"Courier", call:"R06-B", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Image Courier — R05 to R06", dock:"Dock B", color:"#bbf7d0", bay:[61,57], work:[88,19], speed:1.8, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Carrying the finished image from the Render Engine (R05) through the bay to the Gallery Vault (R06).";} }
         ];
         var BAY = [50, 48];
         CREW.forEach(function(a, ai){
@@ -1038,7 +1206,8 @@
           styleSel: "Cinematic", moodSel: "Golden hour",
           format: "square", detail: "high",
           running: false, stageIdx: -1, runs: 0,
-          activity: 0, lastPrompt: null
+          activity: 0, lastPrompt: null,
+          history: [], lastEntry: null
         };
 
         function el(id) { return document.getElementById(id); }
@@ -1102,26 +1271,48 @@
           li.querySelector(".code").textContent = s.code;
           li.querySelector(".pname").textContent = s.name;
           li.querySelector(".ptask").textContent = s.task;
+          if (s.id === "render-engine") {
+            var slow = document.createElement("span");
+            slow.className = "pslow";
+            slow.textContent = "Slow step — image generation takes the longest here.";
+            li.querySelector(".ptask").appendChild(slow);
+          }
           pipeList.appendChild(li);
         });
 
         function setStageStates() {
           STAGE_ORDER.forEach(function (id, idx) {
             var st = "idle";
-            if (state.running) st = idx < state.stageIdx ? "done" : idx === state.stageIdx ? "active" : "idle";
+            if (state.running) {
+              if (idx < state.stageIdx) st = "done";
+              else if (idx === state.stageIdx) {
+                // STAGED until the room's pair is genuinely WORKING at its
+                // workstations — a crew merely deployed or in place no longer
+                // reads as WORKING (the old room 4 / 6 lie).
+                var pair = CREW.filter(function (a) { return a.room === id; });
+                var anyWorking = pair.some(function (a) { return a.status === "WORKING"; });
+                var anyDeployed = pair.some(function (a) { return a.status === "DEPLOYED"; });
+                st = anyWorking ? "active" : anyDeployed ? "staged" : "active";
+              } else st = "idle";
+            }
             else if (state.stageIdx >= 5) st = "done";
             else if (state.stageIdx >= 0) st = idx <= state.stageIdx ? "done" : "idle";
             var room = el("room-" + id);
             if (room) {
               room.setAttribute("data-state", st);
-              room.querySelector(".room-state").textContent = st === "active" ? "WORKING" : st === "done" ? "DONE" : "IDLE";
+              room.querySelector(".room-state").textContent = st === "active" ? "WORKING" : st === "staged" ? "STAGED" : st === "done" ? "DONE" : "IDLE";
             }
             var li = el("pipe-" + id);
             if (li) {
               li.setAttribute("data-state", st);
-              li.querySelector(".pstate").textContent = st === "active" ? "WORKING" : st === "done" ? "DONE" : "";
+              li.querySelector(".pstate").textContent = st === "active" ? "WORKING" : st === "staged" ? "STAGED" : st === "done" ? "DONE" : "";
             }
+            // Activation beam from the bay to the room being activated / worked.
+            var beam = el("beam-" + id);
+            if (beam) beam.classList.toggle("on", st === "active" || st === "staged");
           });
+          var bayStatus = el("bay-status");
+          if (bayStatus) bayStatus.textContent = state.running ? "ACTIVATING ROOM CREWS" : "CREW ROUTES THROUGH HERE";
           // Factory coupling: conveyor belts and floor dressing run at full pace
           // only while a job is live; at rest they crawl.
           var mapEl = document.querySelector(".map");
@@ -1144,7 +1335,7 @@
         buildCrew();
         emit(null, "Backend live — 12 named agents at their posts across all 6 rooms, holding still. No job yet — start the pipeline to set them moving.");
         log("SYS // image-ecosystem online — 6 rooms, crew parked at posts until a run fires");
-        log("PAGE // MuseAi-image-ecosystem on GitHub Pages — same grid as the live space");
+        log("PAGE // MuseAi-image-ecosystem on GitHub Pages — 3D diorama build, Nebula theme, updated Nov 26 2026");
 
         // ---------- Agent dots ----------
         var NODES = [
@@ -2022,7 +2213,7 @@
               a.at="En route \u00B7 Deployment Bay \u2192 "+a.roomCode+" "+a.roomName;
               if(a.id==="courier"){
                 issueRoute(a, [[42,81], a.bay, a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
-                emit(a, "Deployed via the Deployment Bay \u2192 R04 Render Engine pickup, then on to R06 Gallery Vault with the image.");
+                emit(a, "Deployed via the Deployment Bay \u2192 R05 Render Engine pickup, then on to R06 Gallery Vault with the image.");
               } else {
                 issueRoute(a, [a.bay, a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
                 emit(a, "Deployed via the Deployment Bay \u2192 "+a.roomCode+" "+a.roomName+".");
@@ -2114,6 +2305,7 @@
               }
             }
           }
+          setStageStates();
           var seen=document.getElementById("insp-seen");
           if(seen && selectedAgent) seen.textContent=clockTime(new Date(selectedAgent.lastSeen))+(selectedAgent.offline?" \u00B7 OFFLINE":"");
         }
@@ -2142,6 +2334,12 @@
           el("stat-runs").textContent = "RUNS " + state.runs;
           var imageUrl = renderImage(brief, prompts);
           state.lastPrompt = { brief: brief, prompts: prompts, imageUrl: imageUrl };
+          var durS = backend.startedAt ? (Date.now() - backend.startedAt) / 1000 : 0;
+          var entry = { num: state.runs, subject: brief.subject, style: prompts.style, mood: prompts.mood, format: brief.format, imageUrl: imageUrl, dur: durS, starred: false };
+          state.history.push(entry);
+          state.lastEntry = entry;
+          updateStats();
+          refreshStarBtn();
           CREW.forEach(function(a){
             var doneText="Done on Job #"+state.runs+": "+a.taskWork(brief,prompts);
             if(a.status==="WORKING" || a.status==="DEPLOYED"){
@@ -2163,14 +2361,18 @@
           img.alt = brief.subject;
           el("result-meta").textContent = brief.subject + " — " + prompts.style + " · " + prompts.mood + " · " + brief.format + " · detail " + brief.detail;
           var tiles = document.querySelectorAll(".vault-tile");
-          if (tiles.length) {
-            tiles[0].classList.add("filled");
-            tiles[0].innerHTML = "";
+          tiles.forEach(function (tile, ti) {
+            var e2 = state.history[state.history.length - 1 - ti];
+            if (!e2) return;
+            tile.classList.add("filled");
+            tile.innerHTML = "";
             var thumb = document.createElement("img");
-            thumb.src = imageUrl;
-            thumb.alt = "";
-            tiles[0].appendChild(thumb);
-          }
+            thumb.src = e2.imageUrl;
+            thumb.alt = e2.subject;
+            tile.appendChild(thumb);
+            tile.title = "Run #" + e2.num + " — " + e2.subject + " (tap to view)";
+            tile.onclick = function () { openLightbox(e2); };
+          });
           var box = el("prompt-box");
           box.innerHTML = "";
           [["EXPANDED //", prompts.expanded], ["COMPOSITION //", prompts.composition], ["FINAL //", prompts.final]].forEach(function (pair) {
@@ -2340,6 +2542,92 @@
           a.click();
           document.body.removeChild(a);
           setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+        });
+
+        // ---------- Evolution build: themes, stats, surprise, star, lightbox ----------
+        function applyTheme(name) {
+          document.documentElement.setAttribute("data-theme", name);
+          Array.prototype.forEach.call(document.querySelectorAll("[data-theme-btn]"), function (b) {
+            b.setAttribute("aria-pressed", b.getAttribute("data-theme-btn") === name ? "true" : "false");
+          });
+        }
+        Array.prototype.forEach.call(document.querySelectorAll("[data-theme-btn]"), function (b) {
+          b.addEventListener("click", function () {
+            applyTheme(b.getAttribute("data-theme-btn"));
+            log("THEME // console theme switched to " + b.getAttribute("data-theme-btn").toUpperCase() + " — the whole scene recolours");
+          });
+        });
+        function updateStats() {
+          var h = state.history;
+          var done = h.length;
+          var totalDur = h.reduce(function (s, e) { return s + (e.dur || 0); }, 0);
+          var counts = {};
+          h.forEach(function (e) { counts[e.style] = (counts[e.style] || 0) + 1; });
+          var top = "—", topN = 0;
+          Object.keys(counts).forEach(function (k) { if (counts[k] > topN) { topN = counts[k]; top = k; } });
+          var starred = h.filter(function (e) { return e.starred; }).length;
+          el("ops-runs").textContent = state.runs;
+          el("ops-done").textContent = done;
+          el("ops-success").textContent = state.runs ? Math.round((done / state.runs) * 100) + "%" : "—";
+          el("ops-avg").textContent = done ? (totalDur / done).toFixed(1) + "s" : "—";
+          el("ops-topstyle").textContent = top;
+          el("ops-starred").textContent = starred;
+        }
+        function refreshStarBtn() {
+          var e = state.lastEntry;
+          var on = !!(e && e.starred);
+          var sb = el("star-btn");
+          if (sb) { sb.textContent = on ? "★ STARRED" : "☆ STAR"; sb.classList.toggle("starred", on); sb.setAttribute("aria-pressed", on ? "true" : "false"); }
+          var lb = el("lightbox-star");
+          if (lb && lightboxEntry) { var lon = !!lightboxEntry.starred; lb.textContent = lon ? "★ STARRED" : "☆ STAR"; lb.classList.toggle("starred", lon); lb.setAttribute("aria-pressed", lon ? "true" : "false"); }
+        }
+        el("star-btn").addEventListener("click", function () {
+          if (!state.lastEntry) return;
+          state.lastEntry.starred = !state.lastEntry.starred;
+          refreshStarBtn(); updateStats();
+          log("VAULT // run #" + state.lastEntry.num + (state.lastEntry.starred ? " starred" : " unstarred"));
+        });
+        var lightboxEntry = null;
+        function openLightbox(entry) {
+          if (!entry) return;
+          lightboxEntry = entry;
+          el("lightbox-img").src = entry.imageUrl;
+          el("lightbox-img").alt = entry.subject;
+          el("lightbox-cap").textContent = "Run #" + entry.num + " — " + entry.subject + " · " + entry.style + " · " + entry.mood + " · " + entry.format;
+          el("lightbox").hidden = false;
+          refreshStarBtn();
+        }
+        function closeLightbox() { el("lightbox").hidden = true; lightboxEntry = null; }
+        el("lightbox-close").addEventListener("click", closeLightbox);
+        el("lightbox").addEventListener("click", function (ev) { if (ev.target === el("lightbox")) closeLightbox(); });
+        el("lightbox-star").addEventListener("click", function () {
+          if (!lightboxEntry) return;
+          lightboxEntry.starred = !lightboxEntry.starred;
+          refreshStarBtn(); updateStats();
+        });
+        el("result-img").addEventListener("click", function () { if (state.lastEntry) openLightbox(state.lastEntry); });
+        document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") closeLightbox(); });
+
+        var SURPRISES = [
+          { subject: "A neon koi pond at night under paper lanterns", style: "Cinematic", mood: "Dreamy" },
+          { subject: "A lighthouse in a storm, waves breaking over the rocks", style: "Photoreal", mood: "Moody" },
+          { subject: "A red sports car in a city at night, rain-slick streets", style: "Cyberpunk", mood: "Dark" },
+          { subject: "A cat asleep on a stack of old books by a window", style: "Watercolor", mood: "Serene" },
+          { subject: "A rocket lifting off over a desert at dawn", style: "3D render", mood: "Golden hour" },
+          { subject: "A castle on a floating island above the clouds", style: "Anime", mood: "Dreamy" },
+          { subject: "A robot gardener tending a rooftop flower garden", style: "Oil painting", mood: "Bright and clean" },
+          { subject: "A sailing boat crossing a calm lake at golden hour", style: "Cinematic", mood: "Golden hour" }
+        ];
+        el("surprise-btn").addEventListener("click", function () {
+          var pick = SURPRISES[Math.floor(Math.random() * SURPRISES.length)];
+          el("subject").value = pick.subject;
+          el("custom-style").value = ""; el("custom-mood").value = "";
+          state.styleSel = pick.style; state.moodSel = pick.mood;
+          refreshChips("style-chips", "styleSel"); refreshChips("mood-chips", "moodSel");
+          el("subject-error").hidden = true;
+          userDrove = true;
+          log("SURPRISE // the crew invented a brief: \"" + pick.subject.slice(0, 44) + "\" — press RUN PIPELINE to fire it");
+          el("subject").focus();
         });
 
         setStageStates();

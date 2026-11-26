@@ -1,6 +1,6 @@
 # Muse AI Image Ecosystem
 
-![Status](https://img.shields.io/badge/Status-v1.5.0-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-v2.0.0-brightgreen?style=for-the-badge)
 ![Live](https://img.shields.io/badge/Live-GitHub_Pages-2ea44f?style=for-the-badge)
 
 **A real working image generation workflow, built like a satellite station.**
@@ -13,9 +13,9 @@
 
 ## What it is
 
-Top-down satellite view on a dark green grid. Six room blocks joined by streets to a red relay hub. Little agent dots moving room to room like busy traffic.
+A 3D diorama: a tilted slab floating in a starfield viewport, six raised room blocks joined by conveyor streets to a red Deployment Bay pad at the centre. The default theme is Nebula (deep indigo, electric blue), with Emerald, Cyan, Amber, Violet and Rose in the THEME picker, recolours the whole scene, rooms included.
 
-The agents are quiet at rest: only 4 dots, drifting slow. When you set a pipeline, they wake up. More dots join, they move faster, stage by stage, as the brief travels through the rooms, then they settle back to idle when the run finishes.
+The agents hold still at rest: 12 named agents posted two per room, plus a two-person mini crew dormant at the benches in each room. Nothing moves until you press RUN PIPELINE. Then the Deployment Bay fires a flowing activation beam to each room in turn, each pair deploys through the bay, patrols its benches while working, then returns to post and the floor goes still again.
 
 ## The pipeline
 
@@ -24,8 +24,8 @@ The agents are quiet at rest: only 4 dots, drifting slow. When you set a pipelin
 | Prompt Office | Takes your brief, subject, style, mood, format, detail level, keep-out list |
 | Style Lab | Locks the look |
 | Composition Bay | Builds the composition |
-| Render Engine | Draws the image |
-| Detail Forge | Refines it |
+| Detail Forge | Refines the prompt, strips the flaws |
+| Render Engine | Draws the image (the slow step, 15-45s) |
 | Gallery Vault | Keeps it, downloadable as a PNG, with the exact prompts it built |
 
 Write a brief, hit Run Pipeline, watch the rooms light up in order, get an image at the end.
@@ -43,6 +43,7 @@ Write a brief, hit Run Pipeline, watch the rooms light up in order, get an image
 
 ## History
 
+- **v2.0.0 — Nov 26, 2026:** Repo synced to the evolved 3D diorama build. Flat green map replaced by a tilted 3D slab in a starfield viewport with deeper raised rooms; default theme Nebula, picker with Nebula, Emerald, Cyan, Amber, Violet and Rose, recolours the whole scene. Every room holds its own two-person mini crew, dormant at rest, patrolling its benches while its stage works; the Deployment Bay fires a flowing activation beam to each room in turn. Room 4/6 fix carried over from the Space: stages renumbered to the true order (Detail Forge R04 before Render Engine R05), rooms read STAGED in cyan until their pair is genuinely working, Render row labelled the slow step. Also: ops stats bar from the session's run history, SURPRISE ME brief button, starrable vault images with full-screen lightbox, wider command-deck layout with bordered HUD panel, scan sweep while a run is live. Rest rule untouched: nothing moves until RUN PIPELINE is pressed.
 - **v1.5.0 — Nov 26, 2026:** Agents do not move unless the pipeline is started. All 12 named agents hold still at their posts in their rooms while no job is running. The idle roaming tours are gone, the server issues no route to anyone outside a run, and IN MOTION reads 0/12 at rest. Street traffic, the conveyor belts, the gantry crane, and the idle bob on the crew dots are also held while idle. The page no longer runs a demo brief on its own. Movement only begins when you press RUN PIPELINE: each pair deploys through the bay, patrols its benches while working, then returns to its post and stops, and the floor goes still again until the next run. (Supersedes the idle-roam behaviour of v1.3.1-v1.4.3.)
 - **v1.4.3 — Nov 26, 2026:** Fixed the invisible trails and the camouflaged crane at their causes. On a throttled phone the page rendered at only 9-20 frames per second, so the walk collapsed into choppy jumps; the breadcrumb trails were painted underneath the room boxes, so any trail dropped inside a room was invisible; and the gantry crane was the same dark green as the floor, so its travel could not be seen. The conveyor chevrons and background no longer repaint every frame, trails are now drawn on a single canvas above the rooms instead of churning DOM dots, and the crane got a brighter beam, a hazard-striped trolley, a drop cable with a lit hook and a pool of work light, on a faster loop. Frame rate rose to roughly 28-53fps under the same throttling, and a full run is a bit quicker, about 20 seconds.
 - **v1.4.2 — Nov 26, 2026:** Fixed why the agents read as frozen on phones. The crew was animating through left/top layout updates, which collapse to a slideshow on phone GPUs, the first walk for some agents was delayed up to 4 seconds after load so fresh views caught them sitting in their room boxes, the breadcrumb trails switched off entirely on slow frames, and the gantry crane travelled hidden behind the room boxes. Now all 12 agents start walking within the first second, positions render on the GPU via transform, roam/patrol/travel speeds are up, trails stay visible (thinned, not disabled) on slow frames, the crane rides above the rooms with a lit trolley on a faster 26-second loop, the self-test run starts sooner and finishes quicker, and the status strip count now honestly reads CREW 12 and TRAFFIC n/18.
