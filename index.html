@@ -397,7 +397,7 @@
       footer a:hover { color: var(--accent); }
 
       /* Named agents on map */
-      .agent-wrap { position: absolute; width: 0; height: 0; will-change: left, top; pointer-events: auto; cursor: pointer; z-index: 6; }
+      .agent-wrap { position: absolute; left: 0; top: 0; width: 0; height: 0; will-change: transform; pointer-events: auto; cursor: pointer; z-index: 6; }
       .agent-dot { border-radius: 999px; border: 2px solid #e6f5e9; box-shadow: 0 3px 0 rgba(0,0,0,0.7), 0 5px 10px rgba(0,0,0,0.6), 0 0 12px currentColor, inset 0 2px 3px rgba(255,255,255,0.65), inset 0 -3px 4px rgba(0,0,0,0.4); margin-left: -8px; margin-top: -8px; width: 16px; height: 16px; position: relative; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 9px; font-weight: 800; color: rgba(0,0,0,0.75); }
       .agent-label { position: absolute; left: 12px; top: -10px; font-family: var(--mono); font-size: 9px; font-weight: 800; letter-spacing: .06em; background: linear-gradient(180deg, #1c2f22, #060d08); border: 1px solid #3a5c44; padding: 2px 6px; border-radius: 4px; white-space: nowrap; color: var(--text); display: block; line-height: 1.5; box-shadow: 0 3px 0 rgba(0,0,0,0.7), 0 5px 10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.2); }
       .agent-label .agent-task { display: block; font-weight: 400; font-size: 8px; letter-spacing: .02em; color: var(--amber); max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
@@ -521,12 +521,15 @@
       .agent-wrap.walking .agent-label { border-color: rgba(230,245,233,0.55); }
       /* Breadcrumb trail: a fading dot dropped behind every walking agent a
          few times a second — the path it just walked stays visible ~1s. */
-      .crumb { position: absolute; width: 5px; height: 5px; margin-left: -2.5px; margin-top: -2.5px; border-radius: 999px; opacity: 0.55; pointer-events: none; animation: crumb-fade 1.15s ease-out forwards; }
-      @keyframes crumb-fade { from { opacity: 0.55; transform: scale(1); } to { opacity: 0; transform: scale(0.35); } }
-      /* The overhead gantry crane travels the floor on its own loop. */
-      .crane { animation: crane-run 36s ease-in-out infinite; }
+      .crumb { position: absolute; width: 7px; height: 7px; margin-left: -3.5px; margin-top: -3.5px; border-radius: 999px; opacity: 0.8; pointer-events: none; animation: crumb-fade 1.5s ease-out forwards; }
+      @keyframes crumb-fade { from { opacity: 0.8; transform: scale(1); } to { opacity: 0; transform: scale(0.35); } }
+      /* The overhead gantry crane travels the floor on its own loop. It rides
+         ABOVE the room boxes (z-index 3, rooms are 2) so its traverse is
+         actually visible, with a lit trolley block riding the beam. */
+      .crane { z-index: 3; opacity: 0.9; width: 14px; background: linear-gradient(90deg, #3a5c44, #16261a 55%, #0c1710); border-left: 1px solid rgba(255,255,255,0.28); border-right: 1px solid rgba(0,0,0,0.8); box-shadow: 0 0 14px rgba(0,0,0,0.55); animation: crane-run 26s ease-in-out infinite; }
       @keyframes crane-run { 0%, 100% { left: 15%; } 50% { left: 83%; } }
-      .crane::after { content: ""; position: absolute; left: 50%; top: 12%; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 999px; background: var(--amber); box-shadow: 0 0 8px var(--amber); animation: blink-dot 1.4s step-end infinite; }
+      .crane::before { content: ""; position: absolute; left: 50%; top: 34%; width: 22px; height: 16px; margin-left: -11px; border-radius: 3px; background: linear-gradient(180deg, #8a6a24, #5c4714); border: 1px solid rgba(0,0,0,0.7); box-shadow: 0 3px 8px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.35); }
+      .crane::after { content: ""; position: absolute; left: 50%; top: 12%; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 999px; background: var(--amber); box-shadow: 0 0 10px var(--amber); animation: blink-dot 1.4s step-end infinite; }
       /* Bay beacon breathes at rest too, not only during a run. */
       .hub-dot { animation: pulse-core 2.8s ease-in-out infinite; }
       @media (prefers-reduced-motion: reduce) {
@@ -547,7 +550,7 @@
         <span class="online"><span class="blink-dot" aria-hidden="true"></span> SYS ONLINE</span>
         <span>ROOMS 6</span>
         <span id="stat-runs">RUNS 0</span>
-        <span id="stat-agents">AGENTS 16 ON GRID</span>
+        <span id="stat-agents">CREW 12 · TRAFFIC 8/18</span>
         <span id="stat-crew">CREW 0/12 WORKING</span>
         <span id="stat-motion">IN MOTION —/12</span>
         <span id="stat-job">JOB — NONE</span>
@@ -881,7 +884,7 @@
           a.anchor = a.work.slice();  // where the agent rests when it has no route
           a.route = null;             // {from, points, departAt, speed, endsAt, purpose, doneText}
           a.lastSeen = Date.now();    // last server report for this agent
-          a.nextLegAt = Date.now() + 300 + ai * 350; // staggered start phases so the crew never marches in sync
+          a.nextLegAt = Date.now() + ai * 45; // everyone is walking within the first second — phases differ via patrolIdx, not via sitting still
           a.offline = false;
         });
         var selectedAgent = CREW[0];
@@ -961,7 +964,7 @@
             wrap.querySelector(".agent-dot").textContent=a.name.charAt(0);
             wrap.querySelector(".agent-name").textContent=a.name.toUpperCase();
             wrap.querySelector(".agent-call").textContent=" \u00B7 "+a.call;
-            wrap.style.left=a.x+"%"; wrap.style.top=a.y+"%";
+            // Position is set by the renderer via transform (see renderAgentPositions).
             wrap.addEventListener("click", function(){ selectAgent(a); });
             layerA.appendChild(wrap); a.el=wrap;
           });
@@ -1163,8 +1166,9 @@
         var trailLayer = el("trail-layer");
         var crumbCount = 0;
         var frameSlow = false; // set by the rAF loop: true when frames run under ~30fps (weak phone GPU)
+        var mapElCache = null, mapW = 0, mapH = 0, frameNo = 0;
         function spawnCrumb(x, y, color){
-          if(!trailLayer || crumbCount > 70) return;
+          if(!trailLayer || crumbCount > 90) return;
           var c = document.createElement("div");
           c.className = "crumb";
           c.style.left = x + "%"; c.style.top = y + "%"; c.style.background = color;
@@ -1175,6 +1179,7 @@
         }
         function renderAgentPositions(){
           var now = Date.now();
+          frameNo++;
           var movingCount = 0;
           CREW.forEach(function(a){
             if(!a.el) return;
@@ -1191,16 +1196,27 @@
             if(a.offline){ a.el.classList.remove("walking"); return; }
             var p = agentPosAt(a, now);
             a.x = p[0]; a.y = p[1];
-            a.el.style.left = a.x + "%"; a.el.style.top = a.y + "%";
+            // GPU-composited positioning: transform in pixels, never left/top
+            // (animating left/top forces layout+paint every frame and collapses
+            // to a slideshow on phone GPUs — the crew then reads as frozen).
+            if(!mapElCache) mapElCache = document.querySelector(".map");
+            if(mapElCache && (frameNo % 45 === 0 || !mapW)){ mapW = mapElCache.clientWidth; mapH = mapElCache.clientHeight; }
+            if(mapW > 0){
+              a.el.style.transform = "translate3d(" + (a.x / 100 * mapW).toFixed(1) + "px," + (a.y / 100 * mapH).toFixed(1) + "px,0)";
+            } else {
+              a.el.style.left = a.x + "%"; a.el.style.top = a.y + "%";
+            }
             a.el.classList.toggle("flip", a.x > 62);
             // Walking state: the agent is mid-route right now. The class
             // drives the step-bob in CSS; the breadcrumb trail drops a
-            // fading dot behind it ~7x a second so its path stays visible.
+            // fading dot behind it several times a second so its path stays
+            // visible. On slow frames the trail thins out but never vanishes —
+            // a weak phone is exactly where the proof of motion matters.
             var walking = !!a.route && now < a.route.endsAt;
             if(walking){
               movingCount++;
               if(!a.el.classList.contains("walking")) a.el.classList.add("walking");
-              if(!reduced && !frameSlow && now - (a.lastCrumb || 0) > 280){
+              if(!reduced && now - (a.lastCrumb || 0) > (frameSlow ? 420 : 200)){
                 a.lastCrumb = now;
                 spawnCrumb(p[0], p[1], a.color);
               }
@@ -1260,7 +1276,7 @@
             // walk; it draws what the server's state says, at 60fps.
             frameSlow = dt > 0.034;
             renderAgentPositions();
-            el("stat-agents").textContent = "AGENTS " + (count + 12) + " ON GRID";
+            el("stat-agents").textContent = "CREW 12 · TRAFFIC " + count + "/18";
             requestAnimationFrame(tick);
           };
           requestAnimationFrame(tick);
@@ -1869,8 +1885,8 @@
         //    60fps — and if an agent's last report goes stale it marks the agent
         //    OFFLINE with its last-seen time and holds its animation.
         var jobTimer = null;
-        var WORK_MS = 3000;
-        var TRAVEL_SPEED = 46, PATROL_SPEED = 27, ROAM_SPEED = 19;
+        var WORK_MS = 2400;
+        var TRAVEL_SPEED = 52, PATROL_SPEED = 31, ROAM_SPEED = 23;
 
         function routeDistance(from, points){
           var d=0, px=from[0], py=from[1];
@@ -2226,7 +2242,7 @@
           el("subject").value = demoSubject;
           log("SELF-TEST // no brief yet — running one on its own so you can watch the crew work");
           beginRun({ subject: demoSubject, details: "", negative: "", format: state.format, detail: state.detail });
-        }, 6000);
+        }, 4000);
 
         el("download-img-btn").addEventListener("click", function () {
           if (!state.lastPrompt || !state.lastPrompt.imageUrl) return;
