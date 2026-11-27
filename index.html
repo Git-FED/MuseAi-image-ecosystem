@@ -986,6 +986,76 @@
          target changes, no transition, a parked crane. */
       .crane { animation: none; transition: left 2.2s ease-in-out; }
       @media (prefers-reduced-motion: reduce) { .crane { transition: none; } }
+      /* ============ POLISH PASS 8 — Vault stands clear of the slots ============ */
+      /* The one overlap the live tests kept catching: Vault's name tag on
+         a Gallery Vault slot's EMPTY label. Two earlier passes nudged the
+         post around the slot grid and the tag still landed on a slot,
+         because every post inside that room stands on the 2x2 grid — the
+         room's only open floor is the band between the grid's bottom edge
+         (~19.6% plane height) and the status plate pinned to the floor
+         (top edge ~25.9%). Vault's post now stands in that band at the
+         slot grid's column seam (see the CREW table), its patrol runs
+         flat along the band with no vertical leg, and its tag is the one
+         tag on the floor that rides ABOVE its dot: the tag's band
+         (18.7–21.4%) crosses only the slot faces at the seam, where the
+         two EMPTY labels end well clear on either side (left label ends
+         ~77%, right label starts ~89%, the tag spans 81.3–84.7%), so no
+         dot or tag can touch a slot label or the plate in any state —
+         at post, patrolling, or done. */
+      .agent-wrap.lbl-above .agent-label { top: auto; bottom: 11px; }
+      /* ============ POLISH PASS 9 — a crane you cannot miss, a glide that keeps up ============ */
+      /* Pass 6 and 8 geometry held, and the watched live test still
+         failed the crane on the same two points:
+         1) PICK-OUT. The tester could only find it zoomed: "a small
+            ~100px yellow and black diagonal-striped bar with a grey
+            column on the top rail... camouflaged against the full-width
+            hazard banner directly above it". That diagnosis is exact:
+            the bridge beam wore the SAME yellow/black diagonal hazard
+            pattern as the hazard bar that caps the whole map, at a
+            similar scale, 9px below it — pattern on pattern, so the
+            eye grouped them into one banner. The galvanized column
+            helped in the corridor but the beam was the crane's face,
+            and the beam blended. Camouflage again, this time by
+            pattern instead of colour.
+            The fix breaks the pattern match completely: the beam is
+            now a SOLID safety-orange bridge, 248px wide and 24px tall,
+            with GANTRY CRANE lettered on it in black — a colour and a
+            finish nothing else on the floor uses (the hazard bar is
+            striped yellow, the rooms are theme-tinted, the streets
+            are near-black). The mast is safety orange too, 34px wide,
+            so every exposed segment — the top strip above the rooms,
+            the west street corridor, both conveyor crossings — reads
+            as one orange machine, findable at full-page scale without
+            zooming. It still rides BELOW the room boxes (z-index 1),
+            still parks in the west street at 33.4%, and the beam still
+            sits in the open strip above the room tops, so it can never
+            cover a room title, a crew tag or a status line.
+         2) GLIDE LAG. The 2.2s ease-in-out from Pass 7 spends its
+            first half-second barely moving and only arrives at the
+            end of its travel — but a stage lasts ~3s and the crane
+            reverses direction nearly every stage, so at every stage
+            boundary check it was still sitting at (or crawling away
+            from) the PREVIOUS stage's corridor, and at the completion
+            instant it was still east. The glide is now 0.85s on a
+            fast-out curve: it departs the moment the stage changes,
+            covers most of the crossing in the first ~300ms, and is
+            parked at the serving corridor for the clear majority of
+            every stage — including the short Render Engine stage —
+            and it is back at its west park about a second after a
+            run ends, not several screenshots later. */
+      .crane-rail { height: 10px; background: linear-gradient(180deg, #3a4147 0 3px, #14181b 3px 6px, #ff7a1a 6px 8px, #10130f 8px 10px); box-shadow: 0 3px 9px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.3); }
+      .crane { width: 34px; background: linear-gradient(90deg, #ffb03a 0%, #ff7a1a 34%, #e85d00 72%, #7a2f00 100%); border-left: 2px solid #0c0a06; border-right: 2px solid #0c0a06; box-shadow: 10px 0 22px rgba(0,0,0,0.6), -4px 0 12px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.6), 0 0 38px rgba(255,122,26,0.5); transition: left 0.85s cubic-bezier(0.22, 1, 0.36, 1); }
+      .crane-beam { width: 248px; margin-left: -124px; height: 24px; top: 8px; display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(180deg, #ffa53a 0%, #ff7a1a 55%, #e85d00 100%); border: 2px solid #0c0a06; border-radius: 4px;
+        font-family: var(--mono); font-size: 10px; font-weight: 800; letter-spacing: 0.22em; color: #180e02; text-indent: 0.22em; white-space: nowrap;
+        box-shadow: 0 7px 16px rgba(0,0,0,0.8), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -3px 0 rgba(0,0,0,0.3), 0 0 26px rgba(255,122,26,0.55); }
+      .crane-beam::after { bottom: -76px; width: 110px; height: 72px; background: radial-gradient(ellipse 50% 100% at 50% 0%, rgba(255,150,50,0.16), transparent 70%); }
+      .crane::before { top: 38px; width: 46px; height: 30px; margin-left: -23px; background: linear-gradient(180deg, #2b3034, #14171a); border: 2px solid #ff7a1a; border-radius: 4px; box-shadow: 0 6px 14px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.35), 0 0 18px rgba(255,122,26,0.45); }
+      .crane::after { top: 44px; width: 12px; height: 12px; margin-left: -6px; background: #ffb020; border: 2px solid #0c0a06; box-shadow: 0 0 14px var(--amber); }
+      .crane-cable { top: 68px; height: 112px; width: 4px; margin-left: -2px; background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.5)); }
+      .crane-cable::after { width: 26px; height: 18px; margin-left: -13px; bottom: -14px; background: linear-gradient(180deg, #ffa53a, #e85d00); border: 2px solid #0c0a06; border-radius: 3px; box-shadow: 0 0 18px rgba(255,122,26,0.9), inset 0 1px 0 rgba(255,255,255,0.6); }
+      .crane-cable::before { width: 118px; height: 110px; background: radial-gradient(ellipse 50% 100% at 50% 0%, rgba(255,150,50,0.3), transparent 70%); }
+      @media (prefers-reduced-motion: reduce) { .crane { transition: none; } }
     </style>
   </head>
   <body>
@@ -1045,7 +1115,7 @@
         <div class="pipe-h" style="top:29.2%" aria-hidden="true"></div>
         <div class="pipe-h" style="top:70.5%" aria-hidden="true"></div>
         <div class="crane-rail" aria-hidden="true"></div>
-        <div class="crane" style="left:33.4%" aria-hidden="true"><span class="crane-beam"></span><i class="crane-cable"></i></div>
+        <div class="crane" style="left:33.4%" aria-hidden="true"><span class="crane-beam">GANTRY CRANE</span><i class="crane-cable"></i></div>
         <span class="floor-tag" style="left:3%;top:29%" aria-hidden="true">CONVEYOR A →</span>
         <span class="floor-tag" style="left:69%;top:61%" aria-hidden="true">CONVEYOR B →</span>
         <span class="floor-tag" style="left:3%;bottom:1.5%" aria-hidden="true">BAY 04 · RENDER LINE</span>
@@ -1141,7 +1211,7 @@
       <section aria-label="Live operations" style="margin-top:20px">
         <h2 class="sec">LIVE OPS — WHO IS DOING WHAT, AND WHEN</h2>
         <p class="sub">This is the live engine for this page, built the way real agent fleets are wired: the server owns the truth, and the map only renders what the server says. On this static GitHub Pages build the server is a module inside the page — there is no network server behind a Pages site; the full network-server version of this ecosystem is the Space. Inside this page the split is strict all the same: The server creates the job, and for every move it issues an agent's whole route — waypoints, departure time and speed — for deploys and workstation patrols during a run. No route is issued while no pipeline is running, so every agent holds its post and does not move until you start a pipeline. The map animates those routes locally at 60 frames a second, but no animation starts, stops or changes direction except when the server's state changes. The server reports every agent four times a second; if an agent ever stops reporting, it is marked OFFLINE with its last-seen time and its animation holds — it never keeps walking on its own. No anonymous dots do job work — the 12 named crew below do. The smaller background dots are street traffic only, and they only move while a job is live.</p>
-        <div class="legend"><span>● NAMED CREW — 12 agents posted across all 6 rooms, holding still at their posts until a pipeline starts, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job, and only moving while a job is live</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room, patrolling between its benches while it works</span><span>· DONE — the stage is filed and the agent is back at its post, holding still</span><span>· OFFLINE — the server stopped reporting the agent: grey, held at its last reported position, last-seen time shown</span><span>· The conveyor belts run only while a job is live</span><span>· IN MOTION — the status strip counts the crew walking at this moment; it reads 0/12 until a pipeline starts. A walking agent bobs at step pace and leaves a fading dotted trail on the path it just walked</span><span>· The overhead gantry crane travels between the two street corridors to serve the room whose stage is running, and parks back in the west street when the run ends</span></div>
+        <div class="legend"><span>● NAMED CREW — 12 agents posted across all 6 rooms, holding still at their posts until a pipeline starts, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job, and only moving while a job is live</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room, patrolling between its benches while it works</span><span>· DONE — the stage is filed and the agent is back at its post, holding still</span><span>· OFFLINE — the server stopped reporting the agent: grey, held at its last reported position, last-seen time shown</span><span>· The conveyor belts run only while a job is live</span><span>· IN MOTION — the status strip counts the crew walking at this moment; it reads 0/12 until a pipeline starts. A walking agent bobs at step pace and leaves a fading dotted trail on the path it just walked</span><span>· The safety-orange overhead gantry crane — labelled GANTRY CRANE on its bridge beam — glides between the two street corridors in under a second to serve the room whose stage is running, and glides back to its west street park as soon as the run ends</span></div>
         <div class="stats-bar" aria-label="Operations statistics">
           <div class="stat-cell"><div class="sv" id="ops-runs">0</div><div class="sl">TOTAL RUNS</div></div>
           <div class="stat-cell"><div class="sv" id="ops-done">0</div><div class="sl">COMPLETED</div></div>
@@ -1301,7 +1371,9 @@
             <li><code>Six themes</code> — Nebula (the new default, deep indigo and electric blue), Emerald, Cyan, Amber, Violet and Rose. Switching themes recolours the whole scene, rooms included.</li>
             <li><code>Ops stats, Surprise Me, starred vault</code> — a stats bar computed from this session's real run history, a SURPRISE ME button that invents a fresh brief, star any finished image, and a full-screen lightbox from the result or any vault tile.</li>
             <li><code>Bay tower + gantry bridge</code> — latest pass: the Deployment Bay has a floor grid, corner brackets and beacon rings around its centre dot, and the render core, the bay beacon and the rings are now still by default in the stylesheet itself — their pulses exist only while a run is live, so nothing on the floor shimmers or flickers at rest. The overhead gantry was rebuilt to be unmistakable: a rail track runs the full width of the floor's top edge, the column is wider and brighter with an amber edge glow, the hazard-striped bridge beam is 170px wide, and the trolley, cable and hook ride in the open top segment of the west street corridor where the bay wall used to hide them. It parks there fully visible at rest and travels corridor to corridor below the room boxes during a run, so it never covers a title or tag.</li>
-            <li><code>Gantry finish + deeper slab</code> — newest pass: full-page captures showed the gantry still could not be picked out, because the column was finished in the same greens as the floor it travels through. The column is galvanized steel now, near-white at its lit edge with an amber leading edge and a stronger amber glow, the top rail carries an amber centre line, and the trolley and hook are larger with a brighter work light — same parking spot in the west street, same below-the-rooms travel, nothing new moves at rest. The slab tilts to 10 degrees on a thicker stacked edge so its depth reads at a glance, and Vault's post moved to the seam where the Gallery Vault's slot rows and columns meet, so its name tag no longer sits on a slot's EMPTY label.</li>
+            <li><code>Gantry finish + deeper slab</code> — newest pass: full-page captures showed the gantry still could not be picked out, because the column was finished in the same greens as the floor it travels through. The column is galvanized steel now, near-white at its lit edge with an amber leading edge and a stronger amber glow, the top rail carries an amber centre line, and the trolley and hook are larger with a brighter work light — same parking spot in the west street, same below-the-rooms travel, nothing new moves at rest. The slab tilts to 10 degrees on a thicker stacked edge so its depth reads at a glance.</li>
+            <li><code>Vault clear of the slots</code> — newest pass: live captures kept catching Vault's name tag on a Gallery Vault slot's EMPTY label, because every post inside that room stands on the 2x2 slot grid. Vault's post now stands on the open floor band under the grid, at the grid's column seam, its tag rides above its dot instead of below it, and its patrol runs flat along that band with no vertical leg — so neither the dot nor the tag can touch a slot label or the room's status plate at rest, while working, or once done.</li>
+            <li><code>Gantry crane, unmistakable + on time</code> — newest pass: watched live tests could still only find the crane zoomed, because its hazard-striped beam wore the same pattern as the hazard banner capping the map and blended into it, and its 2.2s glide lagged the ~3s stages so it sat at the previous stage's corridor at every check. The beam is now a solid safety-orange bridge, 248px wide and lettered GANTRY CRANE, on a 34px safety-orange mast — a colour and finish nothing else on the floor uses — still riding below the room boxes and parking in the west street. The glide is 0.85s on a fast-out curve, so the crane departs the moment a stage changes, is parked at the serving corridor for most of every stage, and is home about a second after a run ends.</li>
           </ul>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
@@ -1351,7 +1423,7 @@
           { id:"kiln", name:"Kiln", call:"R05-B", room:"render-engine", roomName:"Render Engine", roomCode:"R05", role:"Render Core & Grain", dock:"Dock B", color:"#67e8f9", bay:[61,48.5], work:[58,81], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Firing the render core — grain and detail pass at "+b.detail+" detail.";} },
           { id:"hone", name:"Hone", call:"R04-A", room:"detail-forge", roomName:"Detail Forge", roomCode:"R04", role:"Detail Sharpener", dock:"Dock A", color:"#c084fc", bay:[38.5,57], work:[78,45], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Sharpening detail language and resolving fine texture.";} },
           { id:"polish", name:"Polish", call:"R04-B", room:"detail-forge", roomName:"Detail Forge", roomCode:"R04", role:"Flaw & Keep-Out Checker", dock:"Dock B", color:"#e9d5ff", bay:[46,57], work:[88,47], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return b.negative ? "Stripping keep-out items: "+b.negative+"." : "Checking for flaws — no keep-out list on this brief.";} },
-          { id:"vault", name:"Vault", call:"R06-A", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Vault Keeper", dock:"Dock A", color:"#22ff88", bay:[53.5,57], work:[83,13.8], speed:1.3, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Opening vault slot 1 and filing the finished image.";} },
+          { id:"vault", name:"Vault", call:"R06-A", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Vault Keeper", dock:"Dock A", color:"#22ff88", bay:[53.5,57], work:[83,23.4], speed:1.3, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Opening vault slot 1 and filing the finished image.";} },
           { id:"courier", name:"Courier", call:"R06-B", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Image Courier — R05 to R06", dock:"Dock B", color:"#bbf7d0", bay:[61,57], work:[87,18.5], speed:1.8, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Carrying the finished image from the Render Engine (R05) through the bay to the Gallery Vault (R06).";} }
         ];
         var BAY = [50, 48];
@@ -1392,6 +1464,17 @@
           a.lastSeen = Date.now();    // last server report for this agent
           a.nextLegAt = Infinity; // parked: no leg is ever issued until a pipeline run deploys or sets this agent working
           a.offline = false;
+        });
+        // Gallery Vault override (POLISH PASS 8): the generic patrol
+        // rectangle has a +2 vertical leg, which from Vault's open-band
+        // post would carry its dot onto the status plate. Its patrol is
+        // a flat run along the band instead — same bench-to-bench laps,
+        // no vertical leg, so the pair stays in the one clear strip of
+        // floor its room has. The chain builder skips points the agent
+        // already stands on, so the alternating points walk as a clean
+        // ping-pong between the band's two ends.
+        CREW.forEach(function(a){
+          if(a.id==="vault"){ a.patrol=[[83,23.4],[90,23.4],[83,23.4],[90,23.4]]; }
         });
         var selectedAgent = CREW[0];
         var backend = { seq:0, events:[], job:null, startedAt:0, heartbeat:"\u2014" };
@@ -1467,7 +1550,7 @@
             card.querySelector(".crew-task").textContent=a.task;
             card.addEventListener("click", function(){ selectAgent(a); document.querySelector("[aria-label=\'Live operations\']").scrollIntoView({behavior:"smooth", block:"nearest"}); });
             grid.appendChild(card);
-            var wrap=document.createElement("div"); wrap.className="agent-wrap "+(ai%2===0?"tag-above":"tag-below")+(a.dock==="Dock B"?" lbl-below":""); wrap.id="agent-"+a.id; wrap.setAttribute("data-status",a.status); wrap.style.pointerEvents="auto";
+            var wrap=document.createElement("div"); wrap.className="agent-wrap "+(ai%2===0?"tag-above":"tag-below")+(a.dock==="Dock B"?" lbl-below":"")+(a.id==="vault"?" lbl-above":""); wrap.id="agent-"+a.id; wrap.setAttribute("data-status",a.status); wrap.style.pointerEvents="auto";
             wrap.innerHTML='<div class="agent-dot"></div><span class="agent-label"><span class="agent-name"></span><span class="agent-call"></span><span class="agent-task"></span></span>';
             wrap.querySelector(".agent-dot").style.background=a.color; wrap.querySelector(".agent-dot").style.color=a.color;
             wrap.querySelector(".agent-dot").style.animationDelay=(ai*0.23)+"s";
