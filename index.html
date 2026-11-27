@@ -963,6 +963,29 @@
         .diorama .map { transform: rotateX(10deg); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.8), inset 0 18px 34px rgba(0,0,0,0.55), inset 0 -18px 34px rgba(0,0,0,0.55), 0 18px 0 -5px rgba(14,14,34,0.97), 0 34px 0 -11px rgba(6,6,18,0.94), 0 60px 84px rgba(0,0,0,0.9), 0 0 52px rgba(var(--accent-rgb),0.13); }
       }
       @keyframes slab-float { 0%, 100% { transform: rotateX(10deg) translateY(0); } 50% { transform: rotateX(10deg) translateY(-4px); } }
+      /* ============ POLISH PASS 7 — the crane travels WITH the job ============ */
+      /* The gantry's travel finally failed a watched-from-the-start live
+         test: it WAS moving, but on a free-running 20s CSS loop (33.4% to
+         65% and back) that had nothing to do with the job. A run lasts
+         about 22s — almost exactly one loop — so the crane left its park,
+         crossed the floor and came home inside a single run, and at the
+         stage 5 / 6 checks it was sitting back at its park position,
+         reading as "never travelled". A loop timed to the run length is
+         indistinguishable from no travel at all.
+         The crane is server-driven now, like everything else on this
+         floor: the free-running animation is gone, and setStageStates
+         sets the column's left from the run state on every server tick —
+         the west street corridor (33.4%) while the west and centre rooms
+         work, the east street corridor (65%) for Style Lab, Detail Forge
+         and Gallery Vault, and back to its west street park the moment
+         no job is running. A 2.2s ease carries it corridor to corridor
+         inside one stage (~3.6s), so it arrives, works the stage in
+         place, and is visibly somewhere new at EVERY stage check. It
+         still rides below the room boxes, still parks visible in the
+         west street at rest, and at rest nothing drives it at all: no
+         target changes, no transition, a parked crane. */
+      .crane { animation: none; transition: left 2.2s ease-in-out; }
+      @media (prefers-reduced-motion: reduce) { .crane { transition: none; } }
     </style>
   </head>
   <body>
@@ -1118,7 +1141,7 @@
       <section aria-label="Live operations" style="margin-top:20px">
         <h2 class="sec">LIVE OPS — WHO IS DOING WHAT, AND WHEN</h2>
         <p class="sub">This is the live engine for this page, built the way real agent fleets are wired: the server owns the truth, and the map only renders what the server says. On this static GitHub Pages build the server is a module inside the page — there is no network server behind a Pages site; the full network-server version of this ecosystem is the Space. Inside this page the split is strict all the same: The server creates the job, and for every move it issues an agent's whole route — waypoints, departure time and speed — for deploys and workstation patrols during a run. No route is issued while no pipeline is running, so every agent holds its post and does not move until you start a pipeline. The map animates those routes locally at 60 frames a second, but no animation starts, stops or changes direction except when the server's state changes. The server reports every agent four times a second; if an agent ever stops reporting, it is marked OFFLINE with its last-seen time and its animation holds — it never keeps walking on its own. No anonymous dots do job work — the 12 named crew below do. The smaller background dots are street traffic only, and they only move while a job is live.</p>
-        <div class="legend"><span>● NAMED CREW — 12 agents posted across all 6 rooms, holding still at their posts until a pipeline starts, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job, and only moving while a job is live</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room, patrolling between its benches while it works</span><span>· DONE — the stage is filed and the agent is back at its post, holding still</span><span>· OFFLINE — the server stopped reporting the agent: grey, held at its last reported position, last-seen time shown</span><span>· The conveyor belts run only while a job is live</span><span>· IN MOTION — the status strip counts the crew walking at this moment; it reads 0/12 until a pipeline starts. A walking agent bobs at step pace and leaves a fading dotted trail on the path it just walked</span><span>· The overhead gantry crane travels the floor only while a job is live</span></div>
+        <div class="legend"><span>● NAMED CREW — 12 agents posted across all 6 rooms, holding still at their posts until a pipeline starts, larger, white ring, initial on the dot — tap any dot or card to inspect it</span><span>· TRAFFIC — 18 small dots, ambience only, never carry a job, and only moving while a job is live</span><span>· DEPLOYED — the agent is travelling from the bay to its room</span><span>· WORKING — the agent is at its workstation in its room, patrolling between its benches while it works</span><span>· DONE — the stage is filed and the agent is back at its post, holding still</span><span>· OFFLINE — the server stopped reporting the agent: grey, held at its last reported position, last-seen time shown</span><span>· The conveyor belts run only while a job is live</span><span>· IN MOTION — the status strip counts the crew walking at this moment; it reads 0/12 until a pipeline starts. A walking agent bobs at step pace and leaves a fading dotted trail on the path it just walked</span><span>· The overhead gantry crane travels between the two street corridors to serve the room whose stage is running, and parks back in the west street when the run ends</span></div>
         <div class="stats-bar" aria-label="Operations statistics">
           <div class="stat-cell"><div class="sv" id="ops-runs">0</div><div class="sl">TOTAL RUNS</div></div>
           <div class="stat-cell"><div class="sv" id="ops-done">0</div><div class="sl">COMPLETED</div></div>
@@ -1608,6 +1631,26 @@
           // only while a job is live; at rest they crawl.
           var mapEl = document.querySelector(".map");
           if (mapEl) mapEl.classList.toggle("running", !!state.running);
+          // Gantry crane, driven by the same state: it travels to the street
+          // corridor serving the room whose stage is running and parks back
+          // in the west street when no job is live. This runs on every server
+          // tick, so the target is only written when it actually changes —
+          // an unchanged write would restart the glide. (POLISH PASS 7: the
+          // old free-running 20s CSS loop matched the ~22s run length, so
+          // the crane always ended a run back at its park and read as if it
+          // had never travelled.)
+          var craneEl = document.querySelector(".crane");
+          if (craneEl) {
+            var craneLeft = "33.4%";
+            if (state.running && state.stageIdx >= 0) {
+              var craneRoom = STAGE_ORDER[state.stageIdx];
+              if (craneRoom === "style-lab" || craneRoom === "detail-forge" || craneRoom === "gallery-vault") craneLeft = "65%";
+            }
+            if (craneEl.getAttribute("data-target") !== craneLeft) {
+              craneEl.setAttribute("data-target", craneLeft);
+              craneEl.style.left = craneLeft;
+            }
+          }
         }
 
         // ---------- Terminal ----------
