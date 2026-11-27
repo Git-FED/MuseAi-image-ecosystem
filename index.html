@@ -1056,6 +1056,59 @@
       .crane-cable::after { width: 26px; height: 18px; margin-left: -13px; bottom: -14px; background: linear-gradient(180deg, #ffa53a, #e85d00); border: 2px solid #0c0a06; border-radius: 3px; box-shadow: 0 0 18px rgba(255,122,26,0.9), inset 0 1px 0 rgba(255,255,255,0.6); }
       .crane-cable::before { width: 118px; height: 110px; background: radial-gradient(ellipse 50% 100% at 50% 0%, rgba(255,150,50,0.3), transparent 70%); }
       @media (prefers-reduced-motion: reduce) { .crane { transition: none; } }
+      /* ============ POLISH PASS 10 — the beam steps out from behind the rooms ============ */
+      /* Pass 9's colour and glide fixes held in the watched live test
+         (the orange mast reads in the corridor, the crane reaches the
+         serving corridor inside every stage and is home ~1s after a
+         run ends), but the beam itself failed again: "a thin orange
+         strip, about 10px tall on screen, mostly hidden behind the
+         raised room 1 and room 2 blocks — only the bottom half of its
+         GANTRY CRANE lettering is visible, the G hidden behind room 1,
+         the tops of the letters sliced off by the rooms in front."
+         The cause is pure geometry, and no finish change inside the
+         crane can fix it: the beam hung at top:8px with its lettering
+         centred near 20px, while the top row of rooms starts at
+         top:3% of the map — 17 to 19px at every map height — and the
+         rooms (z-index 2) paint over the crane (z-index 1). So across
+         most of its 248px the beam's lower half, lettering included,
+         sat behind the room boxes; only the sliver above the room
+         tops and the short segment over the street corridor showed.
+         The fix splits the crane across two layers. The mast,
+         trolley, cable and hook stay inside .crane, below the rooms,
+         travelling corridor to corridor exactly as before, so they
+         still never cross a room's content. The bridge beam alone
+         steps out as its own element (.crane-beam-top) at z-index 5 —
+         above the room boxes (2), the activation beams (3) and the
+         trail canvas (4), below the crew (6) — hung at the very top
+         of the floor, top:0, the full 248 by 22px on show end to end
+         with the whole GANTRY CRANE legend readable at a glance. It
+         can ride above the rooms without breaking the floor's oldest
+         rule because of where it hangs: its lowest edge (22px) stays
+         above every room's header row (the room boxes start at
+         17–19px and their code/state text starts a further 8px of
+         border and padding lower, at 25px or more), so it crosses
+         nothing but the rooms' top border sliver — no title, dock
+         label, crew tag or status line is ever under it. Its travel
+         is unchanged: the same server state line that drives the mast
+         sets its left to the mast's centre (the corridor percentage
+         plus half the 34px mast) on the same 0.85s fast-out glide, so
+         beam and mast depart, arrive and park together. */
+      .crane-beam-top {
+        position: absolute; top: 0; width: 248px; height: 22px; z-index: 5; pointer-events: none;
+        transform: translateX(-50%);
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(180deg, #ffa53a 0%, #ff7a1a 55%, #e85d00 100%);
+        border: 2px solid #0c0a06; border-radius: 4px;
+        font-family: var(--mono); font-size: 10px; font-weight: 800; letter-spacing: 0.22em; color: #180e02; text-indent: 0.22em; white-space: nowrap;
+        box-shadow: 0 7px 16px rgba(0,0,0,0.8), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -3px 0 rgba(0,0,0,0.3), 0 0 26px rgba(255,122,26,0.55);
+        transition: left 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .crane-beam-top::after {
+        content: ""; position: absolute; left: 50%; bottom: -76px; width: 110px; height: 72px;
+        transform: translateX(-50%); pointer-events: none;
+        background: radial-gradient(ellipse 50% 100% at 50% 0%, rgba(255,150,50,0.16), transparent 70%);
+      }
+      @media (prefers-reduced-motion: reduce) { .crane-beam-top { transition: none; } }
     </style>
   </head>
   <body>
@@ -1115,7 +1168,8 @@
         <div class="pipe-h" style="top:29.2%" aria-hidden="true"></div>
         <div class="pipe-h" style="top:70.5%" aria-hidden="true"></div>
         <div class="crane-rail" aria-hidden="true"></div>
-        <div class="crane" style="left:33.4%" aria-hidden="true"><span class="crane-beam">GANTRY CRANE</span><i class="crane-cable"></i></div>
+        <div class="crane" style="left:33.4%" aria-hidden="true"><i class="crane-cable"></i></div>
+        <span class="crane-beam-top" style="left:calc(33.4% + 17px)" aria-hidden="true">GANTRY CRANE</span>
         <span class="floor-tag" style="left:3%;top:29%" aria-hidden="true">CONVEYOR A →</span>
         <span class="floor-tag" style="left:69%;top:61%" aria-hidden="true">CONVEYOR B →</span>
         <span class="floor-tag" style="left:3%;bottom:1.5%" aria-hidden="true">BAY 04 · RENDER LINE</span>
@@ -1374,6 +1428,7 @@
             <li><code>Gantry finish + deeper slab</code> — newest pass: full-page captures showed the gantry still could not be picked out, because the column was finished in the same greens as the floor it travels through. The column is galvanized steel now, near-white at its lit edge with an amber leading edge and a stronger amber glow, the top rail carries an amber centre line, and the trolley and hook are larger with a brighter work light — same parking spot in the west street, same below-the-rooms travel, nothing new moves at rest. The slab tilts to 10 degrees on a thicker stacked edge so its depth reads at a glance.</li>
             <li><code>Vault clear of the slots</code> — newest pass: live captures kept catching Vault's name tag on a Gallery Vault slot's EMPTY label, because every post inside that room stands on the 2x2 slot grid. Vault's post now stands on the open floor band under the grid, at the grid's column seam, its tag rides above its dot instead of below it, and its patrol runs flat along that band with no vertical leg — so neither the dot nor the tag can touch a slot label or the room's status plate at rest, while working, or once done.</li>
             <li><code>Gantry crane, unmistakable + on time</code> — newest pass: watched live tests could still only find the crane zoomed, because its hazard-striped beam wore the same pattern as the hazard banner capping the map and blended into it, and its 2.2s glide lagged the ~3s stages so it sat at the previous stage's corridor at every check. The beam is now a solid safety-orange bridge, 248px wide and lettered GANTRY CRANE, on a 34px safety-orange mast — a colour and finish nothing else on the floor uses — still riding below the room boxes and parking in the west street. The glide is 0.85s on a fast-out curve, so the crane departs the moment a stage changes, is parked at the serving corridor for most of every stage, and is home about a second after a run ends.</li>
+            <li><code>Gantry beam, out from behind the rooms</code> — newest pass: watched live tests still found the bridge beam half-hidden behind the raised Prompt Office and Style Lab blocks, its lettering sliced by the room boxes in front of it, because the beam hung where the top row of rooms begins and the rooms paint over the crane's layer. The beam now rides as its own element above the room boxes, hung at the very top of the floor with the full 248px span and the whole GANTRY CRANE legend on show end to end — high enough that it crosses nothing but the rooms' top border, never a title, tag or status line. The mast, trolley, cable and hook stay below the rooms in the street corridors as before, and the same run state drives the beam on the same 0.85s glide, so the whole crane still travels, serves and parks as one machine.</li>
             <li><code>Painter reads the whole brief</code> — newest pass: live takes kept showing the Render Engine ignoring the brief's own words — a red sports car in a neon city at night came back as a dark car under a golden-hour sky, because the sky came only from the mood chip and every subject was painted in the ground silhouette colour. The painter now reads the brief first: the first colour word in it paints the subject (car, cat, dog, robot, dragon, train and boat hulls), a night, dusk or sunny word in the brief sets the sky over whatever mood chip is picked — night gets a cratered moon, stars and a headlight beam — and a car whose brief names a city stands on a lit street with towers behind it instead of an empty stage. Briefs that name no colour and no time of day render exactly as before.</li>
           </ul>
           <h3>RUN IT</h3>
@@ -1724,6 +1779,7 @@
           // the crane always ended a run back at its park and read as if it
           // had never travelled.)
           var craneEl = document.querySelector(".crane");
+          var beamTopEl = document.querySelector(".crane-beam-top");
           if (craneEl) {
             var craneLeft = "33.4%";
             if (state.running && state.stageIdx >= 0) {
@@ -1733,6 +1789,11 @@
             if (craneEl.getAttribute("data-target") !== craneLeft) {
               craneEl.setAttribute("data-target", craneLeft);
               craneEl.style.left = craneLeft;
+              // The lifted bridge beam (POLISH PASS 10) rides on the
+              // mast's centre — the same corridor percentage plus half
+              // the 34px mast — on the same 0.85s glide, so beam and
+              // mast depart, arrive and park together.
+              if (beamTopEl) beamTopEl.style.left = "calc(" + craneLeft + " + 17px)";
             }
           }
         }
