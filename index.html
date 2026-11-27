@@ -1181,7 +1181,7 @@
           <span class="badge">Public</span>
           <span class="badge">GitHub Pages</span>
           <span class="badge">3D Diorama Build</span>
-          <span class="badge">v2.4.0 · Painter Pass 15</span>
+          <span class="badge">v2.5.0 · Painter Pass 16</span>
           <span class="badge">Updated Nov 27, 2026</span>
         </div>
         <div class="repo-links">
@@ -1482,6 +1482,7 @@
             <li><code>Wedge + real neon signs</code> — newest pass: live takes showed the sports car still reading as a tall boxy sedan (its roof peaked at sedan height over a deep dome cabin) and the neon as four blank glowing rectangles floating in the sky. The sports profile is now a true low wedge — 0.30 units tall over a 1.06-long body, dropped nose, thin glass band on the roofline, lip spoiler, smaller wheels — and the generic car sits lower too. Neon signs now mount on actual building faces recorded while the towers are drawn, carry glowing NEON / HOTEL / BAR / 24H lettering (horizontal and vertical), and throw graded, rippled reflections down the wet street under their own building.</li>
             <li><code>Signs on one tower, long reflections, raked tail</code> — newest pass: the last verified live take (hard refresh, v2.2.0 stamp showing) left three smaller caveats on the image, and this pass closes all three. Each neon sign straddled two towers and the gap between them, because the plate was sized at 1.5x its host tower's width — the skyline towers are drawn wider now and every plate is clamped inside its one host face, lettering fitted to the plate. The street reflections read as short straight-edged blocks in a band under the car — each is now a tapered, wavy-edged column running the full depth of the street to the bottom of the frame, with the mirrored word stretched down it and broken, offset ripple streaks instead of straight lines. And the wedge still ended in a flat vertical rear slab under a single peaked roof point — the tail now rakes forward as it rises and the roof apex is a short near-flat segment. The build stamp is v2.3.0 in the repo bar, terminal log and footer. The parked-at-rest floor, crane travel, beams, crew, vault, themes and stats are untouched.</li>
             <li><code>Deep boulevard + perspective reflections</code> — newest pass: the one composition note left open after v2.3.0 was that the street was only a narrow band at the bottom of the frame (about the bottom tenth), so the reflection columns, however wavy, were short in absolute terms. The city painter's street is now a deep boulevard: towers base at 72% of the frame instead of 88%, the wet asphalt runs the bottom 28% with a gradient, a kerb line and perspective lane dashes, and the car parks mid-boulevard at 81.5% so there is real foreground below it. Each neon reflection starts at the kerb and runs the full ~28% depth to the bottom edge, widening toward the viewer as a real reflection does instead of narrowing, with its mirrored word stretched further and finer ripple streaks breaking it up. At night the headlight also lands: a soft pool of light on the wet asphalt ahead of the nose. Non-city cars keep the classic stage ground line, and briefs that name no city render exactly as before. The build stamp is v2.4.0 in the repo bar, terminal log and footer. The parked-at-rest floor, crane travel, beams, crew, vault, themes and stats are untouched.</li>
+            <li><code>Headlight pool, actually landing</code> — newest pass: the v2.4.0 live take (hard refresh, stamp showing) confirmed the deep boulevard, the long widening reflections and the mid-boulevard car, but the headlight pool never appeared — the asphalt ahead of the nose stayed dark. The cause was geometry, not the gradient: the car was centred at full width, so its nose sat at about 95% of the frame and the pool's centre landed past the right edge of the canvas, and the sliver that did reach the frame was drawn at alpha 0.16 over near-black asphalt. The city car now parks left of centre and slightly smaller, nose at about 85% of the frame with its tail clear of the left edge, so there is a real stretch of road ahead of it. The pool is drawn additively in two parts — a bright core right at the nose where the beam lands, and a broad soft wash running from the nose to the frame edge, broken by brighter ripple streaks. Non-city cars and daytime city scenes render exactly as before. The build stamp is v2.5.0 in the repo bar, terminal log and footer. The parked-at-rest floor, crane travel, beams, crew, vault, themes and stats are untouched.</li>
           </ul>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
@@ -1502,7 +1503,7 @@
         <span>Git-FED / MuseAi-image-ecosystem</span>
         <a href="https://github.com/Git-FED/MuseAi-image-ecosystem">github.com/Git-FED/MuseAi-image-ecosystem</a>
         <a href="https://git-fed.github.io/MuseAi-image-ecosystem/">git-fed.github.io/MuseAi-image-ecosystem</a>
-        <span>GRID // SAT-VIEW · BUILD v2.4.0</span>
+        <span>GRID // SAT-VIEW · BUILD v2.5.0</span>
       </footer>
     </main>
 
@@ -1866,7 +1867,7 @@
         buildCrew();
         emit(null, "Backend live — 12 named agents at their posts across all 6 rooms, holding still. No job yet — start the pipeline to set them moving.");
         log("SYS // image-ecosystem online — 6 rooms, crew parked at posts until a run fires");
-        log("PAGE // MuseAi-image-ecosystem v2.4.0 — 3D diorama build, Nebula theme, painter pass 15 (deep boulevard, perspective reflections, headlight pool), updated Nov 27 2026");
+        log("PAGE // MuseAi-image-ecosystem v2.5.0 — 3D diorama build, Nebula theme, painter pass 16 (headlight pool actually lands: car parked left of centre, additive pool on the asphalt), updated Nov 27 2026");
 
         // ---------- Agent dots ----------
         var NODES = [
@@ -2577,7 +2578,14 @@
             // In the city the car parks mid-boulevard (81.5%) so the deep
             // foreground below it carries the reflections; anywhere else
             // it keeps the classic stage ground line.
-            var cx = W * 0.5, gy = inCity ? H * 0.815 : H * 0.88, s = Math.min(W * 0.72, H * 0.78);
+            // Room ahead of the nose (PAINTER PASS 16): through v2.4.0
+            // the car was centred at full width, so its nose sat at ~95%
+            // of the frame and the road ahead of it — where the headlight
+            // pool has to land — was off-canvas. In the city the car now
+            // parks left of centre and a touch smaller: nose at ~85% of
+            // the frame, tail clear of the left edge, and a real stretch
+            // of lit asphalt in front of it.
+            var cx = inCity ? W * 0.45 : W * 0.5, gy = inCity ? H * 0.815 : H * 0.88, s = Math.min(W * (inCity ? 0.64 : 0.72), H * 0.78);
             shadow(cx, gy + 2, s * 0.5);
             // Body in the brief's colour (dark silhouette when it names none),
             // cabin a shade deeper, a lit highlight along the shoulder line.
@@ -2691,20 +2699,37 @@
               ctx.lineTo(cx + s * 0.56, gy - s * (sleekCar ? 0.07 : 0.13));
               ctx.closePath(); ctx.fill();
               ctx.globalAlpha = 1;
-              // Wet-street headlight pool (PAINTER PASS 15): on the deep
-              // boulevard the beam also lands — a soft elongated pool of
-              // light on the asphalt ahead of the nose, with two broken
-              // ripple streaks, so the foreground reads as wet road the
-              // car is actually lighting, not empty black.
+              // Wet-street headlight pool (PAINTER PASS 16): Pass 15
+              // claimed this pool but the live take showed dark asphalt
+              // ahead of the nose — the pool's centre sat past the right
+              // edge of the frame (the centred full-width car put it
+              // there) and what little reached the canvas was drawn at
+              // alpha 0.16 in normal composite, invisible on near-black
+              // asphalt. The car parks left of centre now (see above),
+              // and the pool is drawn additively ("lighter") in two
+              // parts: a bright core right at the nose where the beam
+              // lands, and a broad soft wash running from the nose to
+              // the frame edge, broken by ripple streaks — so the
+              // foreground reads as wet road the car is actually
+              // lighting, not empty black.
               if (inCity) {
-                var pool = ctx.createRadialGradient(cx + s * 0.78, gy + s * 0.1, 0, cx + s * 0.78, gy + s * 0.1, s * 0.42);
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                var poolCx = cx + s * 0.74, poolCy = gy + s * 0.11;
+                var pool = ctx.createRadialGradient(poolCx, poolCy, 0, poolCx, poolCy, s * 0.36);
                 pool.addColorStop(0, pal.glow); pool.addColorStop(1, "rgba(0,0,0,0)");
-                ctx.globalAlpha = 0.16; ctx.fillStyle = pool;
-                ctx.beginPath(); ctx.ellipse(cx + s * 0.78, gy + s * 0.1, s * 0.42, s * 0.13, 0, 0, 7); ctx.fill();
-                ctx.globalAlpha = 0.3; ctx.strokeStyle = pal.glow; ctx.lineWidth = 1.4;
-                ctx.beginPath(); ctx.moveTo(cx + s * 0.52, gy + s * 0.07); ctx.lineTo(cx + s * 0.98, gy + s * 0.07); ctx.stroke();
-                ctx.globalAlpha = 0.2;
-                ctx.beginPath(); ctx.moveTo(cx + s * 0.6, gy + s * 0.15); ctx.lineTo(cx + s * 1.02, gy + s * 0.15); ctx.stroke();
+                ctx.globalAlpha = 0.34; ctx.fillStyle = pool;
+                ctx.beginPath(); ctx.ellipse(poolCx, poolCy, s * 0.36, s * 0.115, 0, 0, 7); ctx.fill();
+                var coreCx = cx + s * 0.64, coreCy = gy + s * 0.06;
+                var core = ctx.createRadialGradient(coreCx, coreCy, 0, coreCx, coreCy, s * 0.16);
+                core.addColorStop(0, pal.glow); core.addColorStop(1, "rgba(0,0,0,0)");
+                ctx.globalAlpha = 0.42; ctx.fillStyle = core;
+                ctx.beginPath(); ctx.ellipse(coreCx, coreCy, s * 0.16, s * 0.06, 0, 0, 7); ctx.fill();
+                ctx.restore();
+                ctx.globalAlpha = 0.38; ctx.strokeStyle = pal.glow; ctx.lineWidth = 1.4;
+                ctx.beginPath(); ctx.moveTo(cx + s * 0.55, gy + s * 0.07); ctx.lineTo(cx + s * 1.0, gy + s * 0.07); ctx.stroke();
+                ctx.globalAlpha = 0.26;
+                ctx.beginPath(); ctx.moveTo(cx + s * 0.62, gy + s * 0.16); ctx.lineTo(cx + s * 1.04, gy + s * 0.16); ctx.stroke();
                 ctx.globalAlpha = 1;
               }
             }
