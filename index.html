@@ -925,6 +925,44 @@
       .room-now { font-size: 8px; letter-spacing: .015em; }
       #room-style-lab .room-now, #room-gallery-vault .room-now { right: 14px; }
       @media (max-width: 1079px) { .room-now { display: none; } }
+      /* ============ POLISH PASS 6 — a crane you can pick out, a deeper slab ============ */
+      /* The Pass 4 gantry rebuild passed its geometry checks and still
+         failed the eye test in full-page captures: testers could not pick
+         the crane out at all. Diagnosis from the capture itself: the
+         column was finished in the same greens as the floor and streets
+         it travels through, so every exposed segment — the west street
+         gap, the conveyor crossings, the bay sliver — read as more floor.
+         Camouflage, not placement. The fix keeps every Pass 4 protection
+         (the crane still rides BELOW the room boxes at z-index 1, still
+         parks in the west street at 33.4%, still travels corridor to
+         corridor only while a run is live, animation still paused at
+         rest) and changes only the finish:
+         - the column is galvanized steel now — near-white at the lit
+           edge, shading to deep green at the shadow edge — with an amber
+           leading edge, so it contrasts with every surface behind it;
+         - the top rail gains an amber centre line, so the track the
+           bridge beam rides reads as crane infrastructure, not trim;
+         - the trolley block grows to 38x26 and the hook to 20x14 with a
+           brighter work-light cone, all inside the open west street
+           segment above conveyor A, where nothing can be covered.
+         The slab itself sits deeper in space: the desktop tilt goes
+         from 8deg to 10deg and the stacked edge shadows thicken, so the
+         floor's thickness reads at a glance. The float keyframes carry
+         the same 10deg so the slab never flattens mid-run (the float
+         itself still only exists while a run is live — the parked-floor
+         block above still kills the animation at rest). */
+      .crane-rail { height: 8px; background: linear-gradient(180deg, #6d937b, #2c4a37 55%, #101f16); box-shadow: 0 3px 9px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 0 rgba(255,176,32,0.55); }
+      .crane { width: 24px; background: linear-gradient(90deg, #f2f7f0 0%, #b9cec0 22%, #6d937b 58%, #33523f 88%, #182a1f 100%); border-left: 2px solid rgba(255,176,32,0.85); border-right: 1px solid rgba(0,0,0,0.85); box-shadow: 10px 0 22px rgba(0,0,0,0.6), -4px 0 12px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.55), 0 0 30px rgba(255,176,32,0.28); }
+      .crane-beam { height: 15px; top: 10px; box-shadow: 0 6px 14px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.45), 0 0 18px rgba(255,176,32,0.35); }
+      .crane::before { top: 30px; width: 38px; height: 26px; margin-left: -19px; box-shadow: 0 5px 12px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.4), 0 0 16px rgba(255,176,32,0.4); }
+      .crane::after { top: 34px; }
+      .crane-cable { top: 56px; height: 104px; width: 3px; margin-left: -1.5px; background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.45)); }
+      .crane-cable::after { width: 20px; height: 14px; margin-left: -10px; bottom: -11px; box-shadow: 0 0 16px rgba(255,176,32,0.85), inset 0 1px 0 rgba(255,255,255,0.6); }
+      .crane-cable::before { width: 96px; height: 96px; background: radial-gradient(ellipse 50% 100% at 50% 0%, rgba(255,176,32,0.26), transparent 70%); }
+      @media (min-width: 900px) {
+        .diorama .map { transform: rotateX(10deg); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.8), inset 0 18px 34px rgba(0,0,0,0.55), inset 0 -18px 34px rgba(0,0,0,0.55), 0 18px 0 -5px rgba(14,14,34,0.97), 0 34px 0 -11px rgba(6,6,18,0.94), 0 60px 84px rgba(0,0,0,0.9), 0 0 52px rgba(var(--accent-rgb),0.13); }
+      }
+      @keyframes slab-float { 0%, 100% { transform: rotateX(10deg) translateY(0); } 50% { transform: rotateX(10deg) translateY(-4px); } }
     </style>
   </head>
   <body>
@@ -1240,6 +1278,7 @@
             <li><code>Six themes</code> — Nebula (the new default, deep indigo and electric blue), Emerald, Cyan, Amber, Violet and Rose. Switching themes recolours the whole scene, rooms included.</li>
             <li><code>Ops stats, Surprise Me, starred vault</code> — a stats bar computed from this session's real run history, a SURPRISE ME button that invents a fresh brief, star any finished image, and a full-screen lightbox from the result or any vault tile.</li>
             <li><code>Bay tower + gantry bridge</code> — latest pass: the Deployment Bay has a floor grid, corner brackets and beacon rings around its centre dot, and the render core, the bay beacon and the rings are now still by default in the stylesheet itself — their pulses exist only while a run is live, so nothing on the floor shimmers or flickers at rest. The overhead gantry was rebuilt to be unmistakable: a rail track runs the full width of the floor's top edge, the column is wider and brighter with an amber edge glow, the hazard-striped bridge beam is 170px wide, and the trolley, cable and hook ride in the open top segment of the west street corridor where the bay wall used to hide them. It parks there fully visible at rest and travels corridor to corridor below the room boxes during a run, so it never covers a title or tag.</li>
+            <li><code>Gantry finish + deeper slab</code> — newest pass: full-page captures showed the gantry still could not be picked out, because the column was finished in the same greens as the floor it travels through. The column is galvanized steel now, near-white at its lit edge with an amber leading edge and a stronger amber glow, the top rail carries an amber centre line, and the trolley and hook are larger with a brighter work light — same parking spot in the west street, same below-the-rooms travel, nothing new moves at rest. The slab tilts to 10 degrees on a thicker stacked edge so its depth reads at a glance, and Vault's post moved to the seam where the Gallery Vault's slot rows and columns meet, so its name tag no longer sits on a slot's EMPTY label.</li>
           </ul>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
@@ -1289,7 +1328,7 @@
           { id:"kiln", name:"Kiln", call:"R05-B", room:"render-engine", roomName:"Render Engine", roomCode:"R05", role:"Render Core & Grain", dock:"Dock B", color:"#67e8f9", bay:[61,48.5], work:[58,81], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Firing the render core — grain and detail pass at "+b.detail+" detail.";} },
           { id:"hone", name:"Hone", call:"R04-A", room:"detail-forge", roomName:"Detail Forge", roomCode:"R04", role:"Detail Sharpener", dock:"Dock A", color:"#c084fc", bay:[38.5,57], work:[78,45], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Sharpening detail language and resolving fine texture.";} },
           { id:"polish", name:"Polish", call:"R04-B", room:"detail-forge", roomName:"Detail Forge", roomCode:"R04", role:"Flaw & Keep-Out Checker", dock:"Dock B", color:"#e9d5ff", bay:[46,57], work:[88,47], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return b.negative ? "Stripping keep-out items: "+b.negative+"." : "Checking for flaws — no keep-out list on this brief.";} },
-          { id:"vault", name:"Vault", call:"R06-A", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Vault Keeper", dock:"Dock A", color:"#22ff88", bay:[53.5,57], work:[77,15], speed:1.3, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Opening vault slot 1 and filing the finished image.";} },
+          { id:"vault", name:"Vault", call:"R06-A", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Vault Keeper", dock:"Dock A", color:"#22ff88", bay:[53.5,57], work:[83,13.8], speed:1.3, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Opening vault slot 1 and filing the finished image.";} },
           { id:"courier", name:"Courier", call:"R06-B", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Image Courier — R05 to R06", dock:"Dock B", color:"#bbf7d0", bay:[61,57], work:[87,18.5], speed:1.8, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Carrying the finished image from the Render Engine (R05) through the bay to the Gallery Vault (R06).";} }
         ];
         var BAY = [50, 48];
