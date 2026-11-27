@@ -242,7 +242,11 @@
       .render-core {
         width: 38px; height: 38px; flex-shrink: 0; border-radius: 999px;
         border: 2px solid var(--cyan); background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.75), rgba(103,232,249,0.45) 45%, rgba(8,47,60,0.9));
-        box-shadow: 0 4px 0 #06202a, 0 6px 14px rgba(0,0,0,0.7), 0 0 20px rgba(103,232,249,0.75), inset 0 -6px 10px rgba(0,0,0,0.45); animation: pulse-core 1.6s ease-in-out infinite;
+        box-shadow: 0 4px 0 #06202a, 0 6px 14px rgba(0,0,0,0.7), 0 0 20px rgba(103,232,249,0.75), inset 0 -6px 10px rgba(0,0,0,0.45);
+        /* Still by default: the pulse is only switched on while a run is live
+           (see the POLISH PASS 4 block). It used to pulse infinitely here and
+           rely on a :not(.running) override to stop it — the override lost,
+           so the orb kept shimmering at rest in live tests. */
       }
       .in-bars { display: flex; flex: 1; align-items: flex-end; gap: 4px; }
       .in-bars div { width: 100%; border-radius: 2px 2px 0 0; background: linear-gradient(180deg, rgba(190,245,255,0.9), rgba(103,232,249,0.45)); box-shadow: 2px 0 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.5); }
@@ -560,12 +564,14 @@
       .crane { z-index: 1; opacity: 1; width: 14px; background: linear-gradient(90deg, #5d8269, #2c4a37 55%, #182a1f); border-left: 1px solid rgba(255,255,255,0.4); border-right: 1px solid rgba(0,0,0,0.85); box-shadow: 6px 0 16px rgba(0,0,0,0.5), -2px 0 8px rgba(0,0,0,0.4); animation: crane-run 20s ease-in-out infinite; }
       @keyframes crane-run { 0%, 100% { left: 15%; } 50% { left: 83%; } }
       .crane::before { content: ""; position: absolute; left: 50%; top: 34%; width: 28px; height: 19px; margin-left: -14px; border-radius: 3px; background: repeating-linear-gradient(-45deg, #d9b62e 0 7px, #161c13 7px 14px); border: 1px solid rgba(0,0,0,0.85); box-shadow: 0 4px 10px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.35); }
-      .crane::after { content: ""; position: absolute; left: 50%; top: 12%; width: 8px; height: 8px; margin-left: -4px; border-radius: 999px; background: var(--amber); box-shadow: 0 0 12px var(--amber); animation: blink-dot 1.4s step-end infinite; }
+      .crane::after { content: ""; position: absolute; left: 50%; top: 12%; width: 8px; height: 8px; margin-left: -4px; border-radius: 999px; background: var(--amber); box-shadow: 0 0 12px var(--amber); /* blinks only while a run is live — POLISH PASS 4 */ }
       .crane-cable { position: absolute; left: 50%; top: calc(34% + 19px); width: 2px; height: 104px; margin-left: -1px; background: linear-gradient(180deg, rgba(230,245,233,0.8), rgba(230,245,233,0.3)); }
       .crane-cable::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 13px; height: 10px; margin-left: -6.5px; border-radius: 2px; background: linear-gradient(180deg, #ffd98a, #b97f10); border: 1px solid rgba(0,0,0,0.6); box-shadow: 0 0 12px rgba(255,176,32,0.6), inset 0 1px 0 rgba(255,255,255,0.55); }
       .crane-cable::before { content: ""; position: absolute; left: 50%; top: calc(100% + 7px); width: 72px; height: 72px; transform: translateX(-50%); background: radial-gradient(ellipse 50% 100% at 50% 0%, rgba(255,176,32,0.17), transparent 70%); pointer-events: none; }
-      /* Bay beacon breathes at rest too, not only during a run. */
-      .hub-dot { animation: pulse-core 2.8s ease-in-out infinite; }
+      /* Bay beacon is still at rest: it pulses only while a run is live
+         (.map.running .hub-dot, above). An earlier infinite animation here
+         outlived the parked-floor overrides and read as a flicker at the
+         beacon after a run finished. */
       /* Parked until the pipeline starts: with no job running the floor is
          still — belts held, crane held, and no idle bob on the crew dots.
          Movement only exists while .running is on the map (a live job). */
@@ -766,7 +772,8 @@
         transform: translate(-50%, -50%); border-radius: 999px; pointer-events: none;
         border: 1px solid rgba(255,154,146,0.5);
         box-shadow: 0 0 0 10px rgba(255,90,78,0.05), 0 0 0 11px rgba(255,154,146,0.22), 0 0 22px rgba(255,90,78,0.25), inset 0 0 18px rgba(255,90,78,0.18);
-        animation: bay-breathe 3.4s ease-in-out infinite;
+        /* No animation at rest: the rings breathe only while a run is live
+           (POLISH PASS 4 block). */
       }
       .hub::after {
         content: ""; position: absolute; inset: 7px; border-radius: 4px; pointer-events: none;
@@ -852,6 +859,72 @@
       .crane { width: 20px; }
       .crane-beam { width: 140px; margin-left: -70px; }
       @keyframes crane-run { 0%, 100% { left: 33%; } 50% { left: 65%; } }
+      /* ============ POLISH PASS 4 — still by default, a gantry you can see ============ */
+      /* Live tests kept catching two leaks in the parked rule: the Render
+         Engine core shimmered at rest and the bay beacon flickered after a
+         run, because both pulsed infinitely in their base rules and depended
+         on :not(.running) overrides to stop. The base rules no longer carry
+         those animations at all — stillness is now the stylesheet default,
+         and each pulse exists only under .running, the class that exists
+         solely while a pipeline job is live. Nothing to override, nothing
+         to leak. */
+      .map.running .render-core { animation: pulse-core 1.6s ease-in-out infinite; }
+      .map.running .hub::before { animation: bay-breathe 1.1s ease-in-out infinite; border-color: rgba(255,154,146,0.9); }
+      .map.running .crane::after { animation: blink-dot 1.4s step-end infinite; }
+      /* The gantry itself kept failing the same live test: testers saw only
+         the hazard bar at the top of the viewport and no crane. The column
+         was dark green on a dark floor, and its working end — trolley, cable
+         and hook — hung at 34% down the column, exactly where the Deployment
+         Bay's west wall (x 34%) slides in front of it (the crane rides below
+         the room boxes), so the hook spent its life hidden behind the bay.
+         The rebuild: a full-width rail track across the top of the floor so
+         the beam reads as riding something; a brighter, wider column with an
+         amber edge glow; a 170px hazard bridge beam hung just under the
+         rail; and the trolley, cable and hook moved up into the open top
+         segment of the west corridor (above the 31% street, clear of every
+         room and of the bay), so the whole machine is on show where it
+         parks. Travel is unchanged: corridor to corridor, below the rooms. */
+      .crane-rail {
+        position: absolute; left: 0; right: 0; top: 0; height: 7px; z-index: 1; pointer-events: none;
+        background: linear-gradient(180deg, #4a7057, #182a1f 60%, #0a140d);
+        border-bottom: 1px solid rgba(255,255,255,0.25);
+        box-shadow: 0 3px 9px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.2);
+      }
+      .crane {
+        width: 22px;
+        background: linear-gradient(90deg, #93b89f, #4a7057 55%, #223d2c);
+        box-shadow: 8px 0 18px rgba(0,0,0,0.55), -3px 0 10px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.55), 0 0 22px rgba(255,176,32,0.16);
+      }
+      .crane-beam { width: 170px; margin-left: -85px; height: 13px; top: 9px; }
+      .crane::before { top: 27px; width: 30px; height: 22px; margin-left: -15px; }
+      .crane::after { top: 30px; }
+      .crane-cable { top: 49px; height: 72px; }
+      .crane-cable::after { width: 16px; height: 12px; margin-left: -8px; bottom: -9px; }
+      @keyframes crane-run { 0%, 100% { left: 33.4%; } 50% { left: 65%; } }
+      @media (prefers-reduced-motion: reduce) {
+        .map.running .render-core, .map.running .hub::before, .map.running .crane::after { animation: none; }
+      }
+      /* ============ POLISH PASS 5 — every status line fits in full ============ */
+      /* Live tests showed the plate lines still clipping with an ellipsis
+         mid-word: the WORKING line carried the agent's whole task sentence,
+         and even the fixed phrases ("done · back at post, holding still")
+         ran longer than the plate at desktop widths. Three-part fix:
+         - the plate speaks in short phrases now (see PLATE_WORK in the
+           script, and the shortened state phrases in roomNow): the full
+           task sentence still shows in the crew roster cards, the Agent
+           Inspector and the Live Ops feed;
+         - the plate font steps down to 8px with tighter tracking, and the
+           two rooms with no crates on their floor (Style Lab, Gallery
+           Vault) let the plate run wider, to 14px from the right wall;
+         - below 1080px the rooms are too narrow for an honest fit, so —
+           exactly as on phones — the in-room lines yield there and the
+           same live text stays fully readable in the roster and Inspector.
+         The lines stay single-line nowrap, so the plate is still exactly
+         two lines tall and its top edge can never creep into the patrol
+         band the crew walks in. */
+      .room-now { font-size: 8px; letter-spacing: .015em; }
+      #room-style-lab .room-now, #room-gallery-vault .room-now { right: 14px; }
+      @media (max-width: 1079px) { .room-now { display: none; } }
     </style>
   </head>
   <body>
@@ -910,7 +983,8 @@
         <div class="street-line-h" style="top:66.5%" aria-hidden="true"></div>
         <div class="pipe-h" style="top:29.2%" aria-hidden="true"></div>
         <div class="pipe-h" style="top:70.5%" aria-hidden="true"></div>
-        <div class="crane" style="left:49.4%" aria-hidden="true"><span class="crane-beam"></span><i class="crane-cable"></i></div>
+        <div class="crane-rail" aria-hidden="true"></div>
+        <div class="crane" style="left:33.4%" aria-hidden="true"><span class="crane-beam"></span><i class="crane-cable"></i></div>
         <span class="floor-tag" style="left:3%;top:29%" aria-hidden="true">CONVEYOR A →</span>
         <span class="floor-tag" style="left:69%;top:61%" aria-hidden="true">CONVEYOR B →</span>
         <span class="floor-tag" style="left:3%;bottom:1.5%" aria-hidden="true">BAY 04 · RENDER LINE</span>
@@ -1158,13 +1232,14 @@
           <h3>THE 3D DIORAMA BUILD — WHAT IS NEW IN THIS UPDATE</h3>
           <ul>
             <li><code>3D diorama floor</code> — the flat map is now a tilted slab floating in a starfield viewport, rooms as raised blocks with deeper extrusion and a scan sweep across the floor while a run is live. Latest pass: the slab tilts further and sits on a thicker visible edge, the rooms and the Deployment Bay tower extrude deeper, and the whole slab floats higher above the starfield.</li>
-            <li><code>Slim map tags</code> — crew tags on the floor are name-only in every state now, centred under each dot. The full live task text lives in the room status lines — now on a dark plate pinned to each room's floor, below the crew's patrol band, with every agent's post raised into the room's upper half so a dot and its tag can never reach the plate — plus the crew roster and the Agent Inspector, so no tag or tooltip card ever covers a room's text again. The tiny DOCK A / DOCK B corner labels retired: the plate names both agents in the room.</li>
+            <li><code>Slim map tags</code> — crew tags on the floor are name-only in every state now, centred under each dot. Each room's status lines sit on a dark plate pinned to the room's floor, below the crew's patrol band, with every agent's post raised into the room's upper half so a dot and its tag can never reach the plate — and the full live task text lives in the crew roster and the Agent Inspector, so no tag or tooltip card ever covers a room's text again. The tiny DOCK A / DOCK B corner labels retired: the plate names both agents in the room.</li>
+            <li><code>Status lines that fit</code> — latest pass: the plate speaks in short phrases sized to read in full — name, state, and a few words for the job in hand — instead of squeezing each agent's whole task sentence onto one line and clipping it mid-word. The full sentence still shows in the roster cards, the Inspector and the Live Ops feed. The two rooms with no crates on the floor (Style Lab, Gallery Vault) let the plate run wider, and below desktop widths the in-room lines yield, exactly as they already did on phones, with the same text one scroll away in the roster.</li>
             <li><code>Mini crews</code> — every room holds its own two-person mini crew at its benches. They sit dormant and dim at rest; when the bay activates their room they light up and patrol bench to bench while that stage works.</li>
             <li><code>Activation beams</code> — the Deployment Bay fires a flowing beam along the streets to each room as its stage starts, so a run reads as the bay waking the floor room by room. The bay nameplate reads ACTIVATING ROOM CREWS while a run is live.</li>
             <li><code>STAGED, not WORKING</code> — a room whose crew has arrived but whose stage has not started reads STAGED in cyan. Rooms only read WORKING while their pair is genuinely at its workstations. Stages are numbered in the true order: Detail Forge is R04 and runs before Render Engine R05.</li>
             <li><code>Six themes</code> — Nebula (the new default, deep indigo and electric blue), Emerald, Cyan, Amber, Violet and Rose. Switching themes recolours the whole scene, rooms included.</li>
             <li><code>Ops stats, Surprise Me, starred vault</code> — a stats bar computed from this session's real run history, a SURPRISE ME button that invents a fresh brief, star any finished image, and a full-screen lightbox from the result or any vault tile.</li>
-            <li><code>Bay tower + gantry bridge</code> — latest pass: the Deployment Bay now has a floor grid, corner brackets and beacon rings around its centre dot (they breathe only while a run is live — at rest the whole floor is parked and still); the overhead gantry carries a wide hazard-striped bridge beam and a brighter beacon, and it now parks in the open west street corridor where it is fully visible at rest, travelling corridor to corridor below the room boxes during a run so it never covers a title or tag.</li>
+            <li><code>Bay tower + gantry bridge</code> — latest pass: the Deployment Bay has a floor grid, corner brackets and beacon rings around its centre dot, and the render core, the bay beacon and the rings are now still by default in the stylesheet itself — their pulses exist only while a run is live, so nothing on the floor shimmers or flickers at rest. The overhead gantry was rebuilt to be unmistakable: a rail track runs the full width of the floor's top edge, the column is wider and brighter with an amber edge glow, the hazard-striped bridge beam is 170px wide, and the trolley, cable and hook ride in the open top segment of the west street corridor where the bay wall used to hide them. It parks there fully visible at rest and travels corridor to corridor below the room boxes during a run, so it never covers a title or tag.</li>
           </ul>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
@@ -1270,14 +1345,18 @@
           renderCrew();
         }
         function pillClass(st){ return st==="WORKING"?"working":st==="DONE"?"done":st==="DEPLOYED"?"deployed":""; }
+        // Short plate phrases for the WORKING state. The room status plate is
+        // one nowrap line per agent, sized so the longest line fits in full
+        // at desktop widths; the agent's full task sentence still shows in
+        // the crew roster cards, the Agent Inspector and the Live Ops feed.
+        var PLATE_WORK = { quill:"expanding brief", scribe:"logging brief", palette:"locking style", mood:"setting mood", frame:"framing shot", rule:"checking thirds", hone:"sharpening detail", polish:"checking flaws", forge:"rendering image", kiln:"firing core", vault:"filing image", courier:"carrying image" };
         function roomNow(){
           STAGE_ORDER.forEach(function(roomId){
             var box=document.getElementById("now-"+roomId); if(!box) return;
             var parts=[];
             CREW.forEach(function(a){
               if(a.room!==roomId) return;
-              var esc = a.task.replace(/</g,"&lt;");
-              var what = a.status==="WORKING" ? "working<span class=\"rn-task\"> \u2014 "+esc+"</span>" : a.status==="DEPLOYED" ? (/^(Finished|Done)/.test(a.task) ? "heading back to post\u2026" : "deploying via the bay\u2026") : a.status==="DONE" ? "done \u00B7 back at post, holding still" : "waiting at post \u00B7 still";
+              var what = a.status==="WORKING" ? "working<span class=\"rn-task\"> \u00B7 "+(PLATE_WORK[a.id]||"on the job")+"</span>" : a.status==="DEPLOYED" ? (/^(Finished|Done)/.test(a.task) ? "heading back to post" : "deploying via the bay") : a.status==="DONE" ? "done \u00B7 back at post" : "waiting at post \u00B7 still";
               parts.push("<span class=\"rn-line\"><b>"+a.name.toUpperCase()+"</b> "+what+"</span>");
             });
             box.innerHTML=parts.join("");
