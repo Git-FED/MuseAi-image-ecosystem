@@ -1477,6 +1477,7 @@
             <li><code>Gantry beam, out from behind the rooms</code> — newest pass: watched live tests still found the bridge beam half-hidden behind the raised Prompt Office and Style Lab blocks, its lettering sliced by the room boxes in front of it, because the beam hung where the top row of rooms begins and the rooms paint over the crane's layer. The beam now rides as its own element above the room boxes, hung at the very top of the floor with the full 248px span and the whole GANTRY CRANE legend on show end to end — high enough that it crosses nothing but the rooms' top border, never a title, tag or status line. The mast, trolley, cable and hook stay below the rooms in the street corridors as before, and the same run state drives the beam on the same 0.85s glide, so the whole crane still travels, serves and parks as one machine.</li>
             <li><code>Gantry beam, on its own track</code> — newest pass: watched live tests still read ANTRY CRANE — in the tilted slab the raised room blocks paint over the beam's ends in the real browser whatever z-index it carries, so stacking inside the overlap could not be trusted to save it. The beam now rides in its own gantry track, a railed strip between the hazard banner and the floor slab where no room box or room shadow exists at any width: the full safety-orange span and the whole GANTRY CRANE legend are on show end to end, at rest and mid-glide, driven by the same run state on the same 0.85s glide, centred over the mast in the street below. The painter also gained a low wedge profile for sports cars (the old stacked boxes read as a pickup), glowing pink-and-cyan neon signs with street reflections for neon city briefs, and the expanded prompt text now follows the brief's own time of day instead of quoting the mood chip over a night or midday image.</li>
             <li><code>Painter reads the whole brief</code> — newest pass: live takes kept showing the Render Engine ignoring the brief's own words — a red sports car in a neon city at night came back as a dark car under a golden-hour sky, because the sky came only from the mood chip and every subject was painted in the ground silhouette colour. The painter now reads the brief first: the first colour word in it paints the subject (car, cat, dog, robot, dragon, train and boat hulls), a night, dusk or sunny word in the brief sets the sky over whatever mood chip is picked — night gets a cratered moon, stars and a headlight beam — and a car whose brief names a city stands on a lit street with towers behind it instead of an empty stage. Briefs that name no colour and no time of day render exactly as before.</li>
+            <li><code>Wedge + real neon signs</code> — newest pass: live takes showed the sports car still reading as a tall boxy sedan (its roof peaked at sedan height over a deep dome cabin) and the neon as four blank glowing rectangles floating in the sky. The sports profile is now a true low wedge — 0.30 units tall over a 1.06-long body, dropped nose, thin glass band on the roofline, lip spoiler, smaller wheels — and the generic car sits lower too. Neon signs now mount on actual building faces recorded while the towers are drawn, carry glowing NEON / HOTEL / BAR / 24H lettering (horizontal and vertical), and throw graded, rippled reflections down the wet street under their own building.</li>
           </ul>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
@@ -2412,9 +2413,11 @@
             // subject stage. Any other car keeps the clean stage.
             var inCity = /\b(city|skyline|downtown|urban|neon|street|traffic)\b/.test(text);
             if (inCity) {
+              var cityBuildings = [];
               var bx3 = W * 0.02;
               while (bx3 < W * 0.96) {
                 var bw3 = W * (0.05 + rand() * 0.07), bh3 = H * (0.2 + rand() * 0.34);
+                cityBuildings.push({ x: bx3, w: bw3, top: H * 0.88 - bh3, h: bh3 });
                 ctx.fillStyle = darkColor; ctx.fillRect(bx3, H * 0.88 - bh3, bw3, bh3);
                 for (var wy3 = 0; wy3 < 5; wy3++) for (var wx3 = 0; wx3 < 3; wx3++) {
                   if (rand() > 0.42) {
@@ -2431,23 +2434,54 @@
               ctx.setLineDash([26, 20]);
               ctx.beginPath(); ctx.moveTo(0, H * 0.945); ctx.lineTo(W, H * 0.945); ctx.stroke();
               ctx.setLineDash([]); ctx.globalAlpha = 1;
-              // Neon briefs get neon (POLISH PASS 11): glowing pink and
-              // cyan sign bars on the tower faces with a smear of their
-              // light on the street below — lit windows alone never read
-              // as neon in the live takes.
+              // Neon briefs get neon (POLISH PASS 12): Pass 11 placed four
+              // blank glowing rectangles at random sky positions, so they
+              // floated above the rooftops and read as empty boxes. Signs
+              // now mount ON recorded building faces — inside the tower
+              // rect, near its top — carry real lettering (NEON / HOTEL /
+              // BAR / 24H) in a glowing tube style, and throw a graded,
+              // rippled reflection down the wet street under their own
+              // building instead of a flat block.
               if (/\bneon\b/.test(text) || prompts.style === "Cyberpunk") {
-                var neonCols = ["#ff2ea6", "#22d3ee", "#ff2ea6", "#7df9ff"];
+                var neonCols = ["#ff2ea6", "#22d3ee", "#ff5a2e", "#b26bff"];
+                var neonWords = ["NEON", "HOTEL", "BAR", "24H"];
+                var tall = cityBuildings.filter(function (b) { return b.h > H * 0.26 && b.w > W * 0.045; });
                 ctx.save();
-                for (var nz = 0; nz < 4; nz++) {
-                  var nx = W * (0.08 + nz * 0.23 + rand() * 0.05), ny = H * (0.3 + rand() * 0.3), nw = W * (0.05 + rand() * 0.05), ncol = neonCols[nz % neonCols.length];
-                  ctx.shadowColor = ncol; ctx.shadowBlur = 16;
-                  ctx.strokeStyle = ncol; ctx.lineWidth = 3;
-                  ctx.globalAlpha = 0.9;
-                  roundRectPath(nx, ny, nw, H * 0.045, 4); ctx.stroke();
-                  ctx.fillStyle = ncol; ctx.globalAlpha = 0.28;
-                  ctx.fillRect(nx + 3, ny + H * 0.022 - 1.5, nw - 6, 3);
-                  ctx.globalAlpha = 0.16; ctx.shadowBlur = 10;
-                  ctx.fillRect(nx, H * 0.88, nw, H * 0.05);
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                for (var nz = 0; nz < Math.min(4, tall.length); nz++) {
+                  var bld = tall[Math.floor(nz * tall.length / Math.min(4, tall.length))];
+                  var ncol = neonCols[nz % neonCols.length], word = neonWords[nz % neonWords.length];
+                  var vertical = nz % 2 === 1;
+                  ctx.shadowColor = ncol; ctx.shadowBlur = 18;
+                  if (vertical) {
+                    var vw = Math.min(bld.w * 0.52, W * 0.032), vh = Math.min(bld.h * 0.52, H * 0.2);
+                    var vx = bld.x + bld.w / 2 - vw / 2, vy = bld.top + bld.h * 0.1;
+                    ctx.strokeStyle = ncol; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.95;
+                    roundRectPath(vx, vy, vw, vh, 4); ctx.stroke();
+                    ctx.fillStyle = ncol; ctx.font = "800 " + Math.max(10, vw * 0.72) + "px monospace";
+                    for (var li2 = 0; li2 < word.length; li2++) ctx.fillText(word.charAt(li2), vx + vw / 2, vy + vh * (li2 + 0.5) / word.length);
+                  } else {
+                    var hw2 = bld.w * 0.86, hh2 = Math.max(15, H * 0.038);
+                    var hx3 = bld.x + bld.w / 2 - hw2 / 2, hy3 = bld.top + bld.h * (0.1 + (nz === 2 ? 0.22 : 0));
+                    ctx.strokeStyle = ncol; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.95;
+                    roundRectPath(hx3, hy3, hw2, hh2, 4); ctx.stroke();
+                    ctx.fillStyle = ncol; ctx.font = "800 " + Math.max(10, hh2 * 0.58) + "px monospace";
+                    ctx.fillText(word, hx3 + hw2 / 2, hy3 + hh2 / 2 + 1);
+                  }
+                  // Wet-street reflection: a vertical gradient smear under
+                  // the sign's own building, broken by ripple strokes, so
+                  // it reads as light on wet asphalt, not a solid block.
+                  var rcx = bld.x + bld.w / 2, rw3 = bld.w * 0.7;
+                  var rgr = ctx.createLinearGradient(0, H * 0.88, 0, H * 0.995);
+                  rgr.addColorStop(0, ncol); rgr.addColorStop(1, "rgba(0,0,0,0)");
+                  ctx.shadowBlur = 0; ctx.fillStyle = rgr; ctx.globalAlpha = 0.3;
+                  ctx.fillRect(rcx - rw3 / 2, H * 0.88, rw3, H * 0.115);
+                  ctx.globalAlpha = 0.4; ctx.strokeStyle = ncol; ctx.lineWidth = 1.4;
+                  for (var rp = 0; rp < 4; rp++) {
+                    var ry = H * (0.9 + rp * 0.024), rwd = rw3 * (0.85 - rp * 0.13);
+                    ctx.beginPath(); ctx.moveTo(rcx - rwd / 2, ry); ctx.lineTo(rcx + rwd / 2, ry); ctx.stroke();
+                  }
+                  ctx.globalAlpha = 1;
                 }
                 ctx.restore(); ctx.globalAlpha = 1;
               }
@@ -2458,70 +2492,74 @@
             // cabin a shade deeper, a lit highlight along the shoulder line.
             var sleekCar = /\b(sports|race|racing|sleek|supercar|convertible|coupe|roadster)\b/.test(text);
             if (sleekCar) {
-              // Sleek profile (POLISH PASS 11): the two stacked boxes used
-              // for every car read as a pickup — a tall cabin on a slab
-              // body. A sports car is one low wedge: a long bonnet sloping
-              // down to the nose, a roofline peaking ahead of the rear
-              // wheel and falling away to a short deck.
+              // Low wedge (POLISH PASS 12): Pass 11 still read as a tall
+              // boxy sedan in live takes — its roof peaked at 0.425s over
+              // a 1.0s wheelbase (a sedan's proportions) and the cabin was
+              // a deep dome. This profile is a true wedge: overall height
+              // 0.30s over a 1.06s length, the nose dropped to 0.13s, a
+              // long bonnet rising gently to a low roof peak set just
+              // ahead of centre, then one straight fastback slope to a
+              // short, high tail with a lip spoiler. The glass is a thin
+              // band following the roofline, not a dome, and the wheels
+              // shrink to 0.085s so they stop towering over the body.
               ctx.fillStyle = subjectFill;
               ctx.beginPath();
-              ctx.moveTo(cx - s * 0.5, gy - s * 0.05);
-              ctx.lineTo(cx - s * 0.5, gy - s * 0.2);
-              ctx.quadraticCurveTo(cx - s * 0.5, gy - s * 0.26, cx - s * 0.42, gy - s * 0.265);
-              ctx.lineTo(cx + s * 0.28, gy - s * 0.235);
-              ctx.quadraticCurveTo(cx + s * 0.46, gy - s * 0.225, cx + s * 0.5, gy - s * 0.17);
-              ctx.lineTo(cx + s * 0.5, gy - s * 0.05);
+              ctx.moveTo(cx + s * 0.53, gy - s * 0.04);
+              ctx.lineTo(cx + s * 0.53, gy - s * 0.13);
+              ctx.quadraticCurveTo(cx + s * 0.52, gy - s * 0.17, cx + s * 0.42, gy - s * 0.185);
+              ctx.lineTo(cx + s * 0.16, gy - s * 0.215);
+              ctx.quadraticCurveTo(cx + s * 0.02, gy - s * 0.3, cx - s * 0.1, gy - s * 0.3);
+              ctx.lineTo(cx - s * 0.34, gy - s * 0.245);
+              ctx.quadraticCurveTo(cx - s * 0.5, gy - s * 0.235, cx - s * 0.52, gy - s * 0.2);
+              ctx.lineTo(cx - s * 0.53, gy - s * 0.04);
               ctx.closePath(); ctx.fill();
-              ctx.fillStyle = subjectDeep;
-              ctx.beginPath();
-              ctx.moveTo(cx - s * 0.31, gy - s * 0.26);
-              ctx.quadraticCurveTo(cx - s * 0.18, gy - s * 0.42, cx - s * 0.02, gy - s * 0.425);
-              ctx.quadraticCurveTo(cx + s * 0.14, gy - s * 0.425, cx + s * 0.27, gy - s * 0.25);
-              ctx.closePath(); ctx.fill();
+              // Lip spoiler on the tail
+              ctx.fillRect(cx - s * 0.56, gy - s * 0.255, s * 0.1, s * 0.022);
+              // Thin glass band following the roofline
               ctx.fillStyle = shade(pal.sky[2].startsWith("#") ? pal.sky[2] : "#7fa8c9", 0.9);
               ctx.beginPath();
-              ctx.moveTo(cx - s * 0.24, gy - s * 0.27);
-              ctx.quadraticCurveTo(cx - s * 0.14, gy - s * 0.385, cx - s * 0.03, gy - s * 0.39);
-              ctx.lineTo(cx - s * 0.005, gy - s * 0.27);
+              ctx.moveTo(cx + s * 0.13, gy - s * 0.225);
+              ctx.quadraticCurveTo(cx + s * 0.02, gy - s * 0.285, cx - s * 0.08, gy - s * 0.285);
+              ctx.lineTo(cx - s * 0.26, gy - s * 0.245);
+              ctx.lineTo(cx + s * 0.02, gy - s * 0.225);
               ctx.closePath(); ctx.fill();
-              ctx.beginPath();
-              ctx.moveTo(cx + s * 0.015, gy - s * 0.39);
-              ctx.quadraticCurveTo(cx + s * 0.1, gy - s * 0.385, cx + s * 0.19, gy - s * 0.265);
-              ctx.lineTo(cx + s * 0.02, gy - s * 0.27);
-              ctx.closePath(); ctx.fill();
+              // Door cut line + side skirt, so the flank reads as panels
+              ctx.strokeStyle = subjectDeep; ctx.lineWidth = Math.max(1.5, s * 0.008);
+              ctx.beginPath(); ctx.moveTo(cx - s * 0.02, gy - s * 0.21); ctx.lineTo(cx - s * 0.02, gy - s * 0.06); ctx.stroke();
+              ctx.fillStyle = subjectDeep; ctx.fillRect(cx - s * 0.44, gy - s * 0.075, s * 0.88, s * 0.028);
             } else {
               ctx.fillStyle = subjectFill;
-              roundRectPath(cx - s * 0.5, gy - s * 0.3, s, s * 0.24, s * 0.08); ctx.fill();
+              roundRectPath(cx - s * 0.5, gy - s * 0.28, s, s * 0.22, s * 0.08); ctx.fill();
               ctx.fillStyle = subjectDeep;
-              roundRectPath(cx - s * 0.28, gy - s * 0.52, s * 0.52, s * 0.26, s * 0.07); ctx.fill();
+              roundRectPath(cx - s * 0.26, gy - s * 0.44, s * 0.48, s * 0.19, s * 0.07); ctx.fill();
               ctx.fillStyle = shade(pal.sky[2].startsWith("#") ? pal.sky[2] : "#7fa8c9", 0.9);
-              roundRectPath(cx - s * 0.22, gy - s * 0.49, s * 0.18, s * 0.17, s * 0.03); ctx.fill();
-              roundRectPath(cx + s * 0.02, gy - s * 0.49, s * 0.17, s * 0.17, s * 0.03); ctx.fill();
+              roundRectPath(cx - s * 0.2, gy - s * 0.415, s * 0.16, s * 0.13, s * 0.03); ctx.fill();
+              roundRectPath(cx + s * 0.01, gy - s * 0.415, s * 0.15, s * 0.13, s * 0.03); ctx.fill();
             }
             if (subjectColor) {
               ctx.fillStyle = subjectHi; ctx.globalAlpha = 0.85;
-              roundRectPath(cx - s * 0.48, gy - s * (sleekCar ? 0.245 : 0.31), sleekCar ? s * 0.8 : s * 0.96, s * 0.045, s * 0.02); ctx.fill();
+              roundRectPath(cx - s * 0.48, gy - s * (sleekCar ? 0.2 : 0.29), sleekCar ? s * 0.86 : s * 0.96, s * 0.04, s * 0.02); ctx.fill();
               ctx.globalAlpha = 1;
             }
             ctx.fillStyle = "#05070a";
-            var wr = s * 0.11;
+            var wr = s * (sleekCar ? 0.085 : 0.105);
             ctx.beginPath(); ctx.arc(cx - s * 0.32, gy - s * 0.06, wr, 0, 7); ctx.fill();
             ctx.beginPath(); ctx.arc(cx + s * 0.32, gy - s * 0.06, wr, 0, 7); ctx.fill();
             ctx.fillStyle = pal.accent;
             ctx.beginPath(); ctx.arc(cx - s * 0.32, gy - s * 0.06, wr * 0.42, 0, 7); ctx.fill();
             ctx.beginPath(); ctx.arc(cx + s * 0.32, gy - s * 0.06, wr * 0.42, 0, 7); ctx.fill();
             ctx.fillStyle = pal.glow;
-            ctx.beginPath(); ctx.arc(cx + s * 0.48, gy - s * 0.2, s * 0.025, 0, 7); ctx.fill();
+            ctx.beginPath(); ctx.arc(cx + s * (sleekCar ? 0.5 : 0.48), gy - s * (sleekCar ? 0.15 : 0.2), s * 0.025, 0, 7); ctx.fill();
             // At night the headlight throws its beam down the road.
             if (briefNight || prompts.mood === "Dark") {
               var beam = ctx.createLinearGradient(cx + s * 0.5, 0, cx + s * 1.05, 0);
               beam.addColorStop(0, pal.glow); beam.addColorStop(1, "rgba(0,0,0,0)");
               ctx.globalAlpha = 0.28; ctx.fillStyle = beam;
               ctx.beginPath();
-              ctx.moveTo(cx + s * 0.49, gy - s * 0.22);
-              ctx.lineTo(cx + s * 1.05, gy - s * 0.34);
+              ctx.moveTo(cx + s * 0.49, gy - s * (sleekCar ? 0.17 : 0.22));
+              ctx.lineTo(cx + s * 1.05, gy - s * 0.3);
               ctx.lineTo(cx + s * 1.05, gy - s * 0.02);
-              ctx.lineTo(cx + s * 0.49, gy - s * 0.16);
+              ctx.lineTo(cx + s * 0.49, gy - s * (sleekCar ? 0.11 : 0.16));
               ctx.closePath(); ctx.fill();
               ctx.globalAlpha = 1;
             }
