@@ -819,6 +819,39 @@
       .map:not(.running) .mini-fig { animation: none; }
       .map:not(.running) .hub::before,
       .map:not(.running) .crane::after { animation: none; }
+      /* ============ POLISH PASS 3 — status plate pinned clear of the crew ============ */
+      /* The crew name tags kept landing on the rooms' status lines because
+         both lived in the same band: the pair's posts and patrol rectangle
+         sat in the lower half of each room, exactly where the status text
+         flows. The split is now structural, not tuned per room:
+         - the status lines sit on a plate PINNED to the room's floor
+           (bottom edge), spanning between the mini crew on the left and the
+           crates on the right;
+         - every named agent's post moved up into the room's upper band and
+           its patrol rectangle is nearly flat (see the CREW table), so a
+           dot plus the tag under it can never reach the plate — at rest,
+           while patrolling, or mid-deploy pause;
+         - each status line is a single nowrap line with an ellipsis, so the
+           plate is always exactly two lines tall and its top edge never
+           creeps up into the patrol band. The full task text still shows
+           in the crew roster cards and the Agent Inspector.
+         The little DOCK A / DOCK B corner labels are retired: they shared
+         the plate's floor band, and the plate itself now names both agents
+         posted in the room. */
+      .room-now {
+        position: absolute; left: 50px; right: 58px; bottom: 5px; margin: 0; z-index: 2;
+      }
+      .rn-line { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .dock { display: none; }
+      /* The gantry parks IN the west street corridor at rest (left 33% is the
+         open vertical street, fully visible) instead of at 15%, where the old
+         keyframes froze it hidden behind the Prompt Office — which is why it
+         "never showed up". Underway it travels corridor to corridor (33% to
+         65%), crossing the bay gap and both street bands, still riding below
+         the room boxes so it can never cover a title, status line or tag. */
+      .crane { width: 20px; }
+      .crane-beam { width: 140px; margin-left: -70px; }
+      @keyframes crane-run { 0%, 100% { left: 33%; } 50% { left: 65%; } }
     </style>
   </head>
   <body>
@@ -1125,13 +1158,13 @@
           <h3>THE 3D DIORAMA BUILD — WHAT IS NEW IN THIS UPDATE</h3>
           <ul>
             <li><code>3D diorama floor</code> — the flat map is now a tilted slab floating in a starfield viewport, rooms as raised blocks with deeper extrusion and a scan sweep across the floor while a run is live. Latest pass: the slab tilts further and sits on a thicker visible edge, the rooms and the Deployment Bay tower extrude deeper, and the whole slab floats higher above the starfield.</li>
-            <li><code>Slim map tags</code> — crew tags on the floor are name-only in every state now, centred under each dot. The full live task text lives in the room status lines (now on their own dark plate, clear of the room's crates), the crew roster and the Agent Inspector, so no tooltip card ever covers a room's text again.</li>
+            <li><code>Slim map tags</code> — crew tags on the floor are name-only in every state now, centred under each dot. The full live task text lives in the room status lines — now on a dark plate pinned to each room's floor, below the crew's patrol band, with every agent's post raised into the room's upper half so a dot and its tag can never reach the plate — plus the crew roster and the Agent Inspector, so no tag or tooltip card ever covers a room's text again. The tiny DOCK A / DOCK B corner labels retired: the plate names both agents in the room.</li>
             <li><code>Mini crews</code> — every room holds its own two-person mini crew at its benches. They sit dormant and dim at rest; when the bay activates their room they light up and patrol bench to bench while that stage works.</li>
             <li><code>Activation beams</code> — the Deployment Bay fires a flowing beam along the streets to each room as its stage starts, so a run reads as the bay waking the floor room by room. The bay nameplate reads ACTIVATING ROOM CREWS while a run is live.</li>
             <li><code>STAGED, not WORKING</code> — a room whose crew has arrived but whose stage has not started reads STAGED in cyan. Rooms only read WORKING while their pair is genuinely at its workstations. Stages are numbered in the true order: Detail Forge is R04 and runs before Render Engine R05.</li>
             <li><code>Six themes</code> — Nebula (the new default, deep indigo and electric blue), Emerald, Cyan, Amber, Violet and Rose. Switching themes recolours the whole scene, rooms included.</li>
             <li><code>Ops stats, Surprise Me, starred vault</code> — a stats bar computed from this session's real run history, a SURPRISE ME button that invents a fresh brief, star any finished image, and a full-screen lightbox from the result or any vault tile.</li>
-            <li><code>Bay tower + gantry bridge</code> — latest pass: the Deployment Bay now has a floor grid, corner brackets and breathing beacon rings around its centre dot so the tower reads busy at rest; the overhead gantry carries a wide hazard-striped bridge beam and a brighter beacon, travelling in the street corridors below the room boxes so it is finally visible without ever covering a title or tag; and the whole slab now floats slowly over a twinkling starfield on desktop.</li>
+            <li><code>Bay tower + gantry bridge</code> — latest pass: the Deployment Bay now has a floor grid, corner brackets and beacon rings around its centre dot (they breathe only while a run is live — at rest the whole floor is parked and still); the overhead gantry carries a wide hazard-striped bridge beam and a brighter beacon, and it now parks in the open west street corridor where it is fully visible at rest, travelling corridor to corridor below the room boxes during a run so it never covers a title or tag.</li>
           </ul>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
@@ -1171,18 +1204,18 @@
         var STAGE_ORDER = ["prompt-office", "style-lab", "composition-bay", "detail-forge", "render-engine", "gallery-vault"];
         // ---------- Named crew: who is who, where they deploy from ----------
         var CREW = [
-          { id:"quill", name:"Quill", call:"R01-A", room:"prompt-office", roomName:"Prompt Office", roomCode:"R01", role:"Prompt Expander", dock:"Dock A", color:"#22ff88", bay:[38.5,40], work:[16,14], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Expanding the brief into a full prompt: \u201C"+b.subject.slice(0,54)+"\u201D";} },
-          { id:"scribe", name:"Scribe", call:"R01-B", room:"prompt-office", roomName:"Prompt Office", roomCode:"R01", role:"Brief Logger & Tagger", dock:"Dock B", color:"#86efac", bay:[46,40], work:[22,18], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Logging the brief and tagging subjects, details and keep-out list.";} },
-          { id:"palette", name:"Palette", call:"R02-A", room:"style-lab", roomName:"Style Lab", roomCode:"R02", role:"Style & Palette Lead", dock:"Dock A", color:"#ffb020", bay:[53.5,40], work:[46,14], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b,pr){return "Locking style \u201C"+pr.style+"\u201D and its palette for the shot.";} },
-          { id:"mood", name:"Mood", call:"R02-B", room:"style-lab", roomName:"Style Lab", roomCode:"R02", role:"Lighting & Mood", dock:"Dock B", color:"#fde68a", bay:[61,40], work:[56,18], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b,pr){return "Setting mood \u201C"+pr.mood+"\u201D — lighting, shadow and atmosphere.";} },
-          { id:"frame", name:"Frame", call:"R03-A", room:"composition-bay", roomName:"Composition Bay", roomCode:"R03", role:"Composition Lead", dock:"Dock A", color:"#67e8f9", bay:[38.5,48.5], work:[16,45], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Framing the shot for "+b.format+" format on the framing table.";} },
-          { id:"rule", name:"Rule", call:"R03-B", room:"composition-bay", roomName:"Composition Bay", roomCode:"R03", role:"Thirds & Margins Checker", dock:"Dock B", color:"#a5f3fc", bay:[46,48.5], work:[22,49], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Checking thirds, margins and headroom for "+b.format+".";} },
-          { id:"forge", name:"Forge", call:"R05-A", room:"render-engine", roomName:"Render Engine", roomCode:"R05", role:"Render Lead", dock:"Dock A", color:"#22d3ee", bay:[53.5,48.5], work:[42,81], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Rendering the image on canvas from the locked final prompt.";} },
-          { id:"kiln", name:"Kiln", call:"R05-B", room:"render-engine", roomName:"Render Engine", roomCode:"R05", role:"Render Core & Grain", dock:"Dock B", color:"#67e8f9", bay:[61,48.5], work:[58,84], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Firing the render core — grain and detail pass at "+b.detail+" detail.";} },
-          { id:"hone", name:"Hone", call:"R04-A", room:"detail-forge", roomName:"Detail Forge", roomCode:"R04", role:"Detail Sharpener", dock:"Dock A", color:"#c084fc", bay:[38.5,57], work:[78,48], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Sharpening detail language and resolving fine texture.";} },
-          { id:"polish", name:"Polish", call:"R04-B", room:"detail-forge", roomName:"Detail Forge", roomCode:"R04", role:"Flaw & Keep-Out Checker", dock:"Dock B", color:"#e9d5ff", bay:[46,57], work:[88,51], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return b.negative ? "Stripping keep-out items: "+b.negative+"." : "Checking for flaws — no keep-out list on this brief.";} },
-          { id:"vault", name:"Vault", call:"R06-A", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Vault Keeper", dock:"Dock A", color:"#22ff88", bay:[53.5,57], work:[78,15], speed:1.3, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Opening vault slot 1 and filing the finished image.";} },
-          { id:"courier", name:"Courier", call:"R06-B", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Image Courier — R05 to R06", dock:"Dock B", color:"#bbf7d0", bay:[61,57], work:[88,19], speed:1.8, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Carrying the finished image from the Render Engine (R05) through the bay to the Gallery Vault (R06).";} }
+          { id:"quill", name:"Quill", call:"R01-A", room:"prompt-office", roomName:"Prompt Office", roomCode:"R01", role:"Prompt Expander", dock:"Dock A", color:"#22ff88", bay:[38.5,40], work:[15,12.5], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Expanding the brief into a full prompt: \u201C"+b.subject.slice(0,54)+"\u201D";} },
+          { id:"scribe", name:"Scribe", call:"R01-B", room:"prompt-office", roomName:"Prompt Office", roomCode:"R01", role:"Brief Logger & Tagger", dock:"Dock B", color:"#86efac", bay:[46,40], work:[23,14], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Logging the brief and tagging subjects, details and keep-out list.";} },
+          { id:"palette", name:"Palette", call:"R02-A", room:"style-lab", roomName:"Style Lab", roomCode:"R02", role:"Style & Palette Lead", dock:"Dock A", color:"#ffb020", bay:[53.5,40], work:[45,12.5], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b,pr){return "Locking style \u201C"+pr.style+"\u201D and its palette for the shot.";} },
+          { id:"mood", name:"Mood", call:"R02-B", room:"style-lab", roomName:"Style Lab", roomCode:"R02", role:"Lighting & Mood", dock:"Dock B", color:"#fde68a", bay:[61,40], work:[55,14], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b,pr){return "Setting mood \u201C"+pr.mood+"\u201D — lighting, shadow and atmosphere.";} },
+          { id:"frame", name:"Frame", call:"R03-A", room:"composition-bay", roomName:"Composition Bay", roomCode:"R03", role:"Composition Lead", dock:"Dock A", color:"#67e8f9", bay:[38.5,48.5], work:[16,43.5], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Framing the shot for "+b.format+" format on the framing table.";} },
+          { id:"rule", name:"Rule", call:"R03-B", room:"composition-bay", roomName:"Composition Bay", roomCode:"R03", role:"Thirds & Margins Checker", dock:"Dock B", color:"#a5f3fc", bay:[46,48.5], work:[23,46], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Checking thirds, margins and headroom for "+b.format+".";} },
+          { id:"forge", name:"Forge", call:"R05-A", room:"render-engine", roomName:"Render Engine", roomCode:"R05", role:"Render Lead", dock:"Dock A", color:"#22d3ee", bay:[53.5,48.5], work:[42,78], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Rendering the image on canvas from the locked final prompt.";} },
+          { id:"kiln", name:"Kiln", call:"R05-B", room:"render-engine", roomName:"Render Engine", roomCode:"R05", role:"Render Core & Grain", dock:"Dock B", color:"#67e8f9", bay:[61,48.5], work:[58,81], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return "Firing the render core — grain and detail pass at "+b.detail+" detail.";} },
+          { id:"hone", name:"Hone", call:"R04-A", room:"detail-forge", roomName:"Detail Forge", roomCode:"R04", role:"Detail Sharpener", dock:"Dock A", color:"#c084fc", bay:[38.5,57], work:[78,45], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Sharpening detail language and resolving fine texture.";} },
+          { id:"polish", name:"Polish", call:"R04-B", room:"detail-forge", roomName:"Detail Forge", roomCode:"R04", role:"Flaw & Keep-Out Checker", dock:"Dock B", color:"#e9d5ff", bay:[46,57], work:[88,47], taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(b){return b.negative ? "Stripping keep-out items: "+b.negative+"." : "Checking for flaws — no keep-out list on this brief.";} },
+          { id:"vault", name:"Vault", call:"R06-A", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Vault Keeper", dock:"Dock A", color:"#22ff88", bay:[53.5,57], work:[77,15], speed:1.3, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Opening vault slot 1 and filing the finished image.";} },
+          { id:"courier", name:"Courier", call:"R06-B", room:"gallery-vault", roomName:"Gallery Vault", roomCode:"R06", role:"Image Courier — R05 to R06", dock:"Dock B", color:"#bbf7d0", bay:[61,57], work:[87,18.5], speed:1.8, taskIdle:"Staged at the Deployment Bay, waiting for a job.", taskWork:function(){return "Carrying the finished image from the Render Engine (R05) through the bay to the Gallery Vault (R06).";} }
         ];
         var BAY = [50, 48];
         CREW.forEach(function(a, ai){
@@ -1193,7 +1226,7 @@
           // in opposite directions and never overlaps.
           var offX = a.dock==="Dock B" ? -6 : 6;
           var patrolOffX = a.dock==="Dock B" ? -10 : 10;
-          a.patrol=[[a.work[0],a.work[1]],[a.work[0]+patrolOffX,a.work[1]],[a.work[0]+patrolOffX,a.work[1]+6],[a.work[0],a.work[1]+6]];
+          a.patrol=[[a.work[0],a.work[1]],[a.work[0]+patrolOffX,a.work[1]],[a.work[0]+patrolOffX,a.work[1]+2],[a.work[0],a.work[1]+2]];
           var streetY = a.work[1] < 32 ? 34.5 : a.work[1] > 64 ? 66.5 : 34.5;
           var streetNear = [Math.max(6, Math.min(94, a.work[0])), streetY];
           var streetFar = [a.work[0] < 50 ? 66 : 34, a.work[1] < 50 ? 66.5 : 34.5];
@@ -1245,9 +1278,9 @@
               if(a.room!==roomId) return;
               var esc = a.task.replace(/</g,"&lt;");
               var what = a.status==="WORKING" ? "working<span class=\"rn-task\"> \u2014 "+esc+"</span>" : a.status==="DEPLOYED" ? (/^(Finished|Done)/.test(a.task) ? "heading back to post\u2026" : "deploying via the bay\u2026") : a.status==="DONE" ? "done \u00B7 back at post, holding still" : "waiting at post \u00B7 still";
-              parts.push("<b>"+a.name.toUpperCase()+"</b> "+what);
+              parts.push("<span class=\"rn-line\"><b>"+a.name.toUpperCase()+"</b> "+what+"</span>");
             });
-            box.innerHTML=parts.join("<br>");
+            box.innerHTML=parts.join("");
           });
         }
         function renderCrew(){
@@ -2352,7 +2385,7 @@
               a.task="Deploying via the Deployment Bay to "+a.roomCode+" "+a.roomName+"\u2026";
               a.at="En route \u00B7 Deployment Bay \u2192 "+a.roomCode+" "+a.roomName;
               if(a.id==="courier"){
-                issueRoute(a, [[42,81], a.bay, a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
+                issueRoute(a, [[42,78], a.bay, a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
                 emit(a, "Deployed via the Deployment Bay \u2192 R05 Render Engine pickup, then on to R06 Gallery Vault with the image.");
               } else {
                 issueRoute(a, [a.bay, a.work], TRAVEL_SPEED*(a.speed||1), "deploy");
