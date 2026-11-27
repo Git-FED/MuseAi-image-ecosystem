@@ -718,6 +718,107 @@
         #trail-canvas { display: none; }
         html { scroll-behavior: auto; }
       }
+      /* ============ POLISH PASS 2 — bay tower, gantry rail, living starfield ============ */
+      /* Starfield gains a second, denser star layer that gently twinkles.
+         It sits above the diorama's painted stars but below the slab, so the
+         floor itself never flickers — only the space around it breathes. */
+      .diorama::before {
+        content: ""; position: absolute; inset: 0; border-radius: 14px; pointer-events: none; z-index: 0;
+        background-image:
+          radial-gradient(1px 1px at 18% 12%, rgba(255,255,255,0.95) 50%, transparent 51%),
+          radial-gradient(1.5px 1.5px at 42% 30%, rgba(255,255,255,0.8) 50%, transparent 51%),
+          radial-gradient(1px 1px at 63% 9%, rgba(255,255,255,0.9) 50%, transparent 51%),
+          radial-gradient(1px 1px at 78% 58%, rgba(255,255,255,0.7) 50%, transparent 51%),
+          radial-gradient(1.5px 1.5px at 91% 34%, rgba(255,255,255,0.85) 50%, transparent 51%),
+          radial-gradient(1px 1px at 27% 82%, rgba(255,255,255,0.6) 50%, transparent 51%),
+          radial-gradient(1px 1px at 55% 88%, rgba(255,255,255,0.65) 50%, transparent 51%),
+          radial-gradient(1px 1px at 8% 52%, rgba(255,255,255,0.7) 50%, transparent 51%);
+        animation: star-twinkle 4.6s ease-in-out infinite alternate;
+      }
+      .diorama > * { position: relative; z-index: 1; }
+      @keyframes star-twinkle { from { opacity: 0.35; } to { opacity: 0.9; } }
+      /* The slab floats: a slow, small vertical drift on desktop only, so the
+         tilt and the stacked edge shadows read as a physical object hovering
+         over the starfield instead of a flat panel. Transform keeps the 8deg
+         tilt in every frame so the diorama never flattens mid-float. */
+      @media (min-width: 900px) {
+        .diorama .map { animation: slab-float 7s ease-in-out infinite; }
+      }
+      @keyframes slab-float {
+        0%, 100% { transform: rotateX(8deg) translateY(0); }
+        50% { transform: rotateX(8deg) translateY(-4px); }
+      }
+      /* Deployment Bay tower interior: the bay was a large empty red slab.
+         It now has a floor grid, corner brackets, and two beacon rings
+         breathing around the centre dot, so the centre of the floor reads
+         as the tower the crews route through — busy even before a run,
+         without any text or tag moving. */
+      .hub {
+        background:
+          radial-gradient(circle at 50% 50%, rgba(255,120,110,0.16) 0 18%, transparent 42%),
+          linear-gradient(rgba(255,150,140,0.07) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,150,140,0.07) 1px, transparent 1px),
+          linear-gradient(180deg, #4a1d17 0%, #331510 40%, #220e0a 100%);
+        background-size: auto, 22px 22px, 22px 22px, auto;
+      }
+      .hub::before {
+        content: ""; position: absolute; left: 50%; top: 50%; width: 74px; height: 74px;
+        transform: translate(-50%, -50%); border-radius: 999px; pointer-events: none;
+        border: 1px solid rgba(255,154,146,0.5);
+        box-shadow: 0 0 0 10px rgba(255,90,78,0.05), 0 0 0 11px rgba(255,154,146,0.22), 0 0 22px rgba(255,90,78,0.25), inset 0 0 18px rgba(255,90,78,0.18);
+        animation: bay-breathe 3.4s ease-in-out infinite;
+      }
+      .hub::after {
+        content: ""; position: absolute; inset: 7px; border-radius: 4px; pointer-events: none;
+        border: 1px dashed rgba(255,154,146,0.28);
+      }
+      @keyframes bay-breathe { 0%, 100% { opacity: 0.65; } 50% { opacity: 1; } }
+      .map.running .hub::before { animation-duration: 1.1s; border-color: rgba(255,154,146,0.9); }
+      .hub-dot { width: 15px; height: 15px; position: relative; z-index: 1; }
+      /* Gantry made unmistakable in the streets: a wide horizontal bridge beam
+         rides at the top of the column and a floor shadow pools under it.
+         The whole crane still travels BELOW the room boxes (z-index 1), so
+         it can never cover a room title, status line or crew tag — it reads
+         in the street corridors, across the bay gap and over open floor,
+         which is exactly where a gantry belongs. */
+      .crane { width: 18px; background: linear-gradient(90deg, #6d937b, #33523f 55%, #1a2f22); box-shadow: 8px 0 18px rgba(0,0,0,0.55), -3px 0 10px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.5); }
+      .crane-beam {
+        position: absolute; top: 10px; left: 50%; width: 118px; height: 11px; margin-left: -59px;
+        border-radius: 3px; pointer-events: none;
+        background: repeating-linear-gradient(-45deg, #d9b62e 0 9px, #161c13 9px 18px);
+        border: 1px solid rgba(0,0,0,0.85);
+        box-shadow: 0 5px 12px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.4);
+      }
+      .crane-beam::after {
+        content: ""; position: absolute; left: 50%; bottom: -64px; width: 90px; height: 60px;
+        transform: translateX(-50%); pointer-events: none;
+        background: radial-gradient(ellipse 50% 100% at 50% 0%, rgba(255,176,32,0.13), transparent 70%);
+      }
+      .crane::after { width: 10px; height: 10px; margin-left: -5px; }
+      /* Finished rooms hold a soft top sheen so DONE reads at a glance */
+      .room[data-state="done"]::before { background: linear-gradient(180deg, rgba(var(--accent-rgb),0.4), rgba(255,255,255,0.02)); }
+      /* Vault tiles lift slightly on hover/focus so they read as tappable */
+      .vault-tile { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+      .vault-tile:hover { transform: translateY(-1px); box-shadow: 2px 4px 0 rgba(0,0,0,0.6), 0 0 12px rgba(var(--accent-rgb),0.3), inset 0 1px 0 rgba(255,255,255,0.18); }
+      @media (prefers-reduced-motion: reduce) {
+        .diorama::before, .hub::before, .diorama .map { animation: none; }
+      }
+      /* ============ PARKED FLOOR — nothing on the floor moves until a run starts ============ */
+      /* The route engine already issues no routes at rest, but ambient CSS
+         still moved the floor itself: the slab's float drift carried every
+         agent dot up and down with it, and the render core, the bay beacon
+         dot and the bay's breathing rings kept pulsing while no job was
+         running. All of it is now gated on .running — the class
+         setStageStates puts on the map only while a pipeline job is live —
+         so at rest the slab, the 12 named agents, the mini crews and every
+         other dot on the floor are completely still, and the only motion
+         on the floor is motion the pipeline started. */
+      .diorama .map:not(.running) { animation: none; }
+      .map:not(.running) .render-core,
+      .map:not(.running) .hub-dot,
+      .map:not(.running) .mini-fig { animation: none; }
+      .map:not(.running) .hub::before,
+      .map:not(.running) .crane::after { animation: none; }
     </style>
   </head>
   <body>
@@ -776,7 +877,7 @@
         <div class="street-line-h" style="top:66.5%" aria-hidden="true"></div>
         <div class="pipe-h" style="top:29.2%" aria-hidden="true"></div>
         <div class="pipe-h" style="top:70.5%" aria-hidden="true"></div>
-        <div class="crane" style="left:49.4%" aria-hidden="true"><i class="crane-cable"></i></div>
+        <div class="crane" style="left:49.4%" aria-hidden="true"><span class="crane-beam"></span><i class="crane-cable"></i></div>
         <span class="floor-tag" style="left:3%;top:29%" aria-hidden="true">CONVEYOR A →</span>
         <span class="floor-tag" style="left:69%;top:61%" aria-hidden="true">CONVEYOR B →</span>
         <span class="floor-tag" style="left:3%;bottom:1.5%" aria-hidden="true">BAY 04 · RENDER LINE</span>
@@ -1030,6 +1131,7 @@
             <li><code>STAGED, not WORKING</code> — a room whose crew has arrived but whose stage has not started reads STAGED in cyan. Rooms only read WORKING while their pair is genuinely at its workstations. Stages are numbered in the true order: Detail Forge is R04 and runs before Render Engine R05.</li>
             <li><code>Six themes</code> — Nebula (the new default, deep indigo and electric blue), Emerald, Cyan, Amber, Violet and Rose. Switching themes recolours the whole scene, rooms included.</li>
             <li><code>Ops stats, Surprise Me, starred vault</code> — a stats bar computed from this session's real run history, a SURPRISE ME button that invents a fresh brief, star any finished image, and a full-screen lightbox from the result or any vault tile.</li>
+            <li><code>Bay tower + gantry bridge</code> — latest pass: the Deployment Bay now has a floor grid, corner brackets and breathing beacon rings around its centre dot so the tower reads busy at rest; the overhead gantry carries a wide hazard-striped bridge beam and a brighter beacon, travelling in the street corridors below the room boxes so it is finally visible without ever covering a title or tag; and the whole slab now floats slowly over a twinkling starfield on desktop.</li>
           </ul>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
