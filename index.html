@@ -1313,7 +1313,7 @@
               <span class="copied" id="copied-note" hidden>COPIED</span>
             </div>
             <div class="prompt-box" id="prompt-box" style="margin-top:12px"></div>
-            <p class="sub" style="margin-top:10px">The Render Engine draws each image live on a canvas in your browser. Its painter reads your brief and draws the subject you actually asked for — a cat, a rocket, a castle, a coastline each get their own scene, in the palette the Style Lab locked — so this static Pages build hands you a real image file with no server behind it. The prompt the rooms built is shown with it, ready to copy.</p>
+            <p class="sub" style="margin-top:10px">The Render Engine draws each image live on a canvas in your browser. Its painter reads your brief and draws the subject you actually asked for — a cat, a rocket, a castle, a coastline each get their own scene, in the palette the Style Lab locked. The brief's own words outrank the chips: a colour word paints the subject that colour, night, dusk or sunny words set the sky, and a car that names a city is drawn on a lit city street — so this static Pages build hands you a real image file with no server behind it. The prompt the rooms built is shown with it, ready to copy.</p>
             <div class="scout" id="scout" hidden>
               <h4>PHOTO SCOUT — REAL PHOTOS FOR THIS BRIEF</h4>
               <p class="sub" id="scout-note">The Vault also sends out a search worker: Photo Scout looks up real, openly licensed photos that match your brief and files the best matches here, next to the render.</p>
@@ -1374,6 +1374,7 @@
             <li><code>Gantry finish + deeper slab</code> — newest pass: full-page captures showed the gantry still could not be picked out, because the column was finished in the same greens as the floor it travels through. The column is galvanized steel now, near-white at its lit edge with an amber leading edge and a stronger amber glow, the top rail carries an amber centre line, and the trolley and hook are larger with a brighter work light — same parking spot in the west street, same below-the-rooms travel, nothing new moves at rest. The slab tilts to 10 degrees on a thicker stacked edge so its depth reads at a glance.</li>
             <li><code>Vault clear of the slots</code> — newest pass: live captures kept catching Vault's name tag on a Gallery Vault slot's EMPTY label, because every post inside that room stands on the 2x2 slot grid. Vault's post now stands on the open floor band under the grid, at the grid's column seam, its tag rides above its dot instead of below it, and its patrol runs flat along that band with no vertical leg — so neither the dot nor the tag can touch a slot label or the room's status plate at rest, while working, or once done.</li>
             <li><code>Gantry crane, unmistakable + on time</code> — newest pass: watched live tests could still only find the crane zoomed, because its hazard-striped beam wore the same pattern as the hazard banner capping the map and blended into it, and its 2.2s glide lagged the ~3s stages so it sat at the previous stage's corridor at every check. The beam is now a solid safety-orange bridge, 248px wide and lettered GANTRY CRANE, on a 34px safety-orange mast — a colour and finish nothing else on the floor uses — still riding below the room boxes and parking in the west street. The glide is 0.85s on a fast-out curve, so the crane departs the moment a stage changes, is parked at the serving corridor for most of every stage, and is home about a second after a run ends.</li>
+            <li><code>Painter reads the whole brief</code> — newest pass: live takes kept showing the Render Engine ignoring the brief's own words — a red sports car in a neon city at night came back as a dark car under a golden-hour sky, because the sky came only from the mood chip and every subject was painted in the ground silhouette colour. The painter now reads the brief first: the first colour word in it paints the subject (car, cat, dog, robot, dragon, train and boat hulls), a night, dusk or sunny word in the brief sets the sky over whatever mood chip is picked — night gets a cratered moon, stars and a headlight beam — and a car whose brief names a city stands on a lit street with towers behind it instead of an empty stage. Briefs that name no colour and no time of day render exactly as before.</li>
           </ul>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
@@ -1996,6 +1997,35 @@
           var moodKey = MOOD_PALETTES[prompts.mood] ? prompts.mood : null;
           var pal = moodKey ? MOOD_PALETTES[moodKey] : { sky: ["#14202e", "#33506b", "#7fa8c9"], ground: ["#24382a", "#16241a", "#0a120c"], glow: "#e6f5e9", accent: "#22ff88" };
           if (prompts.style === "Cyberpunk") pal = { sky: ["#0b0221", "#2b0f54", "#711c91"], ground: ["#160a33", "#0d0620", "#05030f"], glow: "#67e8f9", accent: "#ff2ea6" };
+          // ---------- The brief outranks the chips (POLISH PASS 10) ----------
+          // Live takes kept failing the same way: a brief that said "a red
+          // sports car in a neon city at night" came back as a dark car at
+          // golden hour, because the painter only read the mood chip for the
+          // sky and painted every subject in the ground silhouette colour.
+          // The words in the brief itself now win: a time-of-day word sets
+          // the sky, and the first colour word in the brief paints the
+          // subject. The chips still rule when the brief says neither.
+          var briefText = (brief.subject + " " + brief.details).toLowerCase();
+          var briefNight = /\b(night|midnight|moonlit|starlit|after dark|nocturnal|nighttime)\b/.test(briefText);
+          var briefDusk = /\b(dusk|sunset|twilight|sundown|golden hour)\b/.test(briefText);
+          var briefDay = /\b(sunny|daytime|midday|noon|daylight|bright morning|clear day)\b/.test(briefText);
+          if (briefNight) {
+            pal = { sky: ["#04060f", "#0a1428", "#1d3355"], ground: [shade(pal.ground[0].startsWith("#") ? pal.ground[0] : "#24382a", 0.55), shade(pal.ground[1].startsWith("#") ? pal.ground[1] : "#16241a", 0.55), shade(pal.ground[2].startsWith("#") ? pal.ground[2] : "#0a120c", 0.7)], glow: "#d7e7ff", accent: pal.accent };
+          } else if (briefDusk) {
+            pal = { sky: ["#2e1a47", "#b34a2e", "#f2a541"], ground: pal.ground, glow: "#ffd98a", accent: pal.accent };
+          } else if (briefDay) {
+            pal = { sky: ["#5fb2dd", "#a5dcf0", "#eafafc"], ground: pal.ground, glow: "#ffffff", accent: pal.accent };
+          }
+          // First colour word in the brief (earliest in the sentence wins),
+          // with "golden hour" stripped first so a sunset cannot paint the
+          // subject gold by accident.
+          var COLOR_WORDS = { red: "#d92b1f", crimson: "#b3122e", scarlet: "#e8261c", orange: "#e86a17", yellow: "#f2c41c", gold: "#d9a41c", golden: "#d9a41c", green: "#2f9e44", emerald: "#1fae6e", teal: "#12a5a5", blue: "#2b6fd9", navy: "#274b8f", cyan: "#22b8d9", purple: "#7d3fd1", violet: "#8b5cf6", pink: "#ef6fb0", magenta: "#d92bb0", white: "#eef1ee", silver: "#c9ced4", grey: "#8a8f96", gray: "#8a8f96", black: "#17181c", brown: "#7a4a26" };
+          var colorText = briefText.replace(/golden\s+hour/g, " ");
+          var subjectColor = null, colorAt = Infinity;
+          for (var cw in COLOR_WORDS) {
+            var ci = colorText.search(new RegExp("\\b" + cw + "\\b"));
+            if (ci >= 0 && ci < colorAt) { colorAt = ci; subjectColor = COLOR_WORDS[cw]; }
+          }
           var dims = brief.format === "landscape" ? [960, 540] : brief.format === "portrait" ? [640, 800] : [768, 768];
           var W = dims[0], H = dims[1];
           var canvas = document.createElement("canvas");
@@ -2010,7 +2040,7 @@
           ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
 
           // Stars for dark-leaning moods
-          if (prompts.mood === "Dark" || prompts.mood === "Dreamy" || prompts.mood === "Moody" || prompts.style === "Cyberpunk") {
+          if (prompts.mood === "Dark" || prompts.mood === "Dreamy" || prompts.mood === "Moody" || prompts.style === "Cyberpunk" || briefNight) {
             ctx.fillStyle = "rgba(255,255,255,0.85)";
             for (var i = 0; i < 130; i++) {
               var sx = rand() * W, sy = rand() * horizon * 0.8, sr = rand() * 1.4 + 0.3;
@@ -2027,6 +2057,13 @@
           ctx.globalAlpha = 0.5; ctx.fillStyle = glow; ctx.fillRect(lx - lr * 6, ly - lr * 6, lr * 12, lr * 12);
           ctx.globalAlpha = 1; ctx.fillStyle = pal.glow;
           ctx.beginPath(); ctx.arc(lx, ly, lr, 0, 7); ctx.fill();
+          // A brief that says night gets a moon, not a sun: same disc, cratered.
+          if (briefNight) {
+            ctx.fillStyle = "rgba(10,20,40,0.16)";
+            ctx.beginPath(); ctx.arc(lx - lr * 0.3, ly - lr * 0.2, lr * 0.22, 0, 7); ctx.fill();
+            ctx.beginPath(); ctx.arc(lx + lr * 0.25, ly + lr * 0.3, lr * 0.16, 0, 7); ctx.fill();
+            ctx.beginPath(); ctx.arc(lx + lr * 0.1, ly - lr * 0.45, lr * 0.12, 0, 7); ctx.fill();
+          }
 
           // Subject silhouette, keyed off words in the brief
           var text = (brief.subject + " " + brief.details).toLowerCase();
@@ -2055,6 +2092,12 @@
             }
           }
           var midColor = pal.ground[0], nearColor = pal.ground[1], darkColor = pal.ground[2];
+          // The subject's own colours: the brief's colour word, shaded for a
+          // lit body and a deep cabin/shadow tone. No colour word in the
+          // brief, and the subject stays the classic dark silhouette.
+          var subjectFill = subjectColor ? shade(subjectColor, 0.9) : darkColor;
+          var subjectDeep = subjectColor ? shade(subjectColor, 0.5) : darkColor;
+          var subjectHi = subjectColor ? shade(subjectColor, 1.3) : pal.glow;
 
           // ---------- Scene picker ----------
           // The painter reads the brief and picks a scene family, most specific
@@ -2137,8 +2180,8 @@
             stageBase();
             var cx = W * (0.38 + rand() * 0.24), gy = H * 0.88, s = H * 0.5;
             shadow(cx, gy + 2, s * 0.4);
-            ctx.fillStyle = darkColor;
-            ctx.strokeStyle = darkColor; ctx.lineWidth = s * 0.07; ctx.lineCap = "round";
+            ctx.fillStyle = subjectFill;
+            ctx.strokeStyle = subjectFill; ctx.lineWidth = s * 0.07; ctx.lineCap = "round";
             ctx.beginPath(); ctx.moveTo(cx - s * 0.18, gy - s * 0.04);
             ctx.quadraticCurveTo(cx - s * 0.55, gy, cx - s * 0.48, gy - s * 0.22); ctx.stroke();
             ctx.beginPath(); ctx.ellipse(cx, gy - s * 0.3, s * 0.26, s * 0.32, 0, 0, 7); ctx.fill();
@@ -2155,13 +2198,13 @@
             stageBase();
             var cx = W * (0.36 + rand() * 0.24), gy = H * 0.88, s = H * 0.42;
             shadow(cx, gy + 2, s * 0.55);
-            ctx.fillStyle = darkColor;
+            ctx.fillStyle = subjectFill;
             ctx.fillRect(cx - s * 0.42, gy - s * 0.3, s * 0.1, s * 0.3);
             ctx.fillRect(cx - s * 0.24, gy - s * 0.3, s * 0.1, s * 0.3);
             ctx.fillRect(cx + s * 0.26, gy - s * 0.3, s * 0.1, s * 0.3);
             ctx.fillRect(cx + s * 0.42, gy - s * 0.3, s * 0.1, s * 0.3);
             ctx.beginPath(); ctx.ellipse(cx, gy - s * 0.48, s * 0.55, s * 0.26, 0, 0, 7); ctx.fill();
-            ctx.strokeStyle = darkColor; ctx.lineWidth = s * 0.08; ctx.lineCap = "round";
+            ctx.strokeStyle = subjectFill; ctx.lineWidth = s * 0.08; ctx.lineCap = "round";
             ctx.beginPath(); ctx.moveTo(cx - s * 0.52, gy - s * 0.55); ctx.quadraticCurveTo(cx - s * 0.74, gy - s * 0.8, cx - s * 0.6, gy - s * 0.98); ctx.stroke();
             var hx2 = cx + s * 0.58, hy2 = gy - s * 0.78, hr = s * 0.21;
             ctx.beginPath(); ctx.arc(hx2, hy2, hr, 0, 7); ctx.fill();
@@ -2238,7 +2281,7 @@
           function paintBoat() {
             landscapeBase();
             var cx = W * (0.34 + rand() * 0.3), wy = H * 0.78, s = Math.min(W, H) * 0.3;
-            ctx.fillStyle = darkColor;
+            ctx.fillStyle = subjectFill;
             ctx.beginPath(); ctx.moveTo(cx - s * 0.85, wy); ctx.lineTo(cx + s * 0.85, wy); ctx.lineTo(cx + s * 0.55, wy + s * 0.34); ctx.lineTo(cx - s * 0.55, wy + s * 0.34); ctx.closePath(); ctx.fill();
             ctx.fillRect(cx - s * 0.03, wy - s * 1.25, s * 0.06, s * 1.25);
             ctx.fillStyle = pal.glow; ctx.globalAlpha = 0.92;
@@ -2247,15 +2290,47 @@
             ctx.globalAlpha = 1;
           }
           function paintCar() {
-            stageBase();
+            // A car brief that names a city gets a street to sit on — lit
+            // towers behind it and a road under it — instead of the empty
+            // subject stage. Any other car keeps the clean stage.
+            var inCity = /\b(city|skyline|downtown|urban|neon|street|traffic)\b/.test(text);
+            if (inCity) {
+              var bx3 = W * 0.02;
+              while (bx3 < W * 0.96) {
+                var bw3 = W * (0.05 + rand() * 0.07), bh3 = H * (0.2 + rand() * 0.34);
+                ctx.fillStyle = darkColor; ctx.fillRect(bx3, H * 0.88 - bh3, bw3, bh3);
+                for (var wy3 = 0; wy3 < 5; wy3++) for (var wx3 = 0; wx3 < 3; wx3++) {
+                  if (rand() > 0.42) {
+                    ctx.globalAlpha = 0.45 + rand() * 0.55;
+                    ctx.fillStyle = rand() > 0.3 ? pal.glow : pal.accent;
+                    ctx.fillRect(bx3 + bw3 * (0.14 + wx3 * 0.29), H * 0.88 - bh3 + bh3 * (0.1 + wy3 * 0.17), bw3 * 0.14, bh3 * 0.08);
+                  }
+                }
+                ctx.globalAlpha = 1;
+                bx3 += bw3 + W * 0.014;
+              }
+              ctx.fillStyle = darkColor; ctx.fillRect(0, H * 0.86, W, H * 0.14);
+              ctx.strokeStyle = pal.glow; ctx.globalAlpha = 0.4; ctx.lineWidth = 2;
+              ctx.setLineDash([26, 20]);
+              ctx.beginPath(); ctx.moveTo(0, H * 0.945); ctx.lineTo(W, H * 0.945); ctx.stroke();
+              ctx.setLineDash([]); ctx.globalAlpha = 1;
+            } else stageBase();
             var cx = W * 0.5, gy = H * 0.88, s = Math.min(W, H) * 0.62;
             shadow(cx, gy + 2, s * 0.5);
-            ctx.fillStyle = darkColor;
+            // Body in the brief's colour (dark silhouette when it names none),
+            // cabin a shade deeper, a lit highlight along the shoulder line.
+            ctx.fillStyle = subjectFill;
             roundRectPath(cx - s * 0.5, gy - s * 0.3, s, s * 0.24, s * 0.08); ctx.fill();
+            ctx.fillStyle = subjectDeep;
             roundRectPath(cx - s * 0.28, gy - s * 0.52, s * 0.52, s * 0.26, s * 0.07); ctx.fill();
             ctx.fillStyle = shade(pal.sky[2].startsWith("#") ? pal.sky[2] : "#7fa8c9", 0.9);
             roundRectPath(cx - s * 0.22, gy - s * 0.49, s * 0.18, s * 0.17, s * 0.03); ctx.fill();
             roundRectPath(cx + s * 0.02, gy - s * 0.49, s * 0.17, s * 0.17, s * 0.03); ctx.fill();
+            if (subjectColor) {
+              ctx.fillStyle = subjectHi; ctx.globalAlpha = 0.85;
+              roundRectPath(cx - s * 0.48, gy - s * 0.31, s * 0.96, s * 0.045, s * 0.02); ctx.fill();
+              ctx.globalAlpha = 1;
+            }
             ctx.fillStyle = "#05070a";
             var wr = s * 0.11;
             ctx.beginPath(); ctx.arc(cx - s * 0.32, gy - s * 0.06, wr, 0, 7); ctx.fill();
@@ -2265,14 +2340,27 @@
             ctx.beginPath(); ctx.arc(cx + s * 0.32, gy - s * 0.06, wr * 0.42, 0, 7); ctx.fill();
             ctx.fillStyle = pal.glow;
             ctx.beginPath(); ctx.arc(cx + s * 0.48, gy - s * 0.2, s * 0.025, 0, 7); ctx.fill();
+            // At night the headlight throws its beam down the road.
+            if (briefNight || prompts.mood === "Dark") {
+              var beam = ctx.createLinearGradient(cx + s * 0.5, 0, cx + s * 1.05, 0);
+              beam.addColorStop(0, pal.glow); beam.addColorStop(1, "rgba(0,0,0,0)");
+              ctx.globalAlpha = 0.28; ctx.fillStyle = beam;
+              ctx.beginPath();
+              ctx.moveTo(cx + s * 0.49, gy - s * 0.22);
+              ctx.lineTo(cx + s * 1.05, gy - s * 0.34);
+              ctx.lineTo(cx + s * 1.05, gy - s * 0.02);
+              ctx.lineTo(cx + s * 0.49, gy - s * 0.16);
+              ctx.closePath(); ctx.fill();
+              ctx.globalAlpha = 1;
+            }
           }
           function paintTrain() {
             stageBase();
             var gy = H * 0.88, s = Math.min(W, H);
             var x0 = W * 0.08, carW = W * 0.24, carH = s * 0.2, top = gy - carH - s * 0.07;
-            ctx.fillStyle = darkColor;
             for (var c = 0; c < 3; c++) {
               var bx2 = x0 + c * (carW + W * 0.02);
+              ctx.fillStyle = subjectFill;
               roundRectPath(bx2, top, carW, carH, 6); ctx.fill();
               ctx.fillStyle = pal.accent;
               for (var wn = 0; wn < 3; wn++) { ctx.globalAlpha = 0.55 + rand() * 0.4; ctx.fillRect(bx2 + carW * (0.12 + wn * 0.28), top + carH * 0.18, carW * 0.16, carH * 0.3); }
@@ -2312,14 +2400,14 @@
             stageBase();
             var cx = W * (0.4 + rand() * 0.2), gy = H * 0.88, s = H * 0.5;
             shadow(cx, gy + 2, s * 0.3);
-            ctx.fillStyle = darkColor;
+            ctx.fillStyle = subjectFill;
             ctx.fillRect(cx - s * 0.16, gy - s * 0.18, s * 0.11, s * 0.18);
             ctx.fillRect(cx + s * 0.05, gy - s * 0.18, s * 0.11, s * 0.18);
             roundRectPath(cx - s * 0.26, gy - s * 0.58, s * 0.52, s * 0.42, s * 0.06); ctx.fill();
             roundRectPath(cx - s * 0.42, gy - s * 0.56, s * 0.12, s * 0.36, s * 0.05); ctx.fill();
             roundRectPath(cx + s * 0.3, gy - s * 0.56, s * 0.12, s * 0.36, s * 0.05); ctx.fill();
             roundRectPath(cx - s * 0.21, gy - s * 0.92, s * 0.42, s * 0.3, s * 0.07); ctx.fill();
-            ctx.strokeStyle = darkColor; ctx.lineWidth = s * 0.03;
+            ctx.strokeStyle = subjectFill; ctx.lineWidth = s * 0.03;
             ctx.beginPath(); ctx.moveTo(cx, gy - s * 0.92); ctx.lineTo(cx, gy - s * 1.04); ctx.stroke();
             ctx.fillStyle = pal.accent; ctx.beginPath(); ctx.arc(cx, gy - s * 1.06, s * 0.035, 0, 7); ctx.fill();
             ctx.fillStyle = pal.glow;
@@ -2345,8 +2433,8 @@
             stageBase();
             var cx = W * 0.5, gy = H * 0.88, s = Math.min(W, H) * 0.5;
             shadow(cx, gy + 2, s * 0.6);
-            ctx.fillStyle = darkColor;
-            ctx.strokeStyle = darkColor; ctx.lineCap = "round"; ctx.lineWidth = s * 0.07;
+            ctx.fillStyle = subjectFill;
+            ctx.strokeStyle = subjectFill; ctx.lineCap = "round"; ctx.lineWidth = s * 0.07;
             ctx.beginPath(); ctx.moveTo(cx - s * 0.3, gy - s * 0.25); ctx.quadraticCurveTo(cx - s * 0.75, gy - s * 0.08, cx - s * 0.85, gy - s * 0.42); ctx.stroke();
             ctx.beginPath(); ctx.ellipse(cx, gy - s * 0.28, s * 0.42, s * 0.24, -0.12, 0, 7); ctx.fill();
             ctx.fillRect(cx - s * 0.28, gy - s * 0.22, s * 0.09, s * 0.22);
