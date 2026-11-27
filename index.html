@@ -1181,7 +1181,7 @@
           <span class="badge">Public</span>
           <span class="badge">GitHub Pages</span>
           <span class="badge">3D Diorama Build</span>
-          <span class="badge">v2.2.0 · Painter Pass 13</span>
+          <span class="badge">v2.3.0 · Painter Pass 14</span>
           <span class="badge">Updated Nov 27, 2026</span>
         </div>
         <div class="repo-links">
@@ -1480,6 +1480,7 @@
             <li><code>Painter reads the whole brief</code> — newest pass: live takes kept showing the Render Engine ignoring the brief's own words — a red sports car in a neon city at night came back as a dark car under a golden-hour sky, because the sky came only from the mood chip and every subject was painted in the ground silhouette colour. The painter now reads the brief first: the first colour word in it paints the subject (car, cat, dog, robot, dragon, train and boat hulls), a night, dusk or sunny word in the brief sets the sky over whatever mood chip is picked — night gets a cratered moon, stars and a headlight beam — and a car whose brief names a city stands on a lit street with towers behind it instead of an empty stage. Briefs that name no colour and no time of day render exactly as before.</li>
             <li><code>Sharp wedge + unmissable neon</code> — newest pass: two live takes still read the sports car as a tall boxy sedan and the neon as blank boxes, so the wedge is redrawn with straight lines only — 0.22 units tall over a 1.24-long body, dropped nose, thin straight glass sliver, smaller wheels — and the generic car is a single low fastback polygon instead of stacked boxes, so no brief can draw the boxy sedan again. Neon signs are sized from the canvas (at least 15% of the frame wide) on dark backing plates mounted on the widest tower in each third of the skyline, lettered NEON / HOTEL / BAR with a hot white core over the colour glow, and each throws a bright mirrored reflection down the wet street. The build stamp v2.2.0 shows in the repo bar and footer so a stale cache can never again hide which painter is live.</li>
             <li><code>Wedge + real neon signs</code> — newest pass: live takes showed the sports car still reading as a tall boxy sedan (its roof peaked at sedan height over a deep dome cabin) and the neon as four blank glowing rectangles floating in the sky. The sports profile is now a true low wedge — 0.30 units tall over a 1.06-long body, dropped nose, thin glass band on the roofline, lip spoiler, smaller wheels — and the generic car sits lower too. Neon signs now mount on actual building faces recorded while the towers are drawn, carry glowing NEON / HOTEL / BAR / 24H lettering (horizontal and vertical), and throw graded, rippled reflections down the wet street under their own building.</li>
+            <li><code>Signs on one tower, long reflections, raked tail</code> — newest pass: the last verified live take (hard refresh, v2.2.0 stamp showing) left three smaller caveats on the image, and this pass closes all three. Each neon sign straddled two towers and the gap between them, because the plate was sized at 1.5x its host tower's width — the skyline towers are drawn wider now and every plate is clamped inside its one host face, lettering fitted to the plate. The street reflections read as short straight-edged blocks in a band under the car — each is now a tapered, wavy-edged column running the full depth of the street to the bottom of the frame, with the mirrored word stretched down it and broken, offset ripple streaks instead of straight lines. And the wedge still ended in a flat vertical rear slab under a single peaked roof point — the tail now rakes forward as it rises and the roof apex is a short near-flat segment. The build stamp is v2.3.0 in the repo bar, terminal log and footer. The parked-at-rest floor, crane travel, beams, crew, vault, themes and stats are untouched.</li>
           </ul>
           <h3>RUN IT</h3>
           <p>Open the Pages site, write a brief, pick a style and mood (or type your own), choose a format and detail level, and hit <code>RUN PIPELINE</code>. The rooms light up in order, the Render Engine draws your image, Photo Scout files real photos matching your brief under it, and it all appears in the vault panel — download the image, or copy the prompt the rooms built for it.</p>
@@ -1500,7 +1501,7 @@
         <span>Git-FED / MuseAi-image-ecosystem</span>
         <a href="https://github.com/Git-FED/MuseAi-image-ecosystem">github.com/Git-FED/MuseAi-image-ecosystem</a>
         <a href="https://git-fed.github.io/MuseAi-image-ecosystem/">git-fed.github.io/MuseAi-image-ecosystem</a>
-        <span>GRID // SAT-VIEW · BUILD v2.2.0</span>
+        <span>GRID // SAT-VIEW · BUILD v2.3.0</span>
       </footer>
     </main>
 
@@ -1864,7 +1865,7 @@
         buildCrew();
         emit(null, "Backend live — 12 named agents at their posts across all 6 rooms, holding still. No job yet — start the pipeline to set them moving.");
         log("SYS // image-ecosystem online — 6 rooms, crew parked at posts until a run fires");
-        log("PAGE // MuseAi-image-ecosystem v2.2.0 — 3D diorama build, Nebula theme, painter pass 13 (sharp wedge + canvas-sized neon), updated Nov 27 2026");
+        log("PAGE // MuseAi-image-ecosystem v2.3.0 — 3D diorama build, Nebula theme, painter pass 14 (signs inside one tower, long wavy reflections, raked tail), updated Nov 27 2026");
 
         // ---------- Agent dots ----------
         var NODES = [
@@ -2418,7 +2419,7 @@
               var cityBuildings = [];
               var bx3 = W * 0.02;
               while (bx3 < W * 0.96) {
-                var bw3 = W * (0.05 + rand() * 0.07), bh3 = H * (0.2 + rand() * 0.34);
+                var bw3 = W * (0.085 + rand() * 0.075), bh3 = H * (0.2 + rand() * 0.34);
                 cityBuildings.push({ x: bx3, w: bw3, top: H * 0.88 - bh3, h: bh3 });
                 ctx.fillStyle = darkColor; ctx.fillRect(bx3, H * 0.88 - bh3, bw3, bh3);
                 for (var wy3 = 0; wy3 < 5; wy3++) for (var wx3 = 0; wx3 < 3; wx3++) {
@@ -2465,8 +2466,17 @@
                 hosts.forEach(function (bld, nz) {
                   var ncol = neonCols[nz % neonCols.length], word = neonWords[nz % neonWords.length];
                   var bcx = bld.x + bld.w / 2;
-                  var sw = Math.max(bld.w * 1.5, W * 0.15), sh = Math.max(26, H * 0.055);
-                  var sx = Math.max(4, Math.min(W - sw - 4, bcx - sw / 2));
+                  // Inside one tower face (POLISH PASS 14): Pass 13 sized
+                  // the plate at 1.5x its host tower's width, so every sign
+                  // straddled two towers and the gap between them. The city
+                  // towers are drawn wider now (0.085-0.16 of the canvas),
+                  // and the plate is clamped INSIDE the host face with an
+                  // inset on both sides, centred on that face — the sign
+                  // is wholly on one building, and the lettering fit below
+                  // shrinks the word to the plate rather than the plate
+                  // outgrowing the building.
+                  var sw = Math.min(W * 0.17, bld.w - Math.max(6, W * 0.012)), sh = Math.max(26, H * 0.055);
+                  var sx = bld.x + (bld.w - sw) / 2;
                   var sy = bld.top + bld.h * 0.08;
                   // Dark backing plate so the sign reads as mounted hardware
                   ctx.shadowBlur = 0; ctx.globalAlpha = 0.88; ctx.fillStyle = "#05060e";
@@ -2485,24 +2495,54 @@
                   ctx.shadowBlur = 6; ctx.fillStyle = "rgba(255,255,255,0.88)";
                   ctx.font = "800 " + (fs * 0.94) + "px monospace";
                   ctx.fillText(word, sx + sw / 2, sy + sh / 2 + 1);
-                  // Wet-street reflection: bright gradient column under the
-                  // sign's own building, a mirrored smear of the word, and
-                  // ripple strokes breaking it up.
-                  var rw4 = sw * 1.05, rx4 = Math.max(2, Math.min(W - rw4 - 2, bcx - rw4 / 2));
-                  var rgr2 = ctx.createLinearGradient(0, H * 0.87, 0, H * 0.995);
-                  rgr2.addColorStop(0, ncol); rgr2.addColorStop(1, "rgba(0,0,0,0)");
-                  ctx.shadowBlur = 0; ctx.fillStyle = rgr2; ctx.globalAlpha = 0.5;
-                  ctx.fillRect(rx4, H * 0.87, rw4, H * 0.125);
-                  ctx.globalAlpha = 0.34; ctx.fillStyle = ncol; ctx.shadowColor = ncol; ctx.shadowBlur = 10;
+                  // Wet-street reflection (POLISH PASS 14): the old version
+                  // was one hard-edged gradient rect plus five full-width
+                  // straight ripple lines, and live takes read it as a
+                  // short flat block in a band under the car. It is now a
+                  // long tapered column running the full depth of the
+                  // street, from the kerb to the bottom edge of the frame:
+                  // its sides narrow and wobble as they come toward the
+                  // viewer, the mirrored word is stretched down inside
+                  // that wavy clip, and the surface is broken by short
+                  // offset ripple streaks of varying width and brightness
+                  // instead of ruler-straight lines.
+                  var colTop = H * 0.865, colBot = H * 0.998;
+                  var wTop = sw * 0.92, wBot = sw * 0.5;
                   ctx.save();
-                  ctx.translate(bcx, H * 0.9); ctx.scale(1, -0.55);
+                  ctx.beginPath();
+                  var steps = 14;
+                  for (var sg = 0; sg <= steps; sg++) {
+                    var ty = colTop + (colBot - colTop) * (sg / steps);
+                    var twd = (wTop + (wBot - wTop) * (sg / steps)) / 2;
+                    var wob = Math.sin(sg * 1.7 + nz * 2.1) * W * 0.006;
+                    if (sg === 0) ctx.moveTo(bcx - twd + wob, ty); else ctx.lineTo(bcx - twd + wob, ty);
+                  }
+                  for (var sg2 = steps; sg2 >= 0; sg2--) {
+                    var ty2 = colTop + (colBot - colTop) * (sg2 / steps);
+                    var twd2 = (wTop + (wBot - wTop) * (sg2 / steps)) / 2;
+                    var wob2 = Math.sin(sg2 * 1.7 + nz * 2.1) * W * 0.006;
+                    ctx.lineTo(bcx + twd2 + wob2, ty2);
+                  }
+                  ctx.closePath(); ctx.clip();
+                  var rgr2 = ctx.createLinearGradient(0, colTop, 0, colBot);
+                  rgr2.addColorStop(0, ncol); rgr2.addColorStop(0.55, ncol); rgr2.addColorStop(1, "rgba(0,0,0,0)");
+                  ctx.shadowBlur = 0; ctx.fillStyle = rgr2; ctx.globalAlpha = 0.34;
+                  ctx.fillRect(bcx - wTop, colTop, wTop * 2, colBot - colTop);
+                  ctx.globalAlpha = 0.3; ctx.fillStyle = ncol; ctx.shadowColor = ncol; ctx.shadowBlur = 8;
+                  ctx.save();
+                  ctx.translate(bcx, colTop + (colBot - colTop) * 0.46); ctx.scale(1, -1.5);
                   ctx.font = "800 " + fs + "px monospace";
                   ctx.fillText(word, 0, 0);
                   ctx.restore();
-                  ctx.shadowBlur = 0; ctx.globalAlpha = 0.55; ctx.strokeStyle = ncol; ctx.lineWidth = 1.6;
-                  for (var rp2 = 0; rp2 < 5; rp2++) {
-                    var ry2 = H * (0.885 + rp2 * 0.022), rwd2 = rw4 * (0.92 - rp2 * 0.12);
-                    ctx.beginPath(); ctx.moveTo(bcx - rwd2 / 2, ry2); ctx.lineTo(bcx + rwd2 / 2, ry2); ctx.stroke();
+                  ctx.restore();
+                  ctx.shadowBlur = 0; ctx.strokeStyle = ncol; ctx.lineWidth = 1.6;
+                  for (var rp2 = 0; rp2 < 12; rp2++) {
+                    var rfr = rp2 / 11;
+                    var ry2 = colTop + (colBot - colTop) * (0.06 + rfr * 0.9);
+                    var rwd2 = (wTop + (wBot - wTop) * rfr) * (0.45 + ((rp2 * 37 + nz * 13) % 10) / 22);
+                    var roff = Math.sin(rp2 * 2.3 + nz) * W * 0.008;
+                    ctx.globalAlpha = 0.5 * (1 - rfr * 0.6);
+                    ctx.beginPath(); ctx.moveTo(bcx + roff - rwd2 / 2, ry2); ctx.lineTo(bcx + roff + rwd2 / 2, ry2); ctx.stroke();
                   }
                   ctx.globalAlpha = 1;
                 });
@@ -2528,12 +2568,19 @@
               // to a short vertical tail. The glass is a thin straight-
               // edged sliver under the roofline, and the wheels shrink to
               // 0.068s so the body, not the wheels, sets the height.
+              // Raked tail + flat roof (POLISH PASS 14): the Pass 13
+              // polygon still ended in a fully vertical rear face and a
+              // single peaked roof apex, and the last live take flagged
+              // both. The tail now rakes forward as it rises, and the
+              // roof apex is a short near-flat segment, so no one point
+              // spikes above the line.
               ctx.fillStyle = subjectFill;
               ctx.beginPath();
               ctx.moveTo(cx - s * 0.62, gy - s * 0.03);
-              ctx.lineTo(cx - s * 0.62, gy - s * 0.155);
-              ctx.lineTo(cx - s * 0.58, gy - s * 0.165);
-              ctx.lineTo(cx - s * 0.06, gy - s * 0.22);
+              ctx.lineTo(cx - s * 0.575, gy - s * 0.15);
+              ctx.lineTo(cx - s * 0.53, gy - s * 0.16);
+              ctx.lineTo(cx - s * 0.18, gy - s * 0.212);
+              ctx.lineTo(cx + s * 0.03, gy - s * 0.218);
               ctx.lineTo(cx + s * 0.34, gy - s * 0.125);
               ctx.lineTo(cx + s * 0.6, gy - s * 0.09);
               ctx.lineTo(cx + s * 0.62, gy - s * 0.075);
@@ -2541,14 +2588,15 @@
               ctx.closePath(); ctx.fill();
               // Lip spoiler standing off the tail
               ctx.fillRect(cx - s * 0.66, gy - s * 0.185, s * 0.11, s * 0.02);
-              ctx.fillRect(cx - s * 0.6, gy - s * 0.185, s * 0.02, s * 0.03);
+              ctx.fillRect(cx - s * 0.585, gy - s * 0.185, s * 0.02, s * 0.038);
               // Thin straight glass sliver following the roofline
               ctx.fillStyle = shade(pal.sky[2].startsWith("#") ? pal.sky[2] : "#7fa8c9", 0.95);
               ctx.beginPath();
-              ctx.moveTo(cx - s * 0.4, gy - s * 0.168);
-              ctx.lineTo(cx - s * 0.08, gy - s * 0.2);
-              ctx.lineTo(cx + s * 0.16, gy - s * 0.152);
-              ctx.lineTo(cx - s * 0.12, gy - s * 0.15);
+              ctx.moveTo(cx - s * 0.38, gy - s * 0.168);
+              ctx.lineTo(cx - s * 0.16, gy - s * 0.196);
+              ctx.lineTo(cx + s * 0.02, gy - s * 0.2);
+              ctx.lineTo(cx + s * 0.17, gy - s * 0.15);
+              ctx.lineTo(cx - s * 0.1, gy - s * 0.15);
               ctx.closePath(); ctx.fill();
               // Door cut + deep side skirt
               ctx.strokeStyle = subjectDeep; ctx.lineWidth = Math.max(1.5, s * 0.008);
