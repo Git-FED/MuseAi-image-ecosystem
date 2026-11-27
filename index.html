@@ -615,15 +615,18 @@
         box-shadow: inset 0 0 60px rgba(0,0,0,0.7); }
       .diorama .hazard-bar { margin-top: 0; }
       @media (min-width: 900px) {
-        .diorama { perspective: 1400px; padding: 20px 18px 26px; }
-        .diorama .map { height: 620px; transform: rotateX(4deg); transform-origin: 50% 100%; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.8), inset 0 18px 34px rgba(0,0,0,0.55), inset 0 -18px 34px rgba(0,0,0,0.55), 0 34px 54px rgba(0,0,0,0.8), 0 10px 0 rgba(0,0,0,0.6); }
+        .diorama { perspective: 1150px; padding: 22px 18px 34px; }
+        .diorama .map { height: 620px; transform: rotateX(8deg); transform-origin: 50% 100%; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.8), inset 0 18px 34px rgba(0,0,0,0.55), inset 0 -18px 34px rgba(0,0,0,0.55), 0 14px 0 -4px rgba(12,12,30,0.95), 0 27px 0 -9px rgba(5,5,16,0.9), 0 52px 74px rgba(0,0,0,0.88), 0 0 44px rgba(var(--accent-rgb),0.1); }
       }
       /* Rooms take the theme: gradient, edge and glow all follow the palette */
       .room { background: linear-gradient(180deg, var(--room-a) 0%, var(--room-b) 34%, var(--room-c) 100%); border-color: var(--room-edge);
-        box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 2px 0 0 rgba(255,255,255,0.07), inset 0 -16px 24px rgba(0,0,0,0.62), inset 0 0 0 1px rgba(0,0,0,0.45), 9px 12px 0 rgba(0,0,0,0.55), 9px 12px 0 1px var(--room-edge), 18px 26px 34px rgba(0,0,0,0.75); }
-      .room.render { background: linear-gradient(180deg, var(--room-a) 0%, var(--room-b) 34%, var(--room-c) 100%); border-color: var(--room-edge); box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 2px 0 0 rgba(255,255,255,0.07), inset 0 -16px 24px rgba(0,0,0,0.62), inset 0 0 0 1px rgba(0,0,0,0.45), 9px 12px 0 rgba(0,0,0,0.55), 9px 12px 0 1px var(--room-edge), 18px 26px 34px rgba(0,0,0,0.75), 0 0 26px rgba(var(--accent-rgb),0.3); }
+        box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 2px 0 0 rgba(255,255,255,0.07), inset 0 -16px 24px rgba(0,0,0,0.62), inset 0 0 0 1px rgba(0,0,0,0.45), 12px 16px 0 rgba(0,0,0,0.55), 12px 16px 0 1px var(--room-edge), 24px 34px 40px rgba(0,0,0,0.78); }
+      .room.render { background: linear-gradient(180deg, var(--room-a) 0%, var(--room-b) 34%, var(--room-c) 100%); border-color: var(--room-edge); box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 2px 0 0 rgba(255,255,255,0.07), inset 0 -16px 24px rgba(0,0,0,0.62), inset 0 0 0 1px rgba(0,0,0,0.45), 12px 16px 0 rgba(0,0,0,0.55), 12px 16px 0 1px var(--room-edge), 24px 34px 40px rgba(0,0,0,0.78), 0 0 26px rgba(var(--accent-rgb),0.3); }
+      .room[data-state="active"] { box-shadow: inset 0 2px 0 rgba(255,255,255,0.25), inset 0 -16px 24px rgba(0,0,0,0.6), 12px 16px 0 rgba(0,0,0,0.55), 12px 16px 0 1px #7a5a12, 24px 34px 40px rgba(0,0,0,0.78), 0 0 28px rgba(255,176,32,0.45); }
+      .room[data-state="done"] { box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 0 -16px 24px rgba(0,0,0,0.6), 12px 16px 0 rgba(0,0,0,0.55), 12px 16px 0 1px #1d6b41, 24px 34px 40px rgba(0,0,0,0.78), 0 0 22px rgba(var(--accent-rgb),0.3); }
+      .hub { box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 0 -16px 24px rgba(0,0,0,0.65), 12px 16px 0 #0d0302, 12px 16px 0 1px #6b2a22, 24px 34px 40px rgba(0,0,0,0.78), 0 0 30px rgba(255,90,78,0.28); }
       .room.gallery { background: linear-gradient(180deg, var(--room-a) 0%, var(--room-b) 34%, var(--room-c) 100%); }
-      .room[data-state="staged"] { border-color: var(--cyan); box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 0 -14px 22px rgba(0,0,0,0.6), 9px 12px 0 rgba(0,0,0,0.55), 9px 12px 0 1px #155e6b, 18px 26px 34px rgba(0,0,0,0.75), 0 0 24px rgba(103,232,249,0.4); }
+      .room[data-state="staged"] { border-color: var(--cyan); box-shadow: inset 0 2px 0 rgba(255,255,255,0.22), inset 0 -16px 24px rgba(0,0,0,0.6), 12px 16px 0 rgba(0,0,0,0.55), 12px 16px 0 1px #155e6b, 24px 34px 40px rgba(0,0,0,0.78), 0 0 24px rgba(103,232,249,0.4); }
       .room[data-state="staged"] .room-state { color: var(--cyan); }
       .room-code { color: var(--text); }
       h2.sec { color: var(--accent); }
@@ -679,6 +682,28 @@
       .lightbox img { max-width: min(92vw, 880px); max-height: 74vh; border: 1px solid var(--accent); border-radius: 10px; box-shadow: 0 24px 60px rgba(0,0,0,0.8); }
       .lightbox .lb-cap { font-family: var(--mono); font-size: 12px; color: var(--text); text-align: center; overflow-wrap: anywhere; max-width: 880px; }
       .lightbox .lb-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+      /* --- Polish pass: slim map tags, readable room status, smooth themes --- */
+      /* Map tags are name-only in EVERY state now, centred under the dot.
+         The working pair used to grow a wide tooltip card (name + callsign +
+         full task, up to 190px) that landed on the rooms' own status lines,
+         so neither could be read. The full live task text still shows in the
+         room status lines, the crew roster cards and the Agent Inspector —
+         the floor tag itself never covers room text again. */
+      .agent-wrap .agent-label { left: 50%; right: auto; top: 11px; transform: translateX(-50%); text-align: center; font-size: 8px; padding: 1px 5px; }
+      .agent-wrap.flip .agent-label { left: 50%; right: auto; text-align: center; }
+      .agent-wrap.lbl-below .agent-label { top: 11px; }
+      .agent-wrap .agent-call, .agent-wrap .agent-task { display: none; }
+      /* Room status lines sit on their own dark plate, clear of the crates
+         stacked at the room's right edge, so the text stays readable while
+         the crew works around it. */
+      .room-now { background: rgba(2,4,8,0.66); border: 1px solid rgba(255,255,255,0.07); border-radius: 4px; padding: 3px 6px; margin-right: 56px; }
+      /* Theme switches cross-fade the scene instead of snapping */
+      body, .room, .hub, .panel, .stat-cell, .crew-card, .repo-bar, .status-strip, .terminal, .readme, .pipe li, .chip, .seg button, .theme-btn, .btn { transition: background-color 0.45s ease, border-color 0.45s ease, color 0.45s ease; }
+      .room, .hub { transition: background-color 0.45s ease, border-color 0.5s ease, color 0.45s ease, box-shadow 0.5s ease; }
+      /* The gantry reads wider and brighter in the street corridors (it still
+         rides below the room boxes, so it can never cover a title or tag) */
+      .crane { width: 16px; }
+      .result-img { box-shadow: 0 18px 44px rgba(0,0,0,0.65), 0 0 26px rgba(var(--accent-rgb),0.18); }
       @media (min-width: 1280px) { .crew-grid { grid-template-columns: repeat(4, 1fr); } }
       @media (prefers-reduced-motion: reduce) {
         .map.running::after, #beams line.on, .room[data-state="active"] .mini-fig { animation: none; }
@@ -719,7 +744,7 @@
           <span class="badge">Public</span>
           <span class="badge">GitHub Pages</span>
           <span class="badge">3D Diorama Build</span>
-          <span class="badge">Updated Nov 26, 2026</span>
+          <span class="badge">Updated Nov 27, 2026</span>
         </div>
         <div class="repo-links">
           <a href="https://github.com/Git-FED/MuseAi-image-ecosystem">View repository</a>
@@ -998,7 +1023,8 @@
           <p>GitHub Pages has no network server to add, so the server lives in the page as a module — but the split is the real one used by live agent fleets. The server owns every agent's state and is the only thing that can change it: it creates a numbered job from your brief, and for every move it issues the agent's whole route — waypoints, departure time and speed — covering deploys routed through the Deployment Bay and patrol legs around a workstation while a stage runs. While no job is running it issues no routes at all, so the crew sits at its posts. The map is a renderer only: it animates the server's routes locally at 60 frames a second and never starts, stops or redirects a walk by itself. The server reports every agent four times a second and appends every deployment, arrival, handoff and filing to a timestamped event log (the Deployment Feed and terminal); an agent whose reports go stale is marked <code>OFFLINE</code> with its last-seen time and its animation holds until it reports again. The 18 smaller dots are street traffic only — they stay held at rest and move only during a run, and they never carry a job. The full server version of this ecosystem is the Space; this Page is its live public face.</p>
           <h3>THE 3D DIORAMA BUILD — WHAT IS NEW IN THIS UPDATE</h3>
           <ul>
-            <li><code>3D diorama floor</code> — the flat map is now a tilted slab floating in a starfield viewport, rooms as raised blocks with deeper extrusion and a scan sweep across the floor while a run is live.</li>
+            <li><code>3D diorama floor</code> — the flat map is now a tilted slab floating in a starfield viewport, rooms as raised blocks with deeper extrusion and a scan sweep across the floor while a run is live. Latest pass: the slab tilts further and sits on a thicker visible edge, the rooms and the Deployment Bay tower extrude deeper, and the whole slab floats higher above the starfield.</li>
+            <li><code>Slim map tags</code> — crew tags on the floor are name-only in every state now, centred under each dot. The full live task text lives in the room status lines (now on their own dark plate, clear of the room's crates), the crew roster and the Agent Inspector, so no tooltip card ever covers a room's text again.</li>
             <li><code>Mini crews</code> — every room holds its own two-person mini crew at its benches. They sit dormant and dim at rest; when the bay activates their room they light up and patrol bench to bench while that stage works.</li>
             <li><code>Activation beams</code> — the Deployment Bay fires a flowing beam along the streets to each room as its stage starts, so a run reads as the bay waking the floor room by room. The bay nameplate reads ACTIVATING ROOM CREWS while a run is live.</li>
             <li><code>STAGED, not WORKING</code> — a room whose crew has arrived but whose stage has not started reads STAGED in cyan. Rooms only read WORKING while their pair is genuinely at its workstations. Stages are numbered in the true order: Detail Forge is R04 and runs before Render Engine R05.</li>
@@ -1347,7 +1373,7 @@
         buildCrew();
         emit(null, "Backend live — 12 named agents at their posts across all 6 rooms, holding still. No job yet — start the pipeline to set them moving.");
         log("SYS // image-ecosystem online — 6 rooms, crew parked at posts until a run fires");
-        log("PAGE // MuseAi-image-ecosystem on GitHub Pages — 3D diorama build, Nebula theme, updated Nov 26 2026");
+        log("PAGE // MuseAi-image-ecosystem on GitHub Pages — 3D diorama build, Nebula theme, updated Nov 27 2026");
 
         // ---------- Agent dots ----------
         var NODES = [

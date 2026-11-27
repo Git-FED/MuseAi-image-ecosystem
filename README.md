@@ -1,6 +1,6 @@
 # Muse AI Image Ecosystem
 
-![Status](https://img.shields.io/badge/Status-v2.0.1-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-v2.0.2-brightgreen?style=for-the-badge)
 ![Live](https://img.shields.io/badge/Live-GitHub_Pages-2ea44f?style=for-the-badge)
 
 **A real working image generation workflow, built like a satellite station.**
@@ -13,7 +13,7 @@
 
 ## What it is
 
-A 3D diorama: a tilted slab floating in a starfield viewport, six raised room blocks joined by conveyor streets to a red Deployment Bay pad at the centre. The default theme is Nebula (deep indigo, electric blue), with Emerald, Cyan, Amber, Violet and Rose in the THEME picker, recolours the whole scene, rooms included.
+A flat top-down floor plan: six flat room blocks on a dark grid, joined by conveyor streets to a red Deployment Bay pad at the centre. No tilt, no raised slab. The default theme is Nebula (deep indigo, electric blue), with Emerald, Cyan, Amber, Violet and Rose in the THEME picker, recolours the whole scene, rooms included.
 
 The agents hold still at rest: 12 named agents posted two per room, plus a two-person mini crew dormant at the benches in each room. Nothing moves until you press RUN PIPELINE. Then the Deployment Bay fires a flowing activation beam to each room in turn, each pair deploys through the bay, patrols its benches while working, then returns to post and the floor goes still again.
 
@@ -43,6 +43,7 @@ Write a brief, hit Run Pipeline, watch the rooms light up in order, get an image
 
 ## History
 
+- **v2.0.2 — Nov 27, 2026:** Polish pass on the 3D diorama build. The slab tilts further (8 degrees) with a thicker visible edge and deeper float shadow, and the six rooms plus the Deployment Bay tower extrude deeper, so the floor reads more solidly 3D. The last overlap is fixed: crew tags on the map are now slim name-only tags centred under each dot in every state, the wide tooltip cards that covered room text are gone, and the room status lines sit on their own dark plate, clear of the crates. Theme switches now cross-fade instead of snapping, the gantry crane reads wider in the streets, and the finished image gets a glow shadow. (An earlier flat-build draft briefly carried this version number; it was never pushed to this repo.)
 - **v2.0.1 — Nov 26, 2026:** Fixed the broken map layering. The overhead gantry crane rode in a layer above the rooms, so its opaque column and light cone sliced straight through room titles, status text, and crew nameplates ("Prompt Office" cut in half, Style Lab covered mid-run), worst on a phone. The crane now travels below the room boxes, visible in the streets and across the bay, and never covers text or tags again. On phone widths the in-room status lines the nameplates were landing on are hidden (the same live text stays readable in the crew roster and Agent Inspector), and the hazard-bar title now fits instead of clipping off both ends. The pipeline engine itself was never broken: full runs complete in about 22 seconds on desktop and phone.
 - **v2.0.0 — Nov 26, 2026:** Repo synced to the evolved 3D diorama build. Flat green map replaced by a tilted 3D slab in a starfield viewport with deeper raised rooms; default theme Nebula, picker with Nebula, Emerald, Cyan, Amber, Violet and Rose, recolours the whole scene. Every room holds its own two-person mini crew, dormant at rest, patrolling its benches while its stage works; the Deployment Bay fires a flowing activation beam to each room in turn. Room 4/6 fix carried over from the Space: stages renumbered to the true order (Detail Forge R04 before Render Engine R05), rooms read STAGED in cyan until their pair is genuinely working, Render row labelled the slow step. Also: ops stats bar from the session's run history, SURPRISE ME brief button, starrable vault images with full-screen lightbox, wider command-deck layout with bordered HUD panel, scan sweep while a run is live. Rest rule untouched: nothing moves until RUN PIPELINE is pressed.
 - **v1.5.0 — Nov 26, 2026:** Agents do not move unless the pipeline is started. All 12 named agents hold still at their posts in their rooms while no job is running. The idle roaming tours are gone, the server issues no route to anyone outside a run, and IN MOTION reads 0/12 at rest. Street traffic, the conveyor belts, the gantry crane, and the idle bob on the crew dots are also held while idle. The page no longer runs a demo brief on its own. Movement only begins when you press RUN PIPELINE: each pair deploys through the bay, patrols its benches while working, then returns to its post and stops, and the floor goes still again until the next run. (Supersedes the idle-roam behaviour of v1.3.1-v1.4.3.)
