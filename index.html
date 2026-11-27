@@ -1109,6 +1109,52 @@
         background: radial-gradient(ellipse 50% 100% at 50% 0%, rgba(255,150,50,0.16), transparent 70%);
       }
       @media (prefers-reduced-motion: reduce) { .crane-beam-top { transition: none; } }
+      /* ============ POLISH PASS 11 — the beam leaves the floor entirely ============ */
+      /* Pass 10 put the beam on z-index 5 above the rooms and the watched
+         live test STILL read "ANTRY CRANE": the G sliced where the R01
+         block overlaps the beam's left end, the letter bottoms cut by
+         R02's top edge. In the tilted 3D slab (rotateX on the map, rooms
+         as raised blocks with deep extruded shadows) the room blocks
+         paint over the beam's ends in the real browser whatever z-index
+         the beam carries — the flat audit capture showed it clear and
+         the live page did not. Three passes of stacking and finish
+         changes inside the same overlap zone have now failed the same
+         eye test, so this pass removes the overlap itself: the beam no
+         longer lives in the map at all. It rides in .gantry-track, a
+         railed strip between the hazard banner and the top of the slab
+         — a band where no room box, room shadow, crew tag or status
+         line exists at any viewport width — so the full span and the
+         whole GANTRY CRANE legend are readable end to end BY
+         CONSTRUCTION, at rest and mid-glide. The mast, trolley, cable
+         and hook stay in the street corridors below the rooms exactly
+         as before; the same server state line drives the beam's left
+         on the same 0.85s fast-out glide, and because the track and the
+         map share the diorama's content width, the beam stays centred
+         over the mast in the corridor it is serving. */
+      .gantry-track {
+        position: relative; height: 36px;
+        border: 1px solid #2a4633; border-bottom: 3px solid #2e4a36;
+        background:
+          linear-gradient(180deg, rgba(255,122,26,0.08), transparent 55%),
+          repeating-linear-gradient(90deg, transparent 0 26px, rgba(230,245,233,0.07) 26px 28px),
+          linear-gradient(180deg, #131a15 0%, #0a0f0b 100%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -6px 10px rgba(0,0,0,0.55);
+      }
+      .gantry-track::before {
+        content: ""; position: absolute; left: 0; right: 0; top: 4px; height: 2px; pointer-events: none;
+        background: repeating-linear-gradient(90deg, rgba(255,176,32,0.5) 0 14px, transparent 14px 26px);
+      }
+      .gantry-track::after {
+        content: "GANTRY TRACK"; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); pointer-events: none;
+        font-family: var(--mono); font-size: 7px; font-weight: 700; letter-spacing: 0.24em; color: rgba(230,245,233,0.3);
+      }
+      .crane-beam-top {
+        top: 50%; height: 26px; width: min(248px, 62%);
+        transform: translate(-50%, -50%);
+        box-shadow: 0 5px 12px rgba(0,0,0,0.75), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -3px 0 rgba(0,0,0,0.3), 0 0 22px rgba(255,122,26,0.5);
+      }
+      .crane-beam-top::after { content: none; }
+      @media (max-width: 639px) { .crane-beam-top { font-size: 9px; letter-spacing: 0.16em; text-indent: 0.16em; } }
     </style>
   </head>
   <body>
@@ -1158,6 +1204,7 @@
       <!-- Factory floor map — 3D diorama -->
       <div class="diorama">
       <div class="hazard-bar" aria-hidden="true"><span>MUSE IMAGE WORKS — FACTORY FLOOR 01 · 3D DIORAMA</span></div>
+      <div class="gantry-track" aria-hidden="true"><span class="crane-beam-top" style="left:calc(33.4% + 17px)">GANTRY CRANE</span></div>
       <section class="map" aria-label="Ecosystem map">
         <div class="street-h" style="top:31%;height:7%" aria-hidden="true"></div>
         <div class="street-h" style="top:63%;height:7%" aria-hidden="true"></div>
@@ -1169,7 +1216,6 @@
         <div class="pipe-h" style="top:70.5%" aria-hidden="true"></div>
         <div class="crane-rail" aria-hidden="true"></div>
         <div class="crane" style="left:33.4%" aria-hidden="true"><i class="crane-cable"></i></div>
-        <span class="crane-beam-top" style="left:calc(33.4% + 17px)" aria-hidden="true">GANTRY CRANE</span>
         <span class="floor-tag" style="left:3%;top:29%" aria-hidden="true">CONVEYOR A →</span>
         <span class="floor-tag" style="left:69%;top:61%" aria-hidden="true">CONVEYOR B →</span>
         <span class="floor-tag" style="left:3%;bottom:1.5%" aria-hidden="true">BAY 04 · RENDER LINE</span>
@@ -1429,6 +1475,7 @@
             <li><code>Vault clear of the slots</code> — newest pass: live captures kept catching Vault's name tag on a Gallery Vault slot's EMPTY label, because every post inside that room stands on the 2x2 slot grid. Vault's post now stands on the open floor band under the grid, at the grid's column seam, its tag rides above its dot instead of below it, and its patrol runs flat along that band with no vertical leg — so neither the dot nor the tag can touch a slot label or the room's status plate at rest, while working, or once done.</li>
             <li><code>Gantry crane, unmistakable + on time</code> — newest pass: watched live tests could still only find the crane zoomed, because its hazard-striped beam wore the same pattern as the hazard banner capping the map and blended into it, and its 2.2s glide lagged the ~3s stages so it sat at the previous stage's corridor at every check. The beam is now a solid safety-orange bridge, 248px wide and lettered GANTRY CRANE, on a 34px safety-orange mast — a colour and finish nothing else on the floor uses — still riding below the room boxes and parking in the west street. The glide is 0.85s on a fast-out curve, so the crane departs the moment a stage changes, is parked at the serving corridor for most of every stage, and is home about a second after a run ends.</li>
             <li><code>Gantry beam, out from behind the rooms</code> — newest pass: watched live tests still found the bridge beam half-hidden behind the raised Prompt Office and Style Lab blocks, its lettering sliced by the room boxes in front of it, because the beam hung where the top row of rooms begins and the rooms paint over the crane's layer. The beam now rides as its own element above the room boxes, hung at the very top of the floor with the full 248px span and the whole GANTRY CRANE legend on show end to end — high enough that it crosses nothing but the rooms' top border, never a title, tag or status line. The mast, trolley, cable and hook stay below the rooms in the street corridors as before, and the same run state drives the beam on the same 0.85s glide, so the whole crane still travels, serves and parks as one machine.</li>
+            <li><code>Gantry beam, on its own track</code> — newest pass: watched live tests still read ANTRY CRANE — in the tilted slab the raised room blocks paint over the beam's ends in the real browser whatever z-index it carries, so stacking inside the overlap could not be trusted to save it. The beam now rides in its own gantry track, a railed strip between the hazard banner and the floor slab where no room box or room shadow exists at any width: the full safety-orange span and the whole GANTRY CRANE legend are on show end to end, at rest and mid-glide, driven by the same run state on the same 0.85s glide, centred over the mast in the street below. The painter also gained a low wedge profile for sports cars (the old stacked boxes read as a pickup), glowing pink-and-cyan neon signs with street reflections for neon city briefs, and the expanded prompt text now follows the brief's own time of day instead of quoting the mood chip over a night or midday image.</li>
             <li><code>Painter reads the whole brief</code> — newest pass: live takes kept showing the Render Engine ignoring the brief's own words — a red sports car in a neon city at night came back as a dark car under a golden-hour sky, because the sky came only from the mood chip and every subject was painted in the ground silhouette colour. The painter now reads the brief first: the first colour word in it paints the subject (car, cat, dog, robot, dragon, train and boat hulls), a night, dusk or sunny word in the brief sets the sky over whatever mood chip is picked — night gets a cratered moon, stars and a headlight beam — and a car whose brief names a city stands on a lit street with towers behind it instead of an empty stage. Briefs that name no colour and no time of day render exactly as before.</li>
           </ul>
           <h3>RUN IT</h3>
@@ -2015,6 +2062,15 @@
           var mood = el("custom-mood").value.trim() || state.moodSel;
           var styleWords = STYLE_WORDS[style] || (tidy(style).toLowerCase() + " style, rendered with intent and control");
           var moodWords = MOOD_WORDS[mood] || ("an atmosphere that feels " + tidy(mood).toLowerCase());
+          // The brief's own time of day outranks the mood chip in the text
+          // too (POLISH PASS 11): the painter already lets a night or sunny
+          // brief set the sky, but the expanded prompt kept quoting the
+          // chip — "bathed in warm golden-hour light" — over a night or
+          // midday image. When the brief names a time, the text says so.
+          var briefTimeText = (brief.subject + " " + (brief.details || "")).toLowerCase();
+          if (/\b(night|midnight|moonlit|starlit|after dark|nighttime)\b/.test(briefTimeText)) moodWords = "under a night sky — moonlit and starlit, the darkness kept";
+          else if (/\b(dusk|sunset|twilight|sundown)\b/.test(briefTimeText)) moodWords = "at dusk, in fading sunset light and long violet shadows";
+          else if (/\b(sunny|daytime|midday|noon|daylight|clear day)\b/.test(briefTimeText)) moodWords = "in bright sunny daylight — clear, vivid, high sun";
           var expanded = tidy(brief.subject) + ". " +
             (brief.details ? "Key details that must appear: " + tidy(brief.details) + ". " : "") +
             "Rendered as " + styleWords + ", " + moodWords + ".";
@@ -2375,21 +2431,76 @@
               ctx.setLineDash([26, 20]);
               ctx.beginPath(); ctx.moveTo(0, H * 0.945); ctx.lineTo(W, H * 0.945); ctx.stroke();
               ctx.setLineDash([]); ctx.globalAlpha = 1;
+              // Neon briefs get neon (POLISH PASS 11): glowing pink and
+              // cyan sign bars on the tower faces with a smear of their
+              // light on the street below — lit windows alone never read
+              // as neon in the live takes.
+              if (/\bneon\b/.test(text) || prompts.style === "Cyberpunk") {
+                var neonCols = ["#ff2ea6", "#22d3ee", "#ff2ea6", "#7df9ff"];
+                ctx.save();
+                for (var nz = 0; nz < 4; nz++) {
+                  var nx = W * (0.08 + nz * 0.23 + rand() * 0.05), ny = H * (0.3 + rand() * 0.3), nw = W * (0.05 + rand() * 0.05), ncol = neonCols[nz % neonCols.length];
+                  ctx.shadowColor = ncol; ctx.shadowBlur = 16;
+                  ctx.strokeStyle = ncol; ctx.lineWidth = 3;
+                  ctx.globalAlpha = 0.9;
+                  roundRectPath(nx, ny, nw, H * 0.045, 4); ctx.stroke();
+                  ctx.fillStyle = ncol; ctx.globalAlpha = 0.28;
+                  ctx.fillRect(nx + 3, ny + H * 0.022 - 1.5, nw - 6, 3);
+                  ctx.globalAlpha = 0.16; ctx.shadowBlur = 10;
+                  ctx.fillRect(nx, H * 0.88, nw, H * 0.05);
+                }
+                ctx.restore(); ctx.globalAlpha = 1;
+              }
             } else stageBase();
             var cx = W * 0.5, gy = H * 0.88, s = Math.min(W, H) * 0.62;
             shadow(cx, gy + 2, s * 0.5);
             // Body in the brief's colour (dark silhouette when it names none),
             // cabin a shade deeper, a lit highlight along the shoulder line.
-            ctx.fillStyle = subjectFill;
-            roundRectPath(cx - s * 0.5, gy - s * 0.3, s, s * 0.24, s * 0.08); ctx.fill();
-            ctx.fillStyle = subjectDeep;
-            roundRectPath(cx - s * 0.28, gy - s * 0.52, s * 0.52, s * 0.26, s * 0.07); ctx.fill();
-            ctx.fillStyle = shade(pal.sky[2].startsWith("#") ? pal.sky[2] : "#7fa8c9", 0.9);
-            roundRectPath(cx - s * 0.22, gy - s * 0.49, s * 0.18, s * 0.17, s * 0.03); ctx.fill();
-            roundRectPath(cx + s * 0.02, gy - s * 0.49, s * 0.17, s * 0.17, s * 0.03); ctx.fill();
+            var sleekCar = /\b(sports|race|racing|sleek|supercar|convertible|coupe|roadster)\b/.test(text);
+            if (sleekCar) {
+              // Sleek profile (POLISH PASS 11): the two stacked boxes used
+              // for every car read as a pickup — a tall cabin on a slab
+              // body. A sports car is one low wedge: a long bonnet sloping
+              // down to the nose, a roofline peaking ahead of the rear
+              // wheel and falling away to a short deck.
+              ctx.fillStyle = subjectFill;
+              ctx.beginPath();
+              ctx.moveTo(cx - s * 0.5, gy - s * 0.05);
+              ctx.lineTo(cx - s * 0.5, gy - s * 0.2);
+              ctx.quadraticCurveTo(cx - s * 0.5, gy - s * 0.26, cx - s * 0.42, gy - s * 0.265);
+              ctx.lineTo(cx + s * 0.28, gy - s * 0.235);
+              ctx.quadraticCurveTo(cx + s * 0.46, gy - s * 0.225, cx + s * 0.5, gy - s * 0.17);
+              ctx.lineTo(cx + s * 0.5, gy - s * 0.05);
+              ctx.closePath(); ctx.fill();
+              ctx.fillStyle = subjectDeep;
+              ctx.beginPath();
+              ctx.moveTo(cx - s * 0.31, gy - s * 0.26);
+              ctx.quadraticCurveTo(cx - s * 0.18, gy - s * 0.42, cx - s * 0.02, gy - s * 0.425);
+              ctx.quadraticCurveTo(cx + s * 0.14, gy - s * 0.425, cx + s * 0.27, gy - s * 0.25);
+              ctx.closePath(); ctx.fill();
+              ctx.fillStyle = shade(pal.sky[2].startsWith("#") ? pal.sky[2] : "#7fa8c9", 0.9);
+              ctx.beginPath();
+              ctx.moveTo(cx - s * 0.24, gy - s * 0.27);
+              ctx.quadraticCurveTo(cx - s * 0.14, gy - s * 0.385, cx - s * 0.03, gy - s * 0.39);
+              ctx.lineTo(cx - s * 0.005, gy - s * 0.27);
+              ctx.closePath(); ctx.fill();
+              ctx.beginPath();
+              ctx.moveTo(cx + s * 0.015, gy - s * 0.39);
+              ctx.quadraticCurveTo(cx + s * 0.1, gy - s * 0.385, cx + s * 0.19, gy - s * 0.265);
+              ctx.lineTo(cx + s * 0.02, gy - s * 0.27);
+              ctx.closePath(); ctx.fill();
+            } else {
+              ctx.fillStyle = subjectFill;
+              roundRectPath(cx - s * 0.5, gy - s * 0.3, s, s * 0.24, s * 0.08); ctx.fill();
+              ctx.fillStyle = subjectDeep;
+              roundRectPath(cx - s * 0.28, gy - s * 0.52, s * 0.52, s * 0.26, s * 0.07); ctx.fill();
+              ctx.fillStyle = shade(pal.sky[2].startsWith("#") ? pal.sky[2] : "#7fa8c9", 0.9);
+              roundRectPath(cx - s * 0.22, gy - s * 0.49, s * 0.18, s * 0.17, s * 0.03); ctx.fill();
+              roundRectPath(cx + s * 0.02, gy - s * 0.49, s * 0.17, s * 0.17, s * 0.03); ctx.fill();
+            }
             if (subjectColor) {
               ctx.fillStyle = subjectHi; ctx.globalAlpha = 0.85;
-              roundRectPath(cx - s * 0.48, gy - s * 0.31, s * 0.96, s * 0.045, s * 0.02); ctx.fill();
+              roundRectPath(cx - s * 0.48, gy - s * (sleekCar ? 0.245 : 0.31), sleekCar ? s * 0.8 : s * 0.96, s * 0.045, s * 0.02); ctx.fill();
               ctx.globalAlpha = 1;
             }
             ctx.fillStyle = "#05070a";
